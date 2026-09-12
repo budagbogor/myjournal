@@ -139,6 +139,19 @@
         <!-- Tombol Aksi Header -->
         <div class="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
           
+          <!-- Tombol Portal Admin & Kelola Jurnal -->
+          <button
+            type="button"
+            id="headerAdminHubBtn"
+            onclick="openAdminHubModal()"
+            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-md active:scale-95"
+            title="Portal Kurasi & Pembaruan Jurnal (Kelola Jurnal)"
+          >
+            <i data-lucide="sliders" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span class="hidden md:inline">Kelola Jurnal</span>
+            <span id="adminCuratedCountBadge" class="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-400 text-slate-950 font-bold">4</span>
+          </button>
+
           <!-- Fitur Terjemahan Otomatis Toggle -->
           <button
             type="button"
@@ -409,6 +422,57 @@
       <!-- ==================== DAFTAR JURNAL UTAMA (Kolom 8 di laptop, Kolom 9 di layar lebar) ==================== -->
       <section class="lg:col-span-8 xl:col-span-9 2xl:col-span-9 space-y-4 min-w-0">
         
+        <!-- Segmented Search Mode Tab (Arsitektur Anti-Slop: Flat, berjarak, kontras tinggi) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 p-1 bg-slate-100 border border-slate-200/80 rounded-2xl shadow-2xs gap-1">
+          <button
+            type="button"
+            id="searchModeOpenAlexBtn"
+            onclick="setSearchMode('openalex')"
+            class="py-2.5 px-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 bg-white text-slate-900 shadow-2xs active:scale-95"
+          >
+            <i data-lucide="globe" class="w-4 h-4 text-indigo-600"></i>
+            <span>Korpus OpenAlex (250M+ Data)</span>
+          </button>
+          <button
+            type="button"
+            id="searchModeDeepSearchBtn"
+            onclick="setSearchMode('deepsearch')"
+            class="py-2.5 px-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-white/50 active:scale-95"
+          >
+            <i data-lucide="sparkles" class="w-4 h-4 text-amber-500 animate-pulse"></i>
+            <span>⚡ DeepSearch (Google Grounding)</span>
+          </button>
+          <button
+            type="button"
+            id="searchModeCuratedBtn"
+            onclick="setSearchMode('curated')"
+            class="py-2.5 px-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-white/50 active:scale-95"
+          >
+            <i data-lucide="bookmark-check" class="w-4 h-4 text-emerald-500"></i>
+            <span>Koleksi Terkurasi Admin</span>
+          </button>
+        </div>
+
+        <!-- Banner Khusus Status DeepSearch -->
+        <div id="deepSearchStatusBanner" class="hidden p-4 rounded-2xl bg-amber-50 border border-amber-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 animate-fade-in">
+          <div class="flex items-start gap-2.5">
+            <div class="p-1.5 rounded-lg bg-amber-100 text-amber-700 mt-0.5">
+              <i data-lucide="info" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-amber-900">Mode DeepSearch (AI Grounding Search) Aktif</h4>
+              <p class="text-[11px] text-amber-800 mt-0.5">Mencari literatur ilmiah dari ratusan provider web (ScienceDirect, IEEE, arXiv, DOAJ, SSRN) secara live menggunakan real-time Google Search Grounding.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onclick="setSearchMode('openalex')"
+            class="text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors flex-shrink-0"
+          >
+            Kembali ke Korpus Umum
+          </button>
+        </div>
+
         <!-- Bar Kontrol Hasil & Metadata -->
         <div class="flex flex-wrap items-center justify-between gap-3 bg-white border border-slate-200/90 p-3.5 rounded-2xl shadow-xs">
           
@@ -839,6 +903,27 @@
               <p class="text-xs text-slate-600 font-medium">Memuat dokumen PDF ke dalam frame aplikasi...</p>
             </div>
             <iframe id="pdfFrame" class="w-full h-full border-0" allow="fullscreen"></iframe>
+            
+            <!-- Floating Translation HUD (Pemberitahuan Terjemahan Cepat) -->
+            <div id="pdfTranslationOverlay" class="absolute bottom-4 left-4 right-4 bg-slate-900/95 backdrop-blur-md border border-slate-700 text-white p-3.5 rounded-2xl shadow-xl flex items-center justify-between gap-3 z-30 transition-all duration-300">
+              <div class="flex items-start gap-2.5">
+                <div class="p-2 rounded-xl bg-indigo-600 text-white flex-shrink-0">
+                  <i data-lucide="languages" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs font-bold tracking-wide text-white">ASISTEN DEEP-READ TERJEMAHAN</h4>
+                  <p class="text-[10.5px] text-slate-300 leading-normal mt-0.5">Membaca PDF asli? Gunakan panel <strong>Berdampingan</strong> di kanan untuk melihat bedah gagasan dan terjemahan komprehensif Bahasa Indonesia.</p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onclick="setReaderViewMode('split')" 
+                class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold shadow-xs whitespace-nowrap flex items-center gap-1.5 transition-all"
+              >
+                <span>Aktifkan Berdampingan</span>
+                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -984,6 +1069,259 @@
             <span id="copyBtnLabel">Salin Sitasi</span>
           </button>
         </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== MODAL PORTAL ADMIN (KELOLA JURNAL) ==================== -->
+  <div id="adminHubModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/55 backdrop-blur-sm">
+    <div class="bg-white border border-slate-200 shadow-2xl rounded-2xl max-w-4xl w-full h-[85vh] flex flex-col overflow-hidden animate-scale-up">
+      
+      <!-- Header Modal -->
+      <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-900 text-white flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center shadow-md">
+            <i data-lucide="sliders" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold">Portal Kurasi & Pembaruan Jurnal (Admin Portal)</h3>
+            <p class="text-xs text-slate-300">Kelola database jurnal terkurasi, tambah rujukan manual/DOI, dan sinkronkan riset baru secara real-time.</p>
+          </div>
+        </div>
+        <button onclick="closeAdminHubModal()" class="text-slate-300 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors" title="Tutup">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Tab Bilah Navigasi Admin -->
+      <div class="px-5 pt-3 bg-slate-50 border-b border-slate-200 flex gap-4 text-xs font-semibold text-slate-600 flex-shrink-0">
+        <button type="button" onclick="switchAdminTab('curated')" id="adminTabCuratedBtn" class="admin-tab-btn pb-3 px-1 border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2">
+          <i data-lucide="database" class="w-4 h-4"></i>
+          <span>Daftar Jurnal Terkurasi (<span id="adminTotalCuratedCount">...</span>)</span>
+        </button>
+        <button type="button" onclick="switchAdminTab('add')" id="adminTabAddBtn" class="admin-tab-btn pb-3 px-1 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Tambah Jurnal Baru (Auto DOI)</span>
+        </button>
+        <button type="button" onclick="switchAdminTab('sync')" id="adminTabSyncBtn" class="admin-tab-btn pb-3 px-1 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-2">
+          <i data-lucide="refresh-cw" class="w-4 h-4 text-amber-500"></i>
+          <span>⚡ Sinkronisasi & Harvester Otomatis</span>
+        </button>
+      </div>
+
+      <!-- Konten Modal (Bisa Di-scroll) -->
+      <div class="flex-1 overflow-y-auto p-5 space-y-5 bg-slate-50/50">
+        
+        <!-- Tab 1: Daftar Jurnal Terkurasi -->
+        <div id="adminTabCurated" class="space-y-4">
+          <div class="flex flex-col sm:flex-row items-center gap-3">
+            <div class="relative flex-1 w-full">
+              <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i>
+              <input
+                type="text"
+                id="adminSearchInput"
+                oninput="filterAdminCuratedList()"
+                class="w-full pl-9 pr-4 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600 placeholder-slate-400"
+                placeholder="Cari rujukan, DOI, penulis atau kata kunci..."
+              />
+            </div>
+            <select
+              id="adminCategoryFilter"
+              onchange="filterAdminCuratedList()"
+              class="w-full sm:w-48 bg-white border border-slate-200 rounded-lg text-xs py-2 px-2.5 focus:outline-none"
+            >
+              <option value="all">Semua Kategori</option>
+              <option value="C144133568">Bisnis, Keuangan & Manajemen</option>
+              <option value="C127413603_applied">Ilmu Terapan & Rekayasa</option>
+              <option value="other">Kategori Lainnya</option>
+            </select>
+          </div>
+
+          <div id="adminCuratedList" class="grid grid-cols-1 gap-3">
+            <!-- Diisi secara dinamis -->
+          </div>
+        </div>
+
+        <!-- Tab 2: Tambah Jurnal Baru -->
+        <div id="adminTabAdd" class="hidden space-y-4">
+          
+          <!-- Box DOI Autocomplete -->
+          <div class="p-4 bg-indigo-50/60 border border-indigo-100 rounded-xl space-y-3">
+            <h4 class="text-xs font-bold text-indigo-950 uppercase tracking-wide flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600"></i>
+              Tarik Data Otomatis via DOI (Sangat Direkomendasikan)
+            </h4>
+            <p class="text-xs text-slate-600">Masukkan DOI karya ilmiah (contoh: <code class="bg-indigo-100 px-1.5 py-0.5 rounded font-mono text-indigo-900">10.1016/j.jbusres.2024.114561</code>). Sistem akan otomatis menarik metadata dari Crossref/OpenAlex dan menerjemahkannya ke Bahasa Indonesia menggunakan Gemini AI.</p>
+            <div class="flex items-center gap-2">
+              <input
+                type="text"
+                id="doiFetcherInput"
+                class="flex-1 px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg placeholder-slate-400 focus:outline-none focus:border-indigo-600"
+                placeholder="Masukkan Nomor DOI atau link lengkap DOI..."
+              />
+              <button
+                type="button"
+                id="btnFetchDoi"
+                onclick="autoFetchDoiMetadata()"
+                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-xs"
+              >
+                <span id="btnFetchDoiLabel">⚡ Tarik Metadata</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Form Edit/Manual -->
+          <form id="adminAddJournalForm" onsubmit="saveAdminJournalForm(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white border border-slate-200 p-5 rounded-2xl shadow-2xs">
+            <div class="md:col-span-2 space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Judul Jurnal (Bahasa Inggris / Asli)</label>
+              <input type="text" id="formTitle" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600" placeholder="Contoh: Digital Transformation in MSMEs and Circular Economy Impacts" />
+            </div>
+
+            <div class="md:col-span-2 space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Judul Terjemahan (Bahasa Indonesia)</label>
+              <input type="text" id="formTranslatedTitle" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600" placeholder="Contoh: Transformasi Digital pada UMKM dan Dampaknya terhadap Ekonomi Sirkular" />
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Penulis (Sebutkan dengan koma)</label>
+              <input type="text" id="formAuthors" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600" placeholder="Contoh: Budi Santoso, Ahmad Fauzi, Catherine Shaw" />
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Nama Jurnal / Penerbit</label>
+              <input type="text" id="formPublisher" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600" placeholder="Contoh: Journal of Business Research" />
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <div class="space-y-1.5 col-span-1">
+                <label class="text-xs font-bold text-slate-700">Tahun</label>
+                <input type="number" id="formYear" required min="1950" max="2026" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600" placeholder="2025" />
+              </div>
+              <div class="space-y-1.5 col-span-2">
+                <label class="text-xs font-bold text-slate-700">Dampak Sitasi (Kutipan)</label>
+                <input type="number" id="formCitations" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600" placeholder="12" />
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Nomor DOI (Opsional)</label>
+              <input type="text" id="formDoi" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600" placeholder="Contoh: 10.1016/j.jbusres.2025.12" />
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Link File PDF Terbuka (Open Access PDF)</label>
+              <input type="url" id="formPdfUrl" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600" placeholder="Contoh: https://example.com/paper.pdf" />
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Bidang Makro (Kategori)</label>
+              <select id="formCategory" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600">
+                <option value="C144133568">Bisnis, Keuangan & Manajemen</option>
+                <option value="C127413603_applied">Ilmu Terapan & Rekayasa Industri</option>
+                <option value="other">Kategori Lainnya</option>
+              </select>
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-700">Nama Sub-bidang / Spesialisasi</label>
+              <input type="text" id="formSubfield" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600" placeholder="Contoh: Teknologi Keuangan (Fintech)" />
+            </div>
+
+            <div class="space-y-1.5 md:col-span-2">
+              <label class="text-xs font-bold text-slate-700">Abstrak (Bahasa Inggris / Asli)</label>
+              <textarea id="formAbstract" rows="3" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600" placeholder="Masukkan abstrak asli..."></textarea>
+            </div>
+
+            <div class="space-y-1.5 md:col-span-2">
+              <label class="text-xs font-bold text-slate-700">Abstrak Terjemahan (Bahasa Indonesia)</label>
+              <textarea id="formTranslatedAbstract" rows="3" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600" placeholder="Masukkan abstrak terjemahan Bahasa Indonesia..."></textarea>
+            </div>
+
+            <div class="md:col-span-2 pt-3 border-t border-slate-100 flex justify-end gap-2">
+              <button type="button" onclick="resetAdminForm()" class="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold">
+                Reset Form
+              </button>
+              <button type="submit" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold flex items-center gap-1">
+                <i data-lucide="save" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>Simpan Jurnal Kurasi</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tab 3: Sinkronisasi & Harvester Otomatis -->
+        <div id="adminTabSync" class="hidden space-y-4">
+          <div class="p-5 bg-white border border-slate-200 rounded-2xl space-y-4 shadow-2xs">
+            <div class="flex items-start gap-3">
+              <div class="p-2 bg-amber-50 rounded-xl text-amber-600">
+                <i data-lucide="zap" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-slate-900">Live AI Harvester & Web Grounding</h4>
+                <p class="text-xs text-slate-500 mt-1">Gunakan fitur ini untuk secara instan menelusuri internet dan repositori akademik bagi disiplin ilmu yang minim jurnal. Sistem akan memanen, mengindeks, merangkum, dan menerjemahkan paper terbaru ke Bahasa Indonesia.</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              
+              <!-- Card 1: Bisnis -->
+              <div class="p-4 border border-slate-150 bg-slate-50/50 rounded-xl space-y-3 flex flex-col justify-between">
+                <div>
+                  <h5 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i>
+                    Bidang Bisnis, Keuangan & Manajemen
+                  </h5>
+                  <p class="text-[11px] text-slate-500 mt-1">Memanen jurnal-jurnal Fintech, ESG, manajemen rantai pasok global, dan adopsi kecerdasan buatan dalam korporasi ril terbitan tahun 2025/2026.</p>
+                </div>
+                <button
+                  type="button"
+                  id="btnSyncBisnis"
+                  onclick="runLiveSyncAdmin('business')"
+                  class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                  <span>Sinkronkan Jurnal Bisnis</span>
+                </button>
+              </div>
+
+              <!-- Card 2: Ilmu Terapan -->
+              <div class="p-4 border border-slate-150 bg-slate-50/50 rounded-xl space-y-3 flex flex-col justify-between">
+                <div>
+                  <h5 class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <i data-lucide="settings" class="w-4 h-4 text-amber-500"></i>
+                    Bidang Ilmu Terapan & Rekayasa Industri
+                  </h5>
+                  <p class="text-[11px] text-slate-500 mt-1">Memanen jurnal Smart Manufacturing, Predictive Maintenance, industri pangan modern, agribisnis presisi, dan IoT Industri tahun 2025/2026.</p>
+                </div>
+                <button
+                  type="button"
+                  id="btnSyncApplied"
+                  onclick="runLiveSyncAdmin('applied-science')"
+                  class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                  <span>Sinkronkan Jurnal Ilmu Terapan</span>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Konsol Log Realtime -->
+            <div id="syncConsoleLog" class="hidden p-4 rounded-xl bg-slate-950 text-emerald-400 font-mono text-[10px] space-y-1 h-48 overflow-y-auto border border-slate-800">
+              <div class="text-slate-400">&gt;_ Menunggu perintah sinkronisasi...</div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Modal -->
+      <div class="p-4 border-t border-slate-200 bg-slate-50 flex justify-end flex-shrink-0">
+        <button onclick="closeAdminHubModal()" class="px-5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold">
+          Kembali ke Aplikasi
+        </button>
       </div>
 
     </div>
@@ -1298,18 +1636,99 @@
         subfields: [
           {
             id: 'C162324750',
-            name: 'Teknologi Keuangan (Fintech) & Ekonomi',
+            name: 'Teknologi Keuangan (Fintech) & Perbankan Digital',
             microTopics: [
               { name: 'Keuangan Terdesentralisasi (DeFi)', query: 'decentralized finance cryptocurrency smart contracts protocol', conceptId: 'C162324750' },
-              { name: 'Investasi Berkelanjutan & Metrik ESG', query: 'ESG ratings sustainable finance carbon footprint returns' }
+              { name: 'Investasi Berkelanjutan & Metrik ESG', query: 'ESG ratings sustainable finance carbon footprint returns' },
+              { name: 'Credit Scoring AI & Manajemen Risiko', query: 'machine learning credit risk assessment banking financial stability' }
             ]
           },
           {
-            id: 'C144133568',
-            name: 'Strategi Inovasi & Transformasi Digital',
+            id: 'C187736073',
+            name: 'Manajemen Operasi & Rantai Pasok Terapan',
             microTopics: [
-              { name: 'Adopsi AI Perusahaan & Produktivitas', query: 'generative AI corporate adoption workforce productivity' },
-              { name: 'Ketahanan Rantai Pasok Global', query: 'supply chain resilience disruption risk mitigation' }
+              { name: 'Ketahanan Rantai Pasok Global', query: 'supply chain resilience disruption risk mitigation logistics' },
+              { name: 'Operasi Ramping & Lean Six Sigma', query: 'lean manufacturing operations management waste reduction' },
+              { name: 'Perkiraan Permintaan Cerdas (AI Forecasting)', query: 'predictive demand forecasting inventory optimization retail' }
+            ]
+          },
+          {
+            id: 'C144133568_strat',
+            name: 'Strategi Inovasi & Transformasi Digital Bisnis',
+            microTopics: [
+              { name: 'Adopsi AI Perusahaan & Produktivitas', query: 'generative AI corporate adoption workforce productivity enterprise' },
+              { name: 'Model Bisnis Sirkular & Keberlanjutan', query: 'circular business model value creation environmental sustainability' },
+              { name: 'Ekonomi Platform & Ekosistem Digital', query: 'digital platform economy network effects ecosystem strategy' }
+            ]
+          },
+          {
+            id: 'C58925567',
+            name: 'Pemasaran Digital & Perilaku Konsumen',
+            microTopics: [
+              { name: 'Analitika Konsumen & Customer Lifetime Value', query: 'customer lifetime value predictive analytics retention' },
+              { name: 'Pemasaran Omnichannel & E-Commerce', query: 'omnichannel retail customer journey digital marketing' },
+              { name: 'Neuromarketing & Pengambilan Keputusan', query: 'neuromarketing consumer behavior purchase intention eye tracking' }
+            ]
+          },
+          {
+            id: 'C84397302',
+            name: 'Kewirausahaan, UMKM & Startup Ecosystem',
+            microTopics: [
+              { name: 'Pendanaan Ventura & Valuasi Startup', query: 'venture capital startup financing valuation growth scaling' },
+              { name: 'Digitalisasi UMKM & Inklusi Keuangan', query: 'SME digital transformation financial inclusion micro enterprises' },
+              { name: 'Kewirausahaan Sosial & Dampak Berkelanjutan', query: 'social entrepreneurship impact investing community empowerment' }
+            ]
+          },
+          {
+            id: 'C121955636',
+            name: 'Akuntansi Forensik & Tata Kelola Korporat',
+            microTopics: [
+              { name: 'Tata Kelola Korporat & Dewan Direksi', query: 'corporate governance board diversity executive compensation' },
+              { name: 'Akuntansi Forensik & Deteksi Fraud', query: 'forensic accounting financial fraud detection auditing machine learning' },
+              { name: 'Pelaporan Emisi Karbon (Carbon Accounting)', query: 'carbon accounting greenhouse gas scope 3 disclosure compliance' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'C127413603_applied',
+        name: 'Ilmu Terapan & Rekayasa Industri',
+        icon: 'settings',
+        subfields: [
+          {
+            id: 'C2779835921',
+            name: 'Rekayasa Industri & Manufaktur Terapan',
+            microTopics: [
+              { name: 'Otomasi Industri & Manufaktur Cerdas', query: 'smart manufacturing industrial automation cyber physical systems' },
+              { name: 'Pemeliharaan Prediktif (Predictive Maintenance)', query: 'predictive maintenance vibration analysis machine learning industrial' },
+              { name: 'Ergonomi & Rekayasa Sistem Kerja', query: 'applied industrial ergonomics human factors workplace safety' }
+            ]
+          },
+          {
+            id: 'C41008148_applied',
+            name: 'Sains Data Terapan & Analitika Bisnis',
+            microTopics: [
+              { name: 'Analitika Preskriptif Riset Operasi', query: 'operations research prescriptive analytics linear programming optimization' },
+              { name: 'Process Mining & Optimasi Alur Kerja', query: 'process mining business process discovery conformance checking' },
+              { name: 'Big Data untuk Keputusan Manajerial', query: 'big data analytics executive decision support enterprise systems' }
+            ]
+          },
+          {
+            id: 'C185592680',
+            name: 'Teknologi Pangan & Agribisnis Terapan',
+            microTopics: [
+              { name: 'Pertanian Presisi & Sensor IoT Agribisnis', query: 'precision agriculture IoT sensor smart farming yield' },
+              { name: 'Pengemasan Aktif & Rantai Pasok Pangan Dingin', query: 'food cold chain active packaging shelf life preservation' },
+              { name: 'Bioteknologi Pangan Fungsional Terapan', query: 'applied food biotechnology functional ingredients fermentation' }
+            ]
+          },
+          {
+            id: 'C111919701',
+            name: 'Rekayasa Perangkat Lunak & Sistem Terapan',
+            microTopics: [
+              { name: 'Arsitektur Cloud-Native & Skalabilitas', query: 'cloud native software engineering microservices kubernetes latency' },
+              { name: 'Keamanan Siber Terapan & DevSecOps', query: 'applied cybersecurity DevSecOps vulnerability mitigation pipeline' },
+              { name: 'Sistem Tersemat & Edge AI Terapan', query: 'applied embedded systems edge AI microcontrollers real time' }
             ]
           }
         ]
@@ -1415,6 +1834,9 @@
     // --- STATUS APLIKASI GLOBAL ---
     const state = {
       query: 'deep learning',
+      searchMode: 'openalex', // 'openalex' | 'deepsearch' | 'curated'
+      curatedJournals: [],
+      adminActiveTab: 'curated',
       activeConceptId: null,
       activeConceptName: null,
       activeMicroTopic: null,
@@ -1562,11 +1984,168 @@
       emptyState.classList.add('hidden');
       errorState.classList.add('hidden');
       paginationBar.classList.add('hidden');
-      countText.textContent = 'Mencari karya ilmiah di korpus global...';
+      
+      let loadingMessage = 'Mencari karya ilmiah di korpus global...';
+      if (state.searchMode === 'deepsearch') {
+        loadingMessage = 'Memicu DeepSearch AI Grounding (Mencari web & repositori global real-time)...';
+      } else if (state.searchMode === 'curated') {
+        loadingMessage = 'Memuat katalog rujukan terkurasi...';
+      }
+      countText.textContent = loadingMessage;
 
       const startTime = performance.now();
 
       try {
+        // ==================== MODE 1: KATALOG TERKURASI ADMIN ====================
+        if (state.searchMode === 'curated') {
+          const response = await fetch('/api/admin/journals');
+          if (!response.ok) throw new Error('Gagal mengambil data curated');
+          const data = await response.json();
+          const allCurated = data.journals || [];
+
+          // Saring secara client-side agar konsisten dengan filter aktif
+          let filtered = allCurated;
+          const searchVal = (state.query || '').toLowerCase().trim();
+          if (searchVal && searchVal !== 'deep learning') {
+            filtered = filtered.filter(j => 
+              (j.title && j.title.toLowerCase().includes(searchVal)) ||
+              (j.translatedTitle && j.translatedTitle.toLowerCase().includes(searchVal)) ||
+              (j.authors && j.authors.toLowerCase().includes(searchVal)) ||
+              (j.publisher && j.publisher.toLowerCase().includes(searchVal)) ||
+              (j.doi && j.doi.toLowerCase().includes(searchVal))
+            );
+          }
+
+          if (state.activeConceptId) {
+            filtered = filtered.filter(j => j.category === state.activeConceptId);
+          }
+
+          if (state.openAccessOnly) {
+            filtered = filtered.filter(j => Boolean(j.pdf_url));
+          }
+
+          if (state.yearFilter !== 'all') {
+            if (state.yearFilter.includes('-')) {
+              const [from, to] = state.yearFilter.split('-').map(Number);
+              filtered = filtered.filter(j => {
+                const y = j.publication_year || j.year;
+                return y >= from && y <= to;
+              });
+            } else {
+              const yr = Number(state.yearFilter);
+              filtered = filtered.filter(j => (j.publication_year || j.year) === yr);
+            }
+          }
+
+          if (state.minCitations > 0) {
+            filtered = filtered.filter(j => (j.cited_by_count || 0) >= state.minCitations);
+          }
+
+          // Ubah ke format standard OpenAlex
+          const formatted = filtered.map(j => ({
+            id: j.id,
+            display_name: j.title,
+            title: j.title,
+            translatedTitle: j.translatedTitle || j.title,
+            publication_year: j.publication_year || j.year || 2025,
+            publication_date: `${j.publication_year || j.year || 2025}-01-01`,
+            doi: j.doi ? (j.doi.startsWith('http') ? j.doi : `https://doi.org/${j.doi}`) : null,
+            cited_by_count: j.cited_by_count || 0,
+            is_oa: Boolean(j.pdf_url),
+            open_access: {
+              is_oa: Boolean(j.pdf_url),
+              oa_status: j.pdf_url ? "gold" : "closed",
+              oa_url: j.pdf_url
+            },
+            best_oa_location: {
+              pdf_url: j.pdf_url,
+              landing_page_url: j.pdf_url || j.doi
+            },
+            primary_location: {
+              source: {
+                display_name: j.publisher || "Katalog Kurasi",
+                type: "journal"
+              },
+              pdf_url: j.pdf_url,
+              landing_page_url: j.pdf_url || j.doi
+            },
+            authorships: (j.authors || '').split(',').map(name => ({
+              author: { display_name: name.trim() },
+              institutions: []
+            })),
+            concepts: [
+              { id: j.category, display_name: j.category === 'C144133568' ? 'Bisnis & Manajemen' : 'Ilmu Terapan & Rekayasa' }
+            ],
+            abstract: j.abstract || '',
+            translatedAbstract: j.translatedAbstract || j.abstract || '',
+            isCurated: true,
+            sourceProvider: 'Rujukan Terkurasi Admin'
+          }));
+
+          const endTime = performance.now();
+          const latency = Math.round(endTime - startTime);
+
+          state.totalCount = formatted.length;
+          state.results = formatted;
+
+          latencyBadge.textContent = `⚡ ${latency}ms`;
+          latencyBadge.classList.remove('hidden');
+          skeletonLoader.classList.add('hidden');
+
+          if (state.results.length === 0) {
+            emptyState.classList.remove('hidden');
+            countText.textContent = 'Tidak ditemukan rujukan kurasi yang cocok.';
+            updateAnalyticsView();
+            return;
+          }
+
+          countText.innerHTML = `Ditemukan <strong class="text-indigo-700 font-bold">${state.totalCount}</strong> rujukan pilihan kurasi admin`;
+          renderActiveFilterPills();
+          renderPapersList();
+          updateAnalyticsView();
+          return;
+        }
+
+        // ==================== MODE 2: DEEPSEARCH AI GROUNDING ====================
+        if (state.searchMode === 'deepsearch') {
+          const response = await fetch('/api/deep-search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: state.query,
+              category: state.activeConceptName || ""
+            })
+          });
+
+          if (!response.ok) throw new Error('Layanan DeepSearch AI mengembalikan error');
+          const data = await response.json();
+          const papers = data.results || [];
+
+          const endTime = performance.now();
+          const latency = Math.round(endTime - startTime);
+
+          state.totalCount = papers.length;
+          state.results = papers;
+
+          latencyBadge.textContent = `⚡ ${latency}ms`;
+          latencyBadge.classList.remove('hidden');
+          skeletonLoader.classList.add('hidden');
+
+          if (state.results.length === 0) {
+            emptyState.classList.remove('hidden');
+            countText.textContent = 'Tidak ditemukan hasil pencarian dalam web grounding.';
+            updateAnalyticsView();
+            return;
+          }
+
+          countText.innerHTML = `Ditemukan <strong class="text-indigo-700 font-bold">${state.totalCount}</strong> karya ilmiah terverifikasi Google Search Grounding`;
+          renderActiveFilterPills();
+          renderPapersList();
+          updateAnalyticsView();
+          return;
+        }
+
+        // ==================== MODE 3: EXPLORASI GLOBAL OPENALEX (DEFAULT) ====================
         const baseUrl = 'https://api.openalex.org/works';
         const params = new URLSearchParams();
 
@@ -1611,14 +2190,92 @@
         const latency = Math.round(endTime - startTime);
 
         state.totalCount = data.meta?.count || 0;
-        state.results = (data.results || []).map(p => ({
+        let openAlexResults = (data.results || []).map(p => ({
           ...p,
-          // Properti terjemahan ala X
           translatedTitle: null,
           translatedAbstract: null,
           isTranslating: false,
           showOriginal: false
         }));
+
+        // PROMOSI JURNAL TERKURASI ADMIN DI BAGIAN ATAS
+        // Mari kita ambil curated journals yang cocok secara paralel/ringan
+        try {
+          const curatedRes = await fetch('/api/admin/journals');
+          if (curatedRes.ok) {
+            const curatedData = await curatedRes.json();
+            const curatedList = curatedData.journals || [];
+            
+            // Saring curated yang relevan dengan query saat ini
+            let matchingCurated = curatedList;
+            if (state.query && state.query !== 'deep learning') {
+              const q = state.query.toLowerCase().trim();
+              matchingCurated = matchingCurated.filter(j => 
+                (j.title && j.title.toLowerCase().includes(q)) ||
+                (j.translatedTitle && j.translatedTitle.toLowerCase().includes(q)) ||
+                (j.authors && j.authors.toLowerCase().includes(q))
+              );
+            }
+            if (state.activeConceptId) {
+              matchingCurated = matchingCurated.filter(j => j.category === state.activeConceptId);
+            }
+
+            // Batasi curated yang dipromosikan max 3 agar hasil OpenAlex tetap kelihatan seimbang
+            const promoted = matchingCurated.slice(0, 3).map(j => ({
+              id: j.id,
+              display_name: j.title,
+              title: j.title,
+              translatedTitle: j.translatedTitle || j.title,
+              publication_year: j.publication_year || j.year || 2025,
+              publication_date: `${j.publication_year || j.year || 2025}-01-01`,
+              doi: j.doi,
+              cited_by_count: j.cited_by_count || 0,
+              is_oa: Boolean(j.pdf_url),
+              open_access: {
+                is_oa: Boolean(j.pdf_url),
+                oa_status: j.pdf_url ? "gold" : "closed",
+                oa_url: j.pdf_url
+              },
+              best_oa_location: {
+                pdf_url: j.pdf_url,
+                landing_page_url: j.pdf_url || j.doi
+              },
+              primary_location: {
+                source: {
+                  display_name: j.publisher || "Kurasi",
+                  type: "journal"
+                },
+                pdf_url: j.pdf_url,
+                landing_page_url: j.pdf_url || j.doi
+              },
+              authorships: (j.authors || '').split(',').map(name => ({
+                author: { display_name: name.trim() },
+                institutions: []
+              })),
+              concepts: [
+                { id: j.category, display_name: j.category === 'C144133568' ? 'Bisnis & Manajemen' : 'Ilmu Terapan & Rekayasa' }
+              ],
+              abstract: j.abstract || '',
+              translatedAbstract: j.translatedAbstract || j.abstract || '',
+              isCurated: true,
+              sourceProvider: 'Rujukan Rekomendasi (Terkurasi Admin)'
+            }));
+
+            // Gabungkan promoted ke atas, hilangkan duplikasi DOI jika ada di hasil OpenAlex
+            if (promoted.length > 0) {
+              const promotedDois = new Set(promoted.map(p => (p.doi || '').toLowerCase().trim()).filter(Boolean));
+              openAlexResults = openAlexResults.filter(p => !p.doi || !promotedDois.has(p.doi.toLowerCase().trim()));
+              
+              // Sisipkan promoted ke atas hasil
+              openAlexResults = [...promoted, ...openAlexResults];
+              state.totalCount += promoted.length;
+            }
+          }
+        } catch (promError) {
+          console.warn('Gagal memproses promosi rujukan kurasi:', promError);
+        }
+
+        state.results = openAlexResults;
 
         // Perbarui badge latensi
         latencyBadge.textContent = `⚡ ${latency}ms`;
@@ -2774,6 +3431,7 @@
       const pdfBtn = document.getElementById('readerModePdfBtn');
       const framePane = document.getElementById('pdfFramePane');
       const articlePane = document.getElementById('pdfArticlePane');
+      const overlay = document.getElementById('pdfTranslationOverlay');
 
       // Reset style tombol switcher
       [splitBtn, transBtn, pdfBtn].forEach(btn => {
@@ -2786,16 +3444,19 @@
         articlePane.className = 'w-full lg:w-1/2 h-full overflow-y-auto bg-white p-6 sm:p-8 lg:p-10 transition-all duration-200';
         framePane.classList.remove('hidden');
         articlePane.classList.remove('hidden');
+        if (overlay) overlay.classList.add('hidden');
       } else if (mode === 'translated') {
         transBtn.className = 'px-3 py-1.5 rounded-lg bg-white text-indigo-700 font-bold shadow-xs transition-all flex items-center gap-1.5';
         framePane.classList.add('hidden');
         articlePane.classList.remove('hidden');
         articlePane.className = 'w-full h-full overflow-y-auto bg-white p-6 sm:p-12 lg:p-16 transition-all duration-200';
+        if (overlay) overlay.classList.add('hidden');
       } else if (mode === 'pdf') {
         pdfBtn.className = 'px-3 py-1.5 rounded-lg bg-white text-indigo-700 font-bold shadow-xs transition-all flex items-center gap-1.5';
         framePane.classList.remove('hidden');
         articlePane.classList.add('hidden');
         framePane.className = 'w-full h-full flex flex-col bg-slate-100 transition-all duration-200';
+        if (overlay) overlay.classList.remove('hidden');
       }
       lucide.createIcons();
     }
@@ -3617,6 +4278,429 @@
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
       }, 3000);
+    }
+
+    // --- MANAJEMEN MODE PENCARIAN (OPENALEX, DEEPSEARCH, CURATED) ---
+    function setSearchMode(mode) {
+      if (state.searchMode === mode) return;
+      state.searchMode = mode;
+      state.page = 1;
+
+      // Update UI Tabs
+      const modes = ['openalex', 'deepsearch', 'curated'];
+      modes.forEach(m => {
+        const btn = document.getElementById(`searchModeBtn-${m}`);
+        if (!btn) return;
+        if (m === mode) {
+          btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow-xs";
+        } else {
+          btn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all";
+        }
+      });
+
+      // Show/Hide DeepSearch banner
+      const banner = document.getElementById('deepSearchBanner');
+      if (banner) {
+        if (mode === 'deepsearch') {
+          banner.classList.remove('hidden');
+        } else {
+          banner.classList.add('hidden');
+        }
+      }
+
+      showToast(`Beralih ke mode pencarian: ${mode === 'openalex' ? 'Eksplorasi Terbuka' : mode === 'deepsearch' ? 'DeepSearch AI' : 'Katalog Terkurasi'}`, 'success');
+      fetchPapers();
+    }
+
+    // --- MODAL PORTAL ADMIN (KELOLA JURNAL) ---
+    function openAdminHubModal() {
+      const modal = document.getElementById('adminHubModal');
+      modal.classList.remove('hidden');
+      switchAdminTab('curated');
+      fetchAdminJournals();
+      lucide.createIcons();
+    }
+
+    function closeAdminHubModal() {
+      const modal = document.getElementById('adminHubModal');
+      modal.classList.add('hidden');
+      // Refresh papers list in case some journals were added/edited/deleted
+      fetchPapers();
+    }
+
+    function switchAdminTab(tab) {
+      state.adminActiveTab = tab;
+      
+      const tabs = ['curated', 'add', 'sync'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`adminTab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`);
+        const content = document.getElementById(`adminTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        
+        if (t === tab) {
+          btn.className = "admin-tab-btn pb-3 px-1 border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2";
+          content.classList.remove('hidden');
+        } else {
+          btn.className = "admin-tab-btn pb-3 px-1 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-2 text-slate-500";
+          content.classList.add('hidden');
+        }
+      });
+
+      if (tab === 'curated') {
+        fetchAdminJournals();
+      }
+      lucide.createIcons();
+    }
+
+    async function fetchAdminJournals() {
+      const listContainer = document.getElementById('adminCuratedList');
+      const countBadge = document.getElementById('adminTotalCuratedCount');
+      
+      listContainer.innerHTML = `
+        <div class="p-8 text-center text-slate-400">
+          <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2 text-indigo-600"></i>
+          <p class="text-xs">Memuat katalog jurnal terkurasi...</p>
+        </div>
+      `;
+      lucide.createIcons();
+
+      try {
+        const response = await fetch('/api/admin/journals');
+        if (!response.ok) throw new Error('Gagal mengambil data');
+        const data = await response.json();
+        
+        state.curatedJournals = data.journals || [];
+        countBadge.textContent = state.curatedJournals.length.toString();
+        
+        filterAdminCuratedList();
+      } catch (err) {
+        console.error('Error fetching curated journals:', err);
+        listContainer.innerHTML = `
+          <div class="p-8 text-center text-rose-600 border border-rose-100 rounded-xl bg-rose-50">
+            <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
+            <p class="text-xs font-semibold">Gagal memuat katalog rujukan terkurasi.</p>
+          </div>
+        `;
+        lucide.createIcons();
+      }
+    }
+
+    function filterAdminCuratedList() {
+      const listContainer = document.getElementById('adminCuratedList');
+      const searchVal = document.getElementById('adminSearchInput').value.toLowerCase().trim();
+      const catVal = document.getElementById('adminCategoryFilter').value;
+
+      let filtered = state.curatedJournals;
+
+      if (searchVal) {
+        filtered = filtered.filter(j => 
+          (j.title && j.title.toLowerCase().includes(searchVal)) ||
+          (j.translatedTitle && j.translatedTitle.toLowerCase().includes(searchVal)) ||
+          (j.authors && j.authors.toLowerCase().includes(searchVal)) ||
+          (j.publisher && j.publisher.toLowerCase().includes(searchVal)) ||
+          (j.doi && j.doi.toLowerCase().includes(searchVal))
+        );
+      }
+
+      if (catVal !== 'all') {
+        filtered = filtered.filter(j => j.category === catVal);
+      }
+
+      if (filtered.length === 0) {
+        listContainer.innerHTML = `
+          <div class="p-10 border border-dashed border-slate-200 rounded-xl text-center text-slate-400">
+            <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+            <p class="text-xs">Tidak ada rujukan kurasi yang cocok dengan kriteria.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      listContainer.innerHTML = filtered.map(j => {
+        const catLabel = j.category === 'C144133568' ? 'Bisnis & Manajemen' : 'Ilmu Terapan & Rekayasa';
+        const catColor = j.category === 'C144133568' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-amber-50 text-amber-700 border-amber-200';
+        return `
+          <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-2xs hover:shadow-xs transition-shadow flex flex-col sm:flex-row items-start justify-between gap-4">
+            <div class="space-y-1.5 flex-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${catColor}">${catLabel}</span>
+                ${j.subfield ? `<span class="text-[10px] text-slate-500 font-semibold">${j.subfield}</span>` : ''}
+                <span class="text-[10px] text-slate-400 font-mono">${j.doi || 'No DOI'}</span>
+              </div>
+              <h4 class="text-xs font-bold text-slate-800 leading-snug">
+                ${j.translatedTitle || j.title}
+              </h4>
+              ${j.translatedTitle ? `<p class="text-[10px] text-slate-400 italic">Asli: ${j.title}</p>` : ''}
+              <p class="text-[10px] text-slate-500">
+                <strong>Penulis:</strong> ${j.authors} • <strong>Penerbit:</strong> ${j.publisher} (${j.publication_year || j.year || '2025'})
+              </p>
+            </div>
+            <div class="flex items-center gap-1.5 self-end sm:self-center">
+              ${j.pdf_url ? `
+                <a href="${j.pdf_url}" target="_blank" class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg border border-emerald-100" title="Download PDF Terbuka">
+                  <i data-lucide="download-cloud" class="w-4 h-4"></i>
+                </a>
+              ` : ''}
+              <button onclick="editAdminJournal('${j.id}')" class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg border border-indigo-100" title="Sunting">
+                <i data-lucide="pencil" class="w-4 h-4"></i>
+              </button>
+              <button onclick="deleteAdminJournal('${j.id}')" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-100" title="Hapus">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    async function deleteAdminJournal(id) {
+      if (!confirm('Apakah Anda yakin ingin menghapus rujukan kurasi ini dari database?')) return;
+      
+      try {
+        const response = await fetch(`/api/admin/journals/${id}`, {
+          method: 'DELETE'
+        });
+        const resData = await response.json();
+        
+        if (resData.success) {
+          showToast('Jurnal berhasil dihapus dari katalog terkurasi!', 'success');
+          fetchAdminJournals();
+        } else {
+          showToast(resData.error || 'Gagal menghapus rujukan', 'error');
+        }
+      } catch (err) {
+        console.error('Error deleting curated journal:', err);
+        showToast('Terjadi kesalahan koneksi saat menghapus rujukan.', 'error');
+      }
+    }
+
+    async function autoFetchDoiMetadata() {
+      const doiInput = document.getElementById('doiFetcherInput');
+      const doiVal = doiInput.value.trim();
+      
+      if (!doiVal) {
+        showToast('Masukkan nomor DOI terlebih dahulu!', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btnFetchDoi');
+      const btnLabel = document.getElementById('btnFetchDoiLabel');
+      
+      btn.disabled = true;
+      btnLabel.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Sedang Menarik...`;
+      lucide.createIcons();
+
+      try {
+        const response = await fetch('/api/admin/fetch-doi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ doi: doiVal })
+        });
+        const resData = await response.json();
+
+        if (resData.success && resData.data) {
+          const m = resData.data;
+          
+          document.getElementById('formTitle').value = m.title || '';
+          document.getElementById('formTranslatedTitle').value = m.translatedTitle || m.title || '';
+          document.getElementById('formAuthors').value = m.authors || '';
+          document.getElementById('formPublisher').value = m.publisher || '';
+          document.getElementById('formYear').value = m.publication_year || new Date().getFullYear();
+          document.getElementById('formCitations').value = m.cited_by_count || 0;
+          document.getElementById('formDoi').value = m.doi || doiVal;
+          document.getElementById('formPdfUrl').value = m.pdf_url || '';
+          document.getElementById('formAbstract').value = m.abstract || '';
+          document.getElementById('formTranslatedAbstract').value = m.translatedAbstract || m.abstract || '';
+          
+          showToast('Metadata DOI berhasil ditarik dan diterjemahkan otomatis!', 'success');
+        } else {
+          showToast(resData.error || 'Nomor DOI tidak ditemukan di Crossref/OpenAlex.', 'error');
+        }
+      } catch (err) {
+        console.error('Error in autoFetchDoiMetadata:', err);
+        showToast('Terjadi kesalahan jaringan saat menarik metadata.', 'error');
+      } finally {
+        btn.disabled = false;
+        btnLabel.innerHTML = `⚡ Tarik Metadata`;
+        lucide.createIcons();
+      }
+    }
+
+    function editAdminJournal(id) {
+      const journal = state.curatedJournals.find(j => j.id === id);
+      if (!journal) return;
+
+      switchAdminTab('add');
+
+      document.getElementById('formTitle').value = journal.title || '';
+      document.getElementById('formTranslatedTitle').value = journal.translatedTitle || '';
+      document.getElementById('formAuthors').value = journal.authors || '';
+      document.getElementById('formPublisher').value = journal.publisher || '';
+      document.getElementById('formYear').value = journal.publication_year || journal.year || '';
+      document.getElementById('formCitations').value = journal.cited_by_count || 0;
+      document.getElementById('formDoi').value = journal.doi || '';
+      document.getElementById('formPdfUrl').value = journal.pdf_url || '';
+      document.getElementById('formCategory').value = journal.category || 'C144133568';
+      document.getElementById('formSubfield').value = journal.subfield || '';
+      document.getElementById('formAbstract').value = journal.abstract || '';
+      document.getElementById('formTranslatedAbstract').value = journal.translatedAbstract || '';
+
+      // Simpan ID di form untuk mode pembaruan
+      document.getElementById('adminAddJournalForm').setAttribute('data-editing-id', id);
+      showToast('Data dimuat ke formulir editor.', 'info');
+    }
+
+    async function saveAdminJournalForm(event) {
+      event.preventDefault();
+
+      const editingId = document.getElementById('adminAddJournalForm').getAttribute('data-editing-id');
+      
+      const payload = {
+        title: document.getElementById('formTitle').value,
+        translatedTitle: document.getElementById('formTranslatedTitle').value,
+        authors: document.getElementById('formAuthors').value,
+        publisher: document.getElementById('formPublisher').value,
+        publication_year: Number(document.getElementById('formYear').value),
+        cited_by_count: Number(document.getElementById('formCitations').value || 0),
+        doi: document.getElementById('formDoi').value,
+        pdf_url: document.getElementById('formPdfUrl').value,
+        category: document.getElementById('formCategory').value,
+        subfield: document.getElementById('formSubfield').value,
+        abstract: document.getElementById('formAbstract').value,
+        translatedAbstract: document.getElementById('formTranslatedAbstract').value
+      };
+
+      if (editingId) {
+        payload.id = editingId;
+      }
+
+      try {
+        const response = await fetch('/api/admin/journals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const resData = await response.json();
+
+        if (resData.success) {
+          showToast(editingId ? 'Rujukan kurasi berhasil diperbarui!' : 'Rujukan baru berhasil ditambahkan ke katalog terkurasi!', 'success');
+          resetAdminForm();
+          switchAdminTab('curated');
+        } else {
+          showToast(resData.error || 'Gagal menyimpan data', 'error');
+        }
+      } catch (err) {
+        console.error('Error saving curated journal:', err);
+        showToast('Terjadi kesalahan jaringan saat menyimpan rujukan.', 'error');
+      }
+    }
+
+    function resetAdminForm() {
+      document.getElementById('adminAddJournalForm').reset();
+      document.getElementById('adminAddJournalForm').removeAttribute('data-editing-id');
+      document.getElementById('doiFetcherInput').value = '';
+    }
+
+    // --- LIVE SYNC & HARVESTER UTAMA ---
+    async function runLiveSyncAdmin(topic) {
+      const consoleLog = document.getElementById('syncConsoleLog');
+      const btnBusiness = document.getElementById('btnSyncBisnis');
+      const btnApplied = document.getElementById('btnSyncApplied');
+
+      consoleLog.classList.remove('hidden');
+      consoleLog.innerHTML = `<div>[INFO] Memulai koneksi Harvester AI untuk topik: ${topic}...</div>`;
+      
+      btnBusiness.disabled = true;
+      btnApplied.disabled = true;
+
+      const appendLog = (msg, isError = false) => {
+        const col = isError ? 'text-rose-400' : 'text-emerald-400';
+        consoleLog.innerHTML += `<div class="${col}">&gt; ${msg}</div>`;
+        consoleLog.scrollTop = consoleLog.scrollHeight;
+      };
+
+      try {
+        appendLog(`Mengirimkan instruksi pemanenan AI ke repositori Crossref & OpenAlex API...`);
+        appendLog(`Fokus rujukan: terbitan terbaru (2024-2026) dengan metrik dampak sitasi tinggi.`);
+        
+        const response = await fetch('/api/admin/sync-live', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic })
+        });
+        const resData = await response.json();
+
+        if (resData.success) {
+          appendLog(`Koneksi berhasil. AI berhasil memanen ${resData.count} rujukan baru!`);
+          (resData.addedJournals || []).forEach(j => {
+            appendLog(`[DIPANEN] "${j.translatedTitle || j.title}" (${j.publication_year || '2025'}) - DOI: ${j.doi || 'N/A'}`);
+          });
+          appendLog(`Sinkronisasi selesai dengan sukses. Semua data telah didepositkan ke database lokal!`, false);
+          showToast(`Sinkronisasi sukses! Memanen ${resData.count} karya ilmiah baru.`, 'success');
+        } else {
+          appendLog(`Error: ${resData.error || 'Gagal menyinkronkan rujukan.'}`, true);
+          showToast(resData.error || 'Sinkronisasi gagal.', 'error');
+        }
+      } catch (err) {
+        console.error('Error in live sync:', err);
+        appendLog(`Terjadi kesalahan jaringan/timeout saat melakukan pemanenan mendalam: ${err.message}`, true);
+        showToast('Sinkronisasi gagal karena kendala jaringan.', 'error');
+      } finally {
+        btnBusiness.disabled = false;
+        btnApplied.disabled = false;
+      }
+    }
+
+    // --- CEPAT TAMBAH KE KURASI ADMIN (DARI HASIL PENCARIAN) ---
+    async function addPaperToCuratedList(paperId) {
+      const paper = state.results.find(p => p.id === paperId);
+      if (!paper) return;
+
+      const titleClean = paper.display_name || paper.title;
+      const authorsClean = (paper.authorships || []).map(a => a.author?.display_name).filter(Boolean).join(', ');
+      const publisherClean = paper.primary_location?.source?.display_name || 'Tidak tercatat';
+      const abstractClean = reconstructAbstract(paper.abstract_inverted_index) || paper.abstract || '';
+
+      const payload = {
+        title: titleClean,
+        translatedTitle: paper.translatedTitle || titleClean,
+        authors: authorsClean || 'Peneliti Akademik',
+        publisher: publisherClean,
+        publication_year: Number(paper.publication_year || new Date().getFullYear()),
+        cited_by_count: Number(paper.cited_by_count || 0),
+        doi: paper.doi || '',
+        pdf_url: paper.open_access?.oa_url || paper.best_oa_location?.pdf_url || '',
+        category: state.activeConceptId || 'C144133568',
+        subfield: state.activeMicroTopic?.name || '',
+        abstract: abstractClean,
+        translatedAbstract: paper.translatedAbstract || abstractClean
+      };
+
+      try {
+        const response = await fetch('/api/admin/journals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const resData = await response.json();
+
+        if (resData.success) {
+          showToast('Karya ilmiah berhasil ditambahkan ke Katalog Terkurasi Admin!', 'success');
+          // Refresh catalog counts
+          const countBadge = document.getElementById('adminTotalCuratedCount');
+          if (countBadge) {
+            const currentCount = parseInt(countBadge.textContent) || 0;
+            countBadge.textContent = (currentCount + 1).toString();
+          }
+        } else {
+          showToast(resData.error || 'Gagal menambahkan ke katalog terkurasi', 'error');
+        }
+      } catch (err) {
+        console.error('Error in addPaperToCuratedList:', err);
+        showToast('Terjadi kesalahan jaringan.', 'error');
+      }
     }
 
     // --- PINTASAN KEYBOARD GLOBAL ---
