@@ -67,9 +67,12 @@ app.post("/api/translate-batch", async (req, res) => {
     return;
   }
 
-  const ai = getGenAI();
-  if (!ai) {
-    // Fallback jika API key belum tersedia
+  // Hubungi model AI terpilih dinamis
+  let aiConfig;
+  try {
+    aiConfig = await resolveAiConfig(req);
+  } catch (err) {
+    // Fallback ke OpenAlex original jika penyelesaian AI gagal
     for (const item of uncachedItems) {
       results.push({ id: item.id, title: item.title, abstract: item.abstract });
     }
@@ -91,50 +94,22 @@ app.post("/api/translate-batch", async (req, res) => {
         : ""
     }));
 
-    const prompt = `Anda adalah penerjemah akademis profesional untuk literatur jurnal ilmiah bereputasi internasional.
+    const systemPrompt = `Anda adalah penerjemah akademis profesional untuk literatur jurnal ilmiah bereputasi internasional.
 Terjemahkan judul dan abstrak berikut dari Bahasa Inggris ke Bahasa Indonesia akademik yang baku, lugas, dan akurat.
 Aturan:
 1. Pertahankan akronim umum/teknis (contoh: AI, CRISPR, DNA, COVID-19, LLM, BERT, IoT, GPU).
 2. Pertahankan istilah ilmiah yang lazim tidak diterjemahkan dalam komunitas riset Indonesia (contoh: deep learning, transformer, machine learning, in vitro).
 3. Jika abstrak kosong, biarkan kosong.
-Kembalikan format JSON sesuai schema yang ditentukan.
+Kembalikan format JSON murni berbentuk ARRAY objek: [{"id": "...", "title": "judul terjemahan", "abstract": "abstrak terjemahan"}]`;
 
-Data yang diterjemahkan:
-${JSON.stringify(payload)}`;
-
-    const translateWithModel = async (modelName: string) => {
-      return await ai.models.generateContent({
-        model: modelName,
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                id: { type: Type.STRING },
-                title: { type: Type.STRING },
-                abstract: { type: Type.STRING }
-              },
-              required: ["id", "title"]
-            }
-          }
-        }
-      });
-    };
+    const userPrompt = `Data yang wajib diterjemahkan: ${JSON.stringify(payload)}`;
 
     try {
-      let response;
-      try {
-        response = await translateWithModel("gemini-3.8-flash");
-      } catch (err: any) {
-        console.warn("Spike pada gemini-3.8-flash, beralih ke gemini-2.5-flash:", err?.message || err);
-        response = await translateWithModel("gemini-2.5-flash");
-      }
-
-      if (response && response.text) {
-        const parsed = JSON.parse(response.text) as Array<{ id: string; title: string; abstract?: string }>;
+      const responseText = await callAiChat(aiConfig, systemPrompt, userPrompt, "application/json");
+      if (responseText) {
+        // Bersihkan blok markdown ```json jika ada
+        const cleanText = responseText.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, "$1").trim();
+        const parsed = JSON.parse(cleanText) as Array<{ id: string; title: string; abstract?: string }>;
         for (const tr of parsed) {
           const matchedOriginal = chunk.find(c => c.id === tr.id);
           const finalTitle = tr.title || (matchedOriginal ? matchedOriginal.title : "");
@@ -221,8 +196,10 @@ app.post("/api/paper-deep-read", async (req, res) => {
     return;
   }
 
-  const ai = getGenAI();
-  if (!ai) {
+  let aiConfig;
+  try {
+    aiConfig = await resolveAiConfig(req);
+  } catch (err) {
     res.json({
       translatedTitle: title,
       translatedAbstract: abstract || "Abstrak tidak tersedia.",
@@ -236,28 +213,8 @@ app.post("/api/paper-deep-read", async (req, res) => {
   }
 
   try {
-    const prompt = `Anda adalah seorang akademisi, ilmuwan peneliti senior, dan penerjemah literatur ilmiah bereputasi internasional.
-Tugas Anda adalah menerjemahkan dan membedah secara komprehensif naskah karya ilmiah berikut ke dalam Bahasa Indonesia akademis tingkat tinggi (formal, baku, analitis, dan mendalam):
-
-Metadata Makalah:
-- Judul Asli: ${title}
-- Penulis: ${authors || "Peneliti Ilmiah"}
-- Publikasi / Jurnal: ${venue || "Jurnal Ilmiah Internasional"} (${year || "N/A"})
-- Abstrak Sumber: ${abstract || "Abstrak tidak tersedia."}
-
-Instruksi Penting:
-1. Terjemahkan judul dan abstrak ke Bahasa Indonesia akademis yang lugas, presisi, dan alami.
-2. Buat "takeaways" berisi 4-5 poin temuan paling penting dan terobosan dari makalah ini.
-3. Rangkai "sections" terstruktur yang menjelaskan isi naskah secara mendalam bagi pembaca akademis Indonesia:
-   - 1. Latar Belakang & Motivasi Riset (Urgensi masalah, kesenjangan riset, signifikansi topik)
-   - 2. Kerangka Konseptual & Teoretis (Teori utama yang digunakan dan model pemikiran)
-   - 3. Metodologi & Desain Penelitian (Pendekatan analisis, sampel/data, atau metode komputasi)
-   - 4. Temuan Kunci & Hasil Analisis (Wawasan inti, hasil perbandingan, transformasi yang ditemukan)
-   - 5. Implikasi Praktis & Manajerial (Dampak langsung bagi praktisi, pengambil kebijakan, dan industri)
-   - 6. Kesimpulan & Rekomendasi Riset Lanjutan (Sintesis akhir dan keterbatasan/arah studi mendatang)
-4. Tentukan 4-6 kata kunci dalam Bahasa Indonesia (keywordsId).
-5. Pertahankan istilah teknis/akronim umum yang lazim dalam riset (seperti AI, LLM, Generative AI, BMI, IoT, DNA, in vitro, dsb.).
-
+    const systemPrompt = `Anda adalah seorang akademisi, ilmuwan peneliti senior, dan penerjemah literatur ilmiah bereputasi internasional.
+Tugas Anda adalah menerjemahkan dan membedah secara komprehensif naskah karya ilmiah berikut ke dalam Bahasa Indonesia akademis tingkat tinggi (formal, baku, analitis, dan mendalam).
 Format JSON yang Wajib Dihasilkan:
 {
   "translatedTitle": "Judul lengkap dalam Bahasa Indonesia",
@@ -274,26 +231,17 @@ Format JSON yang Wajib Dihasilkan:
   "keywordsId": ["Kata Kunci 1", "Kata Kunci 2", "Kata Kunci 3"]
 }`;
 
-    const executeGeneration = async (modelName: string) => {
-      return await ai.models.generateContent({
-        model: modelName,
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-        },
-      });
-    };
+    const userPrompt = `Metadata Makalah yang akan diterjemahkan:
+- Judul Asli: ${title}
+- Penulis: ${authors || "Peneliti Ilmiah"}
+- Publikasi / Jurnal: ${venue || "Jurnal Ilmiah Internasional"} (${year || "N/A"})
+- Abstrak Sumber: ${abstract || "Abstrak tidak tersedia."}`;
 
-    let response;
-    try {
-      response = await executeGeneration("gemini-3.8-flash");
-    } catch (e: any) {
-      console.warn("Beralih ke gemini-2.5-flash untuk paper-deep-read:", e?.message);
-      response = await executeGeneration("gemini-2.5-flash");
-    }
+    const responseText = await callAiChat(aiConfig, systemPrompt, userPrompt, "application/json");
 
-    if (response && response.text) {
-      const data = JSON.parse(response.text);
+    if (responseText) {
+      const cleanText = responseText.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, "$1").trim();
+      const data = JSON.parse(cleanText);
       serverDeepReadCache.set(cacheKey, data);
       res.json(data);
       return;
@@ -312,6 +260,292 @@ Format JSON yang Wajib Dihasilkan:
     ],
     keywordsId: []
   });
+});
+
+// ==========================================
+// KONFIGURASI MESIN & OTAK AI DINAMIS (GLOBAL & LOKAL)
+// ==========================================
+const AI_SETTINGS_PATH = path.join(process.cwd(), "data", "ai_settings.json");
+
+interface AiSettings {
+  provider: string;
+  model: string;
+  apiKey: string;
+  scope: 'global' | 'local';
+}
+
+async function getAiSettings(): Promise<AiSettings> {
+  try {
+    const raw = await fs.readFile(AI_SETTINGS_PATH, "utf-8");
+    return JSON.parse(raw);
+  } catch {
+    return {
+      provider: "gemini",
+      model: "gemini-2.5-flash",
+      apiKey: "",
+      scope: "global"
+    };
+  }
+}
+
+async function saveAiSettings(settings: AiSettings): Promise<void> {
+  await fs.mkdir(path.dirname(AI_SETTINGS_PATH), { recursive: true });
+  await fs.writeFile(AI_SETTINGS_PATH, JSON.stringify(settings, null, 2), "utf-8");
+}
+
+// Menyelesaikan konfigurasi AI aktif (dari header lokal atau basis data global)
+async function resolveAiConfig(req: express.Request) {
+  const localProvider = req.headers["x-ai-provider"] as string;
+  const localModel = req.headers["x-ai-model"] as string;
+  const localApiKey = req.headers["x-ai-api-key"] as string;
+
+  if (localProvider && localApiKey) {
+    return {
+      provider: localProvider,
+      model: localModel || (localProvider === "gemini" ? "gemini-2.5-flash" : localProvider === "openai" ? "gpt-4o-mini" : "claude-3-5-haiku-20241022"),
+      apiKey: localApiKey
+    };
+  }
+
+  try {
+    const settings = await getAiSettings();
+    if (settings.apiKey) {
+      return {
+        provider: settings.provider,
+        model: settings.model,
+        apiKey: settings.apiKey
+      };
+    }
+  } catch (e) {
+    // Abaikan jika berkas tidak ada
+  }
+
+  return {
+    provider: "gemini",
+    model: "gemini-2.5-flash",
+    apiKey: process.env.GEMINI_API_KEY || ""
+  };
+}
+
+// Wrapper serbaguna pemanggilan AI Chat untuk multi-provider (Gemini, OpenAI, Anthropic)
+async function callAiChat(
+  config: { provider: string; model: string; apiKey: string },
+  systemPrompt: string,
+  userPrompt: string,
+  responseMimeType: "text/plain" | "application/json" = "text/plain"
+): Promise<string> {
+  const { provider, model, apiKey } = config;
+  if (!apiKey) {
+    throw new Error(`API Key untuk provider ${provider} belum dikonfigurasi. Silakan simpan API Key terlebih dahulu.`);
+  }
+
+  if (provider === "gemini") {
+    const client = new GoogleGenAI({
+      apiKey: apiKey,
+      httpOptions: { headers: { "User-Agent": "aistudio-build" } }
+    });
+    const response = await client.models.generateContent({
+      model: model || "gemini-2.5-flash",
+      contents: `${systemPrompt}\n\n${userPrompt}`,
+      config: {
+        responseMimeType: responseMimeType
+      }
+    });
+    return response.text || "";
+  } else if (provider === "openai") {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: model || "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        response_format: responseMimeType === "application/json" ? { type: "json_object" } : undefined
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(`OpenAI API Error: ${err.error?.message || res.statusText}`);
+    }
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || "";
+  } else if (provider === "anthropic") {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        model: model || "claude-3-5-sonnet-20241022",
+        max_tokens: 4000,
+        system: systemPrompt,
+        messages: [
+          { role: "user", content: userPrompt }
+        ]
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(`Anthropic API Error: ${err.error?.message || res.statusText}`);
+    }
+    const data = await res.json();
+    return data.content?.[0]?.text || "";
+  }
+  throw new Error(`Provider ${provider} tidak didukung.`);
+}
+
+// Wrapper pemanggilan AI dengan Google Search Grounding bawaan
+async function callAiWithGrounding(
+  config: { provider: string; model: string; apiKey: string },
+  prompt: string
+): Promise<{ text: string; chunks: any[]; queries: any[] }> {
+  const { provider, model, apiKey } = config;
+  if (!apiKey) {
+    throw new Error(`API Key belum dikonfigurasi.`);
+  }
+
+  if (provider === "gemini") {
+    const client = new GoogleGenAI({
+      apiKey: apiKey,
+      httpOptions: { headers: { "User-Agent": "aistudio-build" } }
+    });
+    const response = await client.models.generateContent({
+      model: model || "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        tools: [{ googleSearch: {} }]
+      }
+    });
+    return {
+      text: response.text || "",
+      chunks: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [],
+      queries: response.candidates?.[0]?.groundingMetadata?.webSearchQueries || []
+    };
+  } else {
+    // Simulasi Grounding untuk OpenAI & Anthropic dengan prompt tambahan instruksi penelusuran mandiri
+    const systemInstruction = "Anda adalah asisten riset akademis. Gunakan kemampuan pemikiran kritis Anda untuk menghasilkan data naskah ilmiah real-world yang paling akurat.";
+    const text = await callAiChat(config, systemInstruction, prompt, "text/plain");
+    return {
+      text,
+      chunks: [],
+      queries: []
+    };
+  }
+}
+
+// Endpoint Ambil Konfigurasi Otak AI Global (Admin Only)
+app.get("/api/admin/ai-settings", async (req, res) => {
+  try {
+    const settings = await getAiSettings();
+    const maskedKey = settings.apiKey 
+      ? (settings.apiKey.length > 8 
+          ? settings.apiKey.slice(0, 4) + "... [TERENKRIPSI] ..." + settings.apiKey.slice(-4)
+          : "******")
+      : "";
+    res.json({ ...settings, maskedKey });
+  } catch (err: any) {
+    res.status(500).json({ error: "Gagal memuat pengaturan AI: " + err.message });
+  }
+});
+
+// Endpoint Simpan Konfigurasi Otak AI Global (Admin Only)
+app.post("/api/admin/ai-settings", async (req, res) => {
+  try {
+    const { provider, model, apiKey, scope } = req.body;
+    let finalApiKey = apiKey;
+    
+    if (apiKey && apiKey.includes("TERENKRIPSI")) {
+      const current = await getAiSettings();
+      finalApiKey = current.apiKey;
+    }
+
+    const settings: AiSettings = {
+      provider: provider || "gemini",
+      model: model || "gemini-2.5-flash",
+      apiKey: finalApiKey || "",
+      scope: scope || "global"
+    };
+
+    await saveAiSettings(settings);
+    res.json({ success: true, message: "Konfigurasi Otak AI berhasil disimpan secara Global!" });
+  } catch (err: any) {
+    res.status(500).json({ error: "Gagal menyimpan konfigurasi AI: " + err.message });
+  }
+});
+
+// Endpoint Tes Koneksi API Mesin AI Terpilih
+app.post("/api/admin/test-connection", async (req, res) => {
+  const { provider, model, apiKey } = req.body;
+  if (!apiKey) {
+    res.status(400).json({ error: "API Key diperlukan untuk uji koneksi." });
+    return;
+  }
+
+  try {
+    const startTime = performance.now();
+    if (provider === "gemini") {
+      const testClient = new GoogleGenAI({
+        apiKey: apiKey,
+        httpOptions: { headers: { "User-Agent": "aistudio-build" } }
+      });
+      const response = await testClient.models.generateContent({
+        model: model || "gemini-2.5-flash",
+        contents: "Hello, confirm connection. Reply exactly with 'OK'.",
+      });
+      const endTime = performance.now();
+      const latency = Math.round(endTime - startTime);
+      if (response.text) {
+        res.json({ success: true, latency, message: "Koneksi Google Gemini API berhasil terjalin!" });
+        return;
+      }
+    } else if (provider === "openai") {
+      const testRes = await fetch("https://api.openai.com/v1/models", {
+        headers: { "Authorization": `Bearer ${apiKey}` }
+      });
+      const endTime = performance.now();
+      const latency = Math.round(endTime - startTime);
+      if (testRes.ok) {
+        res.json({ success: true, latency, message: "Koneksi OpenAI API berhasil terjalin!" });
+        return;
+      } else {
+        const errData = await testRes.json().catch(() => ({}));
+        throw new Error(errData.error?.message || "Kunci API OpenAI tidak valid.");
+      }
+    } else if (provider === "anthropic") {
+      const testRes = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          model: model || "claude-3-5-haiku-20241022",
+          max_tokens: 5,
+          messages: [{ role: "user", content: "Hi" }]
+        })
+      });
+      const endTime = performance.now();
+      const latency = Math.round(endTime - startTime);
+      if (testRes.ok) {
+        res.json({ success: true, latency, message: "Koneksi Anthropic Claude API berhasil terjalin!" });
+        return;
+      } else {
+        const errData = await testRes.json().catch(() => ({}));
+        throw new Error(errData.error?.message || "Kunci API Anthropic tidak valid.");
+      }
+    }
+    throw new Error("Provider tidak didukung.");
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Gagal tersambung ke layanan API." });
+  }
 });
 
 // ==========================================
@@ -527,29 +761,28 @@ app.post("/api/admin/fetch-doi", async (req, res) => {
       };
     }
 
-    // Terjemahkan judul & abstrak jika Gemini tersedia
-    const ai = getGenAI();
+    // Terjemahkan judul & abstrak jika AI tersedia
     let translatedTitle = fetchedData.title;
     let translatedAbstract = fetchedData.abstract;
 
-    if (ai && (fetchedData.title || fetchedData.abstract)) {
-      try {
-        const trResponse = await ai.models.generateContent({
-          model: "gemini-3.8-flash",
-          contents: `Terjemahkan judul dan abstrak akademis berikut ke Bahasa Indonesia akademik yang natural:
-Judul: ${fetchedData.title}
+    try {
+      const aiConfig = await resolveAiConfig(req);
+      if (aiConfig && aiConfig.apiKey && (fetchedData.title || fetchedData.abstract)) {
+        const systemPrompt = "Anda adalah asisten penerjemah akademis profesional. Terjemahkan judul dan abstrak akademis berikut ke Bahasa Indonesia akademik yang natural.";
+        const userPrompt = `Judul: ${fetchedData.title}
 Abstrak: ${fetchedData.abstract || ""}
-Kembalikan JSON: {"translatedTitle": "...", "translatedAbstract": "..."}`,
-          config: { responseMimeType: "application/json" }
-        });
-        if (trResponse.text) {
-          const parsed = JSON.parse(trResponse.text);
+Kembalikan JSON murni: {"translatedTitle": "...", "translatedAbstract": "..."}`;
+
+        const trResponseText = await callAiChat(aiConfig, systemPrompt, userPrompt, "application/json");
+        if (trResponseText) {
+          const cleanText = trResponseText.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, "$1").trim();
+          const parsed = JSON.parse(cleanText);
           if (parsed.translatedTitle) translatedTitle = parsed.translatedTitle;
           if (parsed.translatedAbstract) translatedAbstract = parsed.translatedAbstract;
         }
-      } catch (e) {
-        console.warn("AI translation in fetch-doi skipped:", e);
       }
+    } catch (e) {
+      console.warn("AI translation in fetch-doi skipped:", e);
     }
 
     fetchedData.translatedTitle = translatedTitle;
@@ -573,9 +806,11 @@ app.post("/api/deep-search", async (req, res) => {
     return;
   }
 
-  const ai = getGenAI();
-  if (!ai) {
-    res.status(503).json({ error: "Layanan DeepSearch AI belum dikonfigurasi (GEMINI_API_KEY)." });
+  let aiConfig;
+  try {
+    aiConfig = await resolveAiConfig(req);
+  } catch (err: any) {
+    res.status(503).json({ error: "Gagal meresolusi mesin AI yang dikonfigurasi: " + err.message });
     return;
   }
 
@@ -630,21 +865,10 @@ Tuliskan output Anda dalam format JSON murni di dalam blok kode \`\`\`json ... \
 ]
 \`\`\``;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
-      contents: prompt,
-      config: {
-        tools: [{ googleSearch: {} }]
-      }
-    });
-
-    // Ekstrak grounding metadata URLs
-    const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    const webSearchQueries = response.candidates?.[0]?.groundingMetadata?.webSearchQueries || [];
+    const { text, chunks, queries: webSearchQueries } = await callAiWithGrounding(aiConfig, prompt);
     
     // Ekstrak JSON dari response text
     let papers: any[] = [];
-    const text = response.text || "";
     const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || text.match(/\[\s*\{[\s\S]*\}\s*\]/);
 
     if (jsonMatch) {
@@ -720,9 +944,11 @@ Tuliskan output Anda dalam format JSON murni di dalam blok kode \`\`\`json ... \
 // 5. Sinkronisasi Otomatis Admin (Live Sync & Harvester ke database terkurasi)
 app.post("/api/admin/sync-live", async (req, res) => {
   const { topic = "business" } = req.body;
-  const ai = getGenAI();
-  if (!ai) {
-    res.status(503).json({ error: "Gemini AI diperlukan untuk live sync." });
+  let aiConfig;
+  try {
+    aiConfig = await resolveAiConfig(req);
+  } catch (err: any) {
+    res.status(503).json({ error: "Gagal meresolusi mesin AI yang dikonfigurasi: " + err.message });
     return;
   }
 
@@ -754,13 +980,7 @@ Format output JSON di dalam \`\`\`json ... \`\`\`:
   }
 ]`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
-      contents: prompt,
-      config: { tools: [{ googleSearch: {} }] }
-    });
-
-    const text = response.text || "";
+    const { text } = await callAiWithGrounding(aiConfig, prompt);
     const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || text.match(/\[\s*\{[\s\S]*\}\s*\]/);
     let newItems: any[] = [];
     if (jsonMatch) {

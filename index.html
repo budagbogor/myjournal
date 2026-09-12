@@ -1108,6 +1108,10 @@
           <i data-lucide="refresh-cw" class="w-4 h-4 text-amber-500"></i>
           <span>⚡ Sinkronisasi & Harvester Otomatis</span>
         </button>
+        <button type="button" onclick="switchAdminTab('ai_settings')" id="adminTabAiSettingsBtn" class="admin-tab-btn pb-3 px-1 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-2">
+          <i data-lucide="cpu" class="w-4 h-4 text-purple-600"></i>
+          <span>⚙️ Konfigurasi Otak AI</span>
+        </button>
       </div>
 
       <!-- Konten Modal (Bisa Di-scroll) -->
@@ -1312,6 +1316,157 @@
               <div class="text-slate-400">&gt;_ Menunggu perintah sinkronisasi...</div>
             </div>
 
+          </div>
+        </div>
+
+        <!-- Tab 4: Konfigurasi Otak AI -->
+        <div id="adminTabAiSettings" class="hidden space-y-4">
+          <div class="p-5 bg-white border border-slate-200 rounded-2xl space-y-5 shadow-2xs">
+            <div class="flex items-start gap-3">
+              <div class="p-2.5 bg-purple-50 rounded-xl text-purple-600">
+                <i data-lucide="cpu" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-slate-900">Konfigurasi Otak & Mesin AI Terdistribusi</h4>
+                <p class="text-xs text-slate-500 mt-1">Sesuaikan provider AI, jenis model kecerdasan buatan, kunci API, dan tingkat jangkauan operasional untuk pemrosesan translasi, ringkasan, dan mesin grounding.</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+              
+              <!-- Kolom Kiri: Pilihan Layanan -->
+              <div class="space-y-4">
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-700 flex items-center gap-1">
+                    <span>Provider Penyedia AI</span>
+                    <span class="text-rose-500">*</span>
+                  </label>
+                  <select
+                    id="aiSettingsProvider"
+                    onchange="onAiProviderChanged()"
+                    class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600 bg-white text-slate-800 font-medium"
+                  >
+                    <option value="gemini">Google Gemini AI</option>
+                    <option value="openai">OpenAI (ChatGPT)</option>
+                    <option value="anthropic">Anthropic Claude</option>
+                  </select>
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-700 flex items-center justify-between">
+                    <span>Model Kecerdasan Buatan (LLM)</span>
+                    <span class="text-[10px] text-slate-400 font-normal">Dapat diketik manual</span>
+                  </label>
+                  <div class="relative">
+                    <input
+                      type="text"
+                      id="aiSettingsModel"
+                      list="aiSettingsModelOptions"
+                      class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600 bg-white text-slate-800 font-medium font-mono"
+                      placeholder="Pilih atau masukkan nama model..."
+                    />
+                    <datalist id="aiSettingsModelOptions">
+                      <option value="gemini-2.5-flash">gemini-2.5-flash (Direkomendasikan)</option>
+                      <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+                      <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                      <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                    </datalist>
+                  </div>
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-700 flex items-center gap-1">
+                    <span>API Key (Kunci Keamanan Layanan)</span>
+                    <span class="text-rose-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <input
+                      type="password"
+                      id="aiSettingsApiKey"
+                      class="w-full pl-3 pr-10 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600 bg-white font-mono"
+                      placeholder="Masukkan API Key Anda..."
+                    />
+                    <button
+                      type="button"
+                      onclick="toggleApiKeyVisibility()"
+                      class="absolute right-2 top-2 text-slate-400 hover:text-slate-600 p-1 rounded-md hover:bg-slate-100"
+                    >
+                      <i id="aiSettingsApiKeyVisibilityIcon" data-lucide="eye" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Kolom Kanan: Pengaturan Scope & Aksi -->
+              <div class="space-y-4">
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-slate-700 flex items-center gap-1">
+                    <span>Cakupan Konfigurasi (Scope)</span>
+                  </label>
+                  <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <button
+                      type="button"
+                      id="aiSettingsScopeGlobalBtn"
+                      onclick="setAiSettingsScope('global')"
+                      class="py-2 px-3 rounded-lg text-xs font-semibold text-center transition-all bg-white text-indigo-700 shadow-2xs"
+                    >
+                      <i data-lucide="globe" class="inline w-3.5 h-3.5 mr-1 align-middle"></i>Global (Server)
+                    </button>
+                    <button
+                      type="button"
+                      id="aiSettingsScopeLocalBtn"
+                      onclick="setAiSettingsScope('local')"
+                      class="py-2 px-3 rounded-lg text-xs font-semibold text-center transition-all text-slate-600 hover:text-slate-900"
+                    >
+                      <i data-lucide="laptop" class="inline w-3.5 h-3.5 mr-1 align-middle"></i>Lokal (Browser)
+                    </button>
+                  </div>
+                  <p class="text-[10.5px] text-slate-500 leading-normal mt-1" id="aiSettingsScopeDescription">
+                    <strong>Global</strong>: Disimpan aman di server Scholara. Berlaku untuk seluruh admin, sinkronisasi otomatis, dan seluruh sesi pengguna secara default.
+                  </p>
+                </div>
+
+                <div class="p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl space-y-2 shadow-3xs">
+                  <h5 class="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                    <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-500"></i>
+                    Panduan Kunci API
+                  </h5>
+                  <ul class="text-[10.5px] text-slate-500 list-disc list-inside space-y-1 leading-relaxed">
+                    <li>Gemini API diperoleh dari <strong>Google AI Studio</strong>.</li>
+                    <li>OpenAI API diperoleh dari <strong>platform.openai.com</strong>.</li>
+                    <li>Anthropic API diperoleh dari <strong>console.anthropic.com</strong>.</li>
+                  </ul>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Bagian Hasil Uji Koneksi -->
+            <div id="aiConnectionResult" class="hidden p-3.5 rounded-xl text-xs flex items-start gap-2.5 transition-all border">
+              <!-- Diisi secara dinamis -->
+            </div>
+
+            <!-- Footer Tab Aksi -->
+            <div class="pt-4 border-t border-slate-150 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <button
+                type="button"
+                id="btnTestAiConnection"
+                onclick="testAiConnection()"
+                class="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-250 text-slate-700 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <i data-lucide="activity" class="w-4 h-4 text-indigo-600 animate-pulse"></i>
+                <span id="btnTestAiConnectionLabel">Uji Koneksi</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="saveAiSettingsFront()"
+                class="w-full sm:w-auto px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-extrabold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm"
+              >
+                <i data-lucide="save" class="w-4 h-4 text-amber-400"></i>
+                <span>Simpan Pengaturan</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1890,6 +2045,258 @@
       } catch (e) {}
     }
 
+    // --- INTEGRASI PENGATURAN LAYANAN & MESIN AI ---
+    let activeAiSettingsScope = 'global'; // 'global' | 'local'
+
+    function getAiHeaders() {
+      const headers = { 'Content-Type': 'application/json' };
+      try {
+        const localRaw = localStorage.getItem('scholara_local_ai_settings');
+        if (localRaw) {
+          const local = JSON.parse(localRaw);
+          if (local && local.scope === 'local' && local.provider && local.apiKey) {
+            headers['x-ai-provider'] = local.provider;
+            headers['x-ai-model'] = local.model || '';
+            headers['x-ai-api-key'] = local.apiKey;
+          }
+        }
+      } catch (e) {
+        console.warn("Gagal membaca local AI settings:", e);
+      }
+      return headers;
+    }
+
+    function onAiProviderChanged() {
+      const provider = document.getElementById('aiSettingsProvider').value;
+      const modelInput = document.getElementById('aiSettingsModel');
+      const dataList = document.getElementById('aiSettingsModelOptions');
+
+      let options = [];
+      if (provider === 'gemini') {
+        options = [
+          { value: 'gemini-2.5-flash', label: 'gemini-2.5-flash (Direkomendasikan)' },
+          { value: 'gemini-2.5-pro', label: 'gemini-2.5-pro' },
+          { value: 'gemini-1.5-flash', label: 'gemini-1.5-flash' },
+          { value: 'gemini-1.5-pro', label: 'gemini-1.5-pro' }
+        ];
+        modelInput.value = 'gemini-2.5-flash';
+      } else if (provider === 'openai') {
+        options = [
+          { value: 'gpt-4o', label: 'gpt-4o' },
+          { value: 'gpt-4o-mini', label: 'gpt-4o-mini' },
+          { value: 'o1-mini', label: 'o1-mini' }
+        ];
+        modelInput.value = 'gpt-4o-mini';
+      } else if (provider === 'anthropic') {
+        options = [
+          { value: 'claude-3-5-sonnet-latest', label: 'claude-3-5-sonnet-latest' },
+          { value: 'claude-3-5-haiku-latest', label: 'claude-3-5-haiku-latest' }
+        ];
+        modelInput.value = 'claude-3-5-haiku-latest';
+      }
+
+      dataList.innerHTML = options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('');
+    }
+
+    function toggleApiKeyVisibility() {
+      const keyInput = document.getElementById('aiSettingsApiKey');
+      const icon = document.getElementById('aiSettingsApiKeyVisibilityIcon');
+      if (keyInput.type === 'password') {
+        keyInput.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        keyInput.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    function setAiSettingsScope(scope) {
+      activeAiSettingsScope = scope;
+      const globalBtn = document.getElementById('aiSettingsScopeGlobalBtn');
+      const localBtn = document.getElementById('aiSettingsScopeLocalBtn');
+      const desc = document.getElementById('aiSettingsScopeDescription');
+
+      if (scope === 'global') {
+        globalBtn.className = "py-2 px-3 rounded-lg text-xs font-semibold text-center transition-all bg-white text-indigo-700 shadow-2xs";
+        localBtn.className = "py-2 px-3 rounded-lg text-xs font-semibold text-center transition-all text-slate-600 hover:text-slate-900";
+        desc.innerHTML = `<strong>Global</strong>: Disimpan aman di server Scholara. Berlaku untuk seluruh admin, sinkronisasi otomatis, dan seluruh sesi pengguna secara default.`;
+      } else {
+        localBtn.className = "py-2 px-3 rounded-lg text-xs font-semibold text-center transition-all bg-white text-indigo-700 shadow-2xs";
+        globalBtn.className = "py-2 px-3 rounded-lg text-xs font-semibold text-center transition-all text-slate-600 hover:text-slate-900";
+        desc.innerHTML = `<strong>Lokal (Browser)</strong>: Hanya berlaku untuk peramban web saat ini. Metadata API key disisipkan dalam header permintaan kustom kueri AI Anda, aman dari penyimpanan permanen server.`;
+      }
+      lucide.createIcons();
+    }
+
+    async function loadAiSettings() {
+      // 1. Cek apakah ada konfigurasi lokal tersimpan
+      let localConfig = null;
+      try {
+        const localRaw = localStorage.getItem('scholara_local_ai_settings');
+        if (localRaw) {
+          localConfig = JSON.parse(localRaw);
+        }
+      } catch (e) {}
+
+      // 2. Selalu tarik info global terdaftar dari backend untuk pembanding
+      try {
+        const res = await fetch('/api/admin/ai-settings');
+        if (res.ok) {
+          const data = await res.json();
+          const global = data.settings || {};
+
+          // Prioritaskan local jika scope saat ini local, sebaliknya tampilkan global
+          if (localConfig && localConfig.scope === 'local') {
+            document.getElementById('aiSettingsProvider').value = localConfig.provider || 'gemini';
+            onAiProviderChanged();
+            document.getElementById('aiSettingsModel').value = localConfig.model || '';
+            document.getElementById('aiSettingsApiKey').value = localConfig.apiKey || '';
+            setAiSettingsScope('local');
+          } else {
+            document.getElementById('aiSettingsProvider').value = global.provider || 'gemini';
+            onAiProviderChanged();
+            document.getElementById('aiSettingsModel').value = global.model || '';
+            // Masukkan placeholder bertopeng jika kunci API global sudah ada di server
+            document.getElementById('aiSettingsApiKey').value = global.hasApiKey ? '••••••••••••••••••••••••••••••••' : '';
+            setAiSettingsScope('global');
+          }
+        }
+      } catch (err) {
+        console.warn("Gagal menarik konfigurasi AI dari server, menggunakan local fallback:", err);
+        if (localConfig) {
+          document.getElementById('aiSettingsProvider').value = localConfig.provider || 'gemini';
+          onAiProviderChanged();
+          document.getElementById('aiSettingsModel').value = localConfig.model || '';
+          document.getElementById('aiSettingsApiKey').value = localConfig.apiKey || '';
+          setAiSettingsScope('local');
+        }
+      }
+      document.getElementById('aiConnectionResult').classList.add('hidden');
+      lucide.createIcons();
+    }
+
+    async function testAiConnection() {
+      const provider = document.getElementById('aiSettingsProvider').value;
+      const model = document.getElementById('aiSettingsModel').value.trim();
+      let apiKey = document.getElementById('aiSettingsApiKey').value.trim();
+
+      if (!apiKey) {
+        showToast('API Key tidak boleh kosong untuk uji koneksi!', 'error');
+        return;
+      }
+
+      // Jika bertopeng, itu berarti uji koneksi menggunakan kunci global server yang sudah ada
+      const isMasked = apiKey.includes('•');
+
+      const btn = document.getElementById('btnTestAiConnection');
+      const label = document.getElementById('btnTestAiConnectionLabel');
+      const resultEl = document.getElementById('aiConnectionResult');
+
+      btn.disabled = true;
+      label.textContent = 'Mencoba Berkomunikasi...';
+
+      resultEl.classList.remove('hidden');
+      resultEl.className = "p-3.5 rounded-xl text-xs flex items-start gap-2.5 transition-all bg-indigo-50 border-indigo-200 text-indigo-950 border";
+      resultEl.innerHTML = `
+        <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-indigo-600 flex-shrink-0 mt-0.5"></i>
+        <div>
+          <h5 class="font-bold">Menghubungi Server AI</h5>
+          <p class="text-[10.5px] text-slate-600 mt-0.5">Mengirimkan ping verifikasi ke penyedia layanan ${provider.toUpperCase()}...</p>
+        </div>
+      `;
+      lucide.createIcons();
+
+      try {
+        const res = await fetch('/api/admin/test-connection', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            provider,
+            model,
+            apiKey: isMasked ? undefined : apiKey // Server akan menggunakan kunci globalnya jika undefined
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          resultEl.className = "p-3.5 rounded-xl text-xs flex items-start gap-2.5 transition-all bg-emerald-50 border-emerald-200 text-emerald-950 border";
+          resultEl.innerHTML = `
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5"></i>
+            <div>
+              <h5 class="font-bold text-emerald-900">Koneksi Berhasil Mapan (Sukses!)</h5>
+              <p class="text-[10.5px] text-emerald-800 mt-0.5">Komunikasi ke provider <strong>${provider.toUpperCase()}</strong> menggunakan model <strong>${model}</strong> berjalan lancar. Respons latensi stabil.</p>
+            </div>
+          `;
+          showToast('Uji koneksi AI sukses!', 'success');
+        } else {
+          throw new Error(data.error || 'Server menolak verifikasi');
+        }
+      } catch (err) {
+        resultEl.className = "p-3.5 rounded-xl text-xs flex items-start gap-2.5 transition-all bg-rose-50 border-rose-200 text-rose-950 border";
+        resultEl.innerHTML = `
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5"></i>
+          <div>
+            <h5 class="font-bold text-rose-900">Koneksi AI Gagal Terhubung</h5>
+            <p class="text-[10.5px] text-rose-800 mt-0.5">Keterangan Error: <code class="bg-rose-100 px-1 py-0.2 rounded font-mono text-rose-900 break-all">${err.message}</code>. Harap periksa kembali validitas API Key atau status ketersediaan model Anda.</p>
+          </div>
+        `;
+        showToast('Koneksi AI gagal terhubung.', 'error');
+      } finally {
+        btn.disabled = false;
+        label.textContent = 'Uji Koneksi';
+        lucide.createIcons();
+      }
+    }
+
+    async function saveAiSettingsFront() {
+      const provider = document.getElementById('aiSettingsProvider').value;
+      const model = document.getElementById('aiSettingsModel').value.trim();
+      const apiKey = document.getElementById('aiSettingsApiKey').value.trim();
+
+      if (!apiKey) {
+        showToast('Kunci API Key harus diisi sebelum disimpan!', 'error');
+        return;
+      }
+
+      if (activeAiSettingsScope === 'local') {
+        // Simpan ke LocalStorage
+        try {
+          const settings = { provider, model, apiKey, scope: 'local' };
+          localStorage.setItem('scholara_local_ai_settings', JSON.stringify(settings));
+          showToast('Pengaturan AI Lokal berhasil disimpan di browser Anda!', 'success');
+        } catch (e) {
+          showToast('Gagal menyimpan ke penyimpanan lokal browser.', 'error');
+        }
+      } else {
+        // Simpan ke Server (Global)
+        // Jika API Key bertopeng (••••), kita abaikan pengirimannya agar tidak menimpa kunci yang tersimpan
+        const isMasked = apiKey.includes('•');
+
+        try {
+          const payload = { provider, model };
+          if (!isMasked) payload.apiKey = apiKey;
+
+          const res = await fetch('/api/admin/ai-settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (res.ok) {
+            // Hapus cache local jika beralih kembali ke global agar tidak terjadi bentrokan
+            localStorage.removeItem('scholara_local_ai_settings');
+            showToast('Pengaturan AI Global berhasil disimpan aman di server!', 'success');
+          } else {
+            const data = await res.json();
+            throw new Error(data.error || 'Server gagal menyimpan data');
+          }
+        } catch (err) {
+          showToast('Gagal menyimpan ke server: ' + err.message, 'error');
+        }
+      }
+    }
+
     // Mesin Penerjemah Bahasa Inggris ke Bahasa Indonesia Cerdas
     async function translateTextToIndonesian(text) {
       if (!text || typeof text !== 'string') return '';
@@ -1910,7 +2317,7 @@
       try {
         const res = await fetch('/api/translate-text', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAiHeaders(),
           body: JSON.stringify({ text: trimmed })
         });
         if (res.ok) {
@@ -2110,7 +2517,7 @@
         if (state.searchMode === 'deepsearch') {
           const response = await fetch('/api/deep-search', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAiHeaders(),
             body: JSON.stringify({
               query: state.query,
               category: state.activeConceptName || ""
@@ -2353,7 +2760,7 @@
       try {
         const res = await fetch('/api/translate-batch', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAiHeaders(),
           body: JSON.stringify({ items: pendingPapers })
         });
 
@@ -3308,7 +3715,7 @@
       try {
         const res = await fetch('/api/paper-deep-read', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAiHeaders(),
           body: JSON.stringify({
             id: paper.id,
             title: originalTitle,
@@ -4331,10 +4738,16 @@
     function switchAdminTab(tab) {
       state.adminActiveTab = tab;
       
-      const tabs = ['curated', 'add', 'sync'];
+      const tabs = ['curated', 'add', 'sync', 'ai_settings'];
       tabs.forEach(t => {
-        const btn = document.getElementById(`adminTab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`);
-        const content = document.getElementById(`adminTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        let idPart = t;
+        if (t === 'ai_settings') {
+          idPart = 'AiSettings';
+        } else {
+          idPart = t.charAt(0).toUpperCase() + t.slice(1);
+        }
+        const btn = document.getElementById(`adminTab${idPart}Btn`);
+        const content = document.getElementById(`adminTab${idPart}`);
         
         if (t === tab) {
           btn.className = "admin-tab-btn pb-3 px-1 border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2";
@@ -4347,6 +4760,8 @@
 
       if (tab === 'curated') {
         fetchAdminJournals();
+      } else if (tab === 'ai_settings') {
+        loadAiSettings();
       }
       lucide.createIcons();
     }
@@ -4495,7 +4910,7 @@
       try {
         const response = await fetch('/api/admin/fetch-doi', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAiHeaders(),
           body: JSON.stringify({ doi: doiVal })
         });
         const resData = await response.json();
@@ -4627,7 +5042,7 @@
         
         const response = await fetch('/api/admin/sync-live', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAiHeaders(),
           body: JSON.stringify({ topic })
         });
         const resData = await response.json();
