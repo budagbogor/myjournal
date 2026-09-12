@@ -1,0 +1,6 @@
+{
+  "name": "Scholara - Academic Journal Search Engine",
+  "description": "Mesin pencari jurnal ilmiah bertenaga OpenAlex dengan terjemahan otomatis bahasa Indonesia ala media sosial X, filter Open Access, generator sitasi, dan analitik bibliometrik.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

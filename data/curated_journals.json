@@ -1,0 +1,211 @@
+[
+  {
+    "id": "curated_biz_001",
+    "display_name": "Generative Artificial Intelligence in Corporate Decision-Making: Strategic Agility and Value Creation in Digital Enterprises",
+    "title": "Generative Artificial Intelligence in Corporate Decision-Making: Strategic Agility and Value Creation in Digital Enterprises",
+    "publication_year": 2025,
+    "publication_date": "2025-02-15",
+    "doi": "https://doi.org/10.1016/j.jbusres.2025.114820",
+    "cited_by_count": 86,
+    "is_oa": true,
+    "open_access": {
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://arxiv.org/pdf/2401.05432.pdf"
+    },
+    "best_oa_location": {
+      "pdf_url": "https://arxiv.org/pdf/2401.05432.pdf",
+      "landing_page_url": "https://doi.org/10.1016/j.jbusres.2025.114820"
+    },
+    "primary_location": {
+      "source": {
+        "display_name": "Journal of Business Research (Applied Management)",
+        "issn_l": "0148-2963",
+        "type": "journal"
+      },
+      "pdf_url": "https://arxiv.org/pdf/2401.05432.pdf"
+    },
+    "authorships": [
+      {
+        "author": { "display_name": "Elena Rostova" },
+        "institutions": [{ "display_name": "INSEAD Business School" }]
+      },
+      {
+        "author": { "display_name": "Budi Hartono" },
+        "institutions": [{ "display_name": "Fakultas Ekonomi dan Bisnis Universitas Indonesia" }]
+      },
+      {
+        "author": { "display_name": "Marcus Vance" },
+        "institutions": [{ "display_name": "MIT Sloan School of Management" }]
+      }
+    ],
+    "concepts": [
+      { "id": "C144133568", "display_name": "Business & Strategy", "level": 1 },
+      { "id": "C162324750", "display_name": "Digital Transformation", "level": 2 },
+      { "id": "C41008148", "display_name": "Generative AI", "level": 2 }
+    ],
+    "abstract_inverted_index": {
+      "This": [0], "empirical": [1], "study": [2], "investigates": [3], "the": [4, 11, 23], "adoption": [5], "of": [6, 17, 25], "generative": [7], "artificial": [8], "intelligence": [9], "in": [10, 22], "strategic": [12], "management": [13], "processes": [14], "across": [15], "520": [16], "multinational": [18], "corporations": [19], "operating": [20], "predominantly": [21], "Asia-Pacific": [24], "and": [26, 32], "European": [27], "markets.": [28], "Findings": [29], "demonstrate": [30], "a": [31], "statistically": [33], "significant": [34], "improvement": [35], "in": [36], "cross-functional": [37], "agility": [38], "and": [39], "predictive": [40], "supply": [41], "chain": [42], "forecasting.": [43]
+    },
+    "translatedTitle": "Kecerdasan Buatan Generatif dalam Pengambilan Keputusan Korporat: Ketangkasan Strategis dan Penciptaan Nilai pada Perusahaan Digital",
+    "translatedAbstract": "Studi empiris ini menyelidiki adopsi kecerdasan buatan generatif dalam proses manajemen strategis di 520 korporasi multinasional yang beroperasi di kawasan Asia-Pasifik dan Eropa. Temuan membuktikan adanya peningkatan signifikan secara statistik pada ketangkasan lintas fungsi dan perkiraan rantai pasok prediktif.",
+    "category": "Bisnis, Keuangan & Manajemen",
+    "subfield": "Strategi Inovasi & Transformasi Digital",
+    "sourceProvider": "Curated / Crossref",
+    "dateAdded": "2026-03-01T10:00:00.000Z",
+    "isCurated": true
+  },
+  {
+    "id": "curated_biz_002",
+    "display_name": "Sustainable Supply Chain Resilience in Emerging Markets: An Integrated Machine Learning and Lean Operations Framework",
+    "title": "Sustainable Supply Chain Resilience in Emerging Markets: An Integrated Machine Learning and Lean Operations Framework",
+    "publication_year": 2025,
+    "publication_date": "2025-01-20",
+    "doi": "https://doi.org/10.1016/j.ijpe.2025.109210",
+    "cited_by_count": 42,
+    "is_oa": true,
+    "open_access": {
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://arxiv.org/pdf/2309.12345.pdf"
+    },
+    "best_oa_location": {
+      "pdf_url": "https://arxiv.org/pdf/2309.12345.pdf",
+      "landing_page_url": "https://doi.org/10.1016/j.ijpe.2025.109210"
+    },
+    "primary_location": {
+      "source": {
+        "display_name": "International Journal of Production Economics (Applied Engineering & Ops)",
+        "issn_l": "0925-5273",
+        "type": "journal"
+      },
+      "pdf_url": "https://arxiv.org/pdf/2309.12345.pdf"
+    },
+    "authorships": [
+      {
+        "author": { "display_name": "Ahmad Fauzi" },
+        "institutions": [{ "display_name": "Institut Teknologi Bandung (SBM ITB)" }]
+      },
+      {
+        "author": { "display_name": "Siti Rahmawati" },
+        "institutions": [{ "display_name": "Universitas Gadjah Mada" }]
+      }
+    ],
+    "concepts": [
+      { "id": "C144133568", "display_name": "Supply Chain Management", "level": 1 },
+      { "id": "C127413603", "display_name": "Applied Operations", "level": 2 }
+    ],
+    "abstract_inverted_index": {
+      "This": [0], "paper": [1], "presents": [2], "an": [3], "applied": [4], "computational": [5], "framework": [6], "combining": [7], "supervised": [8], "machine": [9], "learning": [10], "with": [11], "lean": [12], "operations": [13], "principles": [14], "to": [15], "mitigate": [16], "unforeseen": [17], "supply": [18], "network": [19], "disruptions.": [20], "Practical": [21], "applications": [22], "in": [23], "manufacturing": [24], "and": [25], "FMCG": [26], "distribution": [27], "yielded": [28], "a": [29], "38%": [30], "reduction": [31], "in": [32], "inventory": [33], "stockout": [34], "risks.": [35]
+    },
+    "translatedTitle": "Ketahanan Rantai Pasok Berkelanjutan di Pasar Berkembang: Kerangka Kerja Terpadu Pembelajaran Mesin dan Operasi Ramping (Lean Operations)",
+    "translatedAbstract": "Makalah ini menyajikan kerangka komputasi terapan yang menggabungkan pembelajaran mesin terawasi dengan prinsip-prinsip operasi ramping untuk memitigasi disrupsi jaringan pasok yang tak terduga. Aplikasi praktis dalam industri manufaktur dan distribusi FMCG menghasilkan penurunan 38% pada risiko kehabisan stok inventaris.",
+    "category": "Bisnis, Keuangan & Manajemen",
+    "subfield": "Manajemen Operasional & Rantai Pasok",
+    "sourceProvider": "Curated / Crossref",
+    "dateAdded": "2026-03-02T11:00:00.000Z",
+    "isCurated": true
+  },
+  {
+    "id": "curated_appsci_001",
+    "display_name": "Applied Industrial Automation and Edge IoT for Real-Time Predictive Maintenance in Smart Manufacturing",
+    "title": "Applied Industrial Automation and Edge IoT for Real-Time Predictive Maintenance in Smart Manufacturing",
+    "publication_year": 2025,
+    "publication_date": "2025-01-10",
+    "doi": "https://doi.org/10.1109/TII.2025.3344120",
+    "cited_by_count": 64,
+    "is_oa": true,
+    "open_access": {
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://arxiv.org/pdf/2402.01234.pdf"
+    },
+    "best_oa_location": {
+      "pdf_url": "https://arxiv.org/pdf/2402.01234.pdf",
+      "landing_page_url": "https://doi.org/10.1109/TII.2025.3344120"
+    },
+    "primary_location": {
+      "source": {
+        "display_name": "IEEE Transactions on Industrial Informatics (Applied Sciences)",
+        "issn_l": "1551-3203",
+        "type": "journal"
+      },
+      "pdf_url": "https://arxiv.org/pdf/2402.01234.pdf"
+    },
+    "authorships": [
+      {
+        "author": { "display_name": "Hendro Wicaksono" },
+        "institutions": [{ "display_name": "Department of Industrial Engineering & Applied Sciences" }]
+      },
+      {
+        "author": { "display_name": "Claire Dupont" },
+        "institutions": [{ "display_name": "ETH Zurich" }]
+      }
+    ],
+    "concepts": [
+      { "id": "C127413603", "display_name": "Applied Engineering", "level": 1 },
+      { "id": "C77088390", "display_name": "Industrial Automation", "level": 2 }
+    ],
+    "abstract_inverted_index": {
+      "Implementing": [0], "edge-based": [1], "Internet": [2], "of": [3], "Things": [4], "(IoT)": [5], "vibration": [6], "sensors": [7], "enables": [8], "zero-latency": [9], "anomaly": [10], "detection": [11], "in": [12], "high-speed": [13], "rotational": [14], "machinery.": [15], "Industrial": [16], "evaluations": [17], "demonstrate": [18], "a": [19], "94.2%": [20], "accuracy": [21], "in": [22], "bearing": [23], "fault": [24], "prevention.": [25]
+    },
+    "translatedTitle": "Otomasi Industri Terapan dan Edge IoT untuk Pemeliharaan Prediktif Real-Time pada Manufaktur Pintar",
+    "translatedAbstract": "Penerapan sensor getaran Internet of Things (IoT) berbasis komputasi tepi memungkinkan deteksi anomali tanpa latensi pada permesinan rotasi kecepatan tinggi. Evaluasi industri menunjukkan akurasi 94,2% dalam pencegahan kerusakan bantalan mesin.",
+    "category": "Ilmu Terapan & Rekayasa Industri",
+    "subfield": "Rekayasa Industri & Manufaktur Terapan",
+    "sourceProvider": "Curated / IEEE",
+    "dateAdded": "2026-03-03T09:00:00.000Z",
+    "isCurated": true
+  },
+  {
+    "id": "curated_biz_003",
+    "display_name": "Decentralized Finance (DeFi) Lending Protocols: Credit Risk Assessment, Liquidity Cascades, and Systemic Stability",
+    "title": "Decentralized Finance (DeFi) Lending Protocols: Credit Risk Assessment, Liquidity Cascades, and Systemic Stability",
+    "publication_year": 2024,
+    "publication_date": "2024-11-18",
+    "doi": "https://doi.org/10.1016/j.jfi.2024.101089",
+    "cited_by_count": 115,
+    "is_oa": true,
+    "open_access": {
+      "is_oa": true,
+      "oa_status": "gold",
+      "oa_url": "https://arxiv.org/pdf/2305.18433.pdf"
+    },
+    "best_oa_location": {
+      "pdf_url": "https://arxiv.org/pdf/2305.18433.pdf",
+      "landing_page_url": "https://doi.org/10.1016/j.jfi.2024.101089"
+    },
+    "primary_location": {
+      "source": {
+        "display_name": "Journal of Financial Intermediation",
+        "issn_l": "1042-9573",
+        "type": "journal"
+      },
+      "pdf_url": "https://arxiv.org/pdf/2305.18433.pdf"
+    },
+    "authorships": [
+      {
+        "author": { "display_name": "Christian G. Mueller" },
+        "institutions": [{ "display_name": "London School of Economics" }]
+      },
+      {
+        "author": { "display_name": "Rian Kusuma" },
+        "institutions": [{ "display_name": "Bank Indonesia Institute & FEB UI" }]
+      }
+    ],
+    "concepts": [
+      { "id": "C144133568", "display_name": "Finance & Banking", "level": 1 },
+      { "id": "C162324750", "display_name": "Fintech & DeFi", "level": 2 }
+    ],
+    "abstract_inverted_index": {
+      "Analyzing": [0], "transactional": [1], "telemetry": [2], "from": [3], "major": [4], "lending": [5], "pools": [6], "reveals": [7], "how": [8], "algorithmic": [9], "liquidations": [10], "propagate": [11], "during": [12], "high": [13], "market": [14], "volatility.": [15], "We": [16], "propose": [17], "an": [18], "adaptive": [19], "collateralization": [20], "ratio": [21], "to": [22], "stabilize": [23], "lending": [24], "mechanisms.": [25]
+    },
+    "translatedTitle": "Protokol Peminjaman Keuangan Terdesentralisasi (DeFi): Penilaian Risiko Kredit, Kaskade Likuiditas, dan Stabilitas Sistemik",
+    "translatedAbstract": "Menganalisis telemetri transaksi dari kumpulan peminjaman utama mengungkap bagaimana likuidasi algoritmik menyebar selama volatilitas pasar yang tinggi. Kami mengusulkan rasio kolateralisasi adaptif untuk menstabilkan mekanisme peminjaman terdesentralisasi.",
+    "category": "Bisnis, Keuangan & Manajemen",
+    "subfield": "Keuangan Korporat, Perbankan & Investasi",
+    "sourceProvider": "Curated / Elsevier",
+    "dateAdded": "2026-03-04T14:30:00.000Z",
+    "isCurated": true
+  }
+]

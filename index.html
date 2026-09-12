@@ -1,0 +1,3656 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scholara - Academic Journal Search Engine</title>
+  <meta name="description" content="Mesin pencari jurnal ilmiah bertenaga OpenAlex dengan terjemahan otomatis bahasa Indonesia ala media sosial X, filter Open Access, generator sitasi, dan analitik bibliometrik." />
+  <meta property="og:title" content="Scholara - Academic Journal Search Engine" />
+  <meta property="og:description" content="Mesin pencari jurnal ilmiah bertenaga OpenAlex dengan terjemahan otomatis bahasa Indonesia ala media sosial X, filter Open Access, generator sitasi, dan analitik bibliometrik." />
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f8fafc; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .transition-translation { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    /* Gaya Cetak / Ekspor PDF untuk Naskah Terjemahan */
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #pdfReaderModal, #pdfArticleContainer, #pdfArticleContainer * {
+        visibility: visible !important;
+      }
+      #pdfReaderModal {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+      }
+      #pdfReaderModal > div {
+        border: none !important;
+        box-shadow: none !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      #pdfReaderHeader, #pdfFramePane, #readerViewModeSwitcher, #readerActionButtons {
+        display: none !important;
+      }
+      #pdfArticlePane {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 15mm 20mm !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#f8fafc] text-slate-800 min-h-screen font-sans antialiased selection:bg-indigo-100 selection:text-indigo-900 flex flex-col">
+
+  <!-- ==================== HEADER UTAMA ==================== -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+    <div class="w-full px-3 sm:px-5 lg:px-6">
+      <div class="flex items-center justify-between h-16 gap-3 sm:gap-6">
+        
+        <!-- Logo Brand -->
+        <div class="flex items-center gap-2.5 sm:gap-3 flex-shrink-0 cursor-pointer" onclick="resetToHome()" id="brandLogoBtn">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-700 flex items-center justify-center shadow-md shadow-indigo-500/20 text-white flex-shrink-0">
+            <i data-lucide="book-open-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xl font-bold tracking-tight text-slate-900">Scholara</span>
+              <span class="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/80">ID</span>
+            </div>
+            <p class="text-[10px] sm:text-[11px] text-slate-500 font-medium hidden sm:block">Pencari Jurnal & Riset Ilmiah</p>
+          </div>
+        </div>
+
+        <!-- Search Bar Utama (Memanjang penuh merata di layar laptop & desktop) -->
+        <div class="flex-1 mx-2 sm:mx-4 relative">
+          <form id="searchForm" onsubmit="handleSearchSubmit(event)" class="relative flex items-center">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </div>
+            <input
+              type="text"
+              id="searchInput"
+              class="w-full pl-10 pr-20 sm:pr-24 py-2.5 bg-slate-50 hover:bg-slate-100/60 focus:bg-white border border-slate-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/10 rounded-xl text-sm text-slate-900 placeholder-slate-400 transition-all shadow-xs"
+              placeholder="Cari judul, DOI, penulis, atau kata kunci (cth: kecerdasan buatan, graphene, CRISPR)..."
+              autocomplete="off"
+            />
+            <div class="absolute inset-y-0 right-0 pr-2 flex items-center gap-1.5">
+              <button
+                type="button"
+                id="clearSearchBtn"
+                onclick="clearSearchInput()"
+                class="hidden text-slate-400 hover:text-slate-700 p-1 rounded-md"
+                title="Hapus kata kunci"
+              >
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+              </button>
+              <kbd class="hidden md:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-slate-500 bg-white border border-slate-200 rounded shadow-2xs">
+                /
+              </kbd>
+            </div>
+          </form>
+
+          <!-- Dropdown Saran Pencarian Cepat -->
+          <div id="suggestionsDropdown" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-50 divide-y divide-slate-100 max-h-72 overflow-y-auto"></div>
+        </div>
+
+        <!-- Tombol Aksi Header -->
+        <div class="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
+          
+          <!-- Fitur Terjemahan Otomatis Toggle -->
+          <button
+            type="button"
+            id="autoTranslateHeaderBtn"
+            onclick="toggleAutoTranslateGlobal()"
+            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-semibold rounded-xl bg-indigo-50 border border-indigo-200/80 text-indigo-700 hover:bg-indigo-100 transition-all shadow-2xs"
+            title="Pengaturan Terjemahan Otomatis Bahasa Indonesia ala Media Sosial X"
+          >
+            <i data-lucide="languages" class="w-3.5 h-3.5 text-indigo-600"></i>
+            <span class="hidden sm:inline">Terjemahan Otomatis</span>
+            <span id="autoTranslateStatusBadge" class="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-600 text-white font-mono">AKTIF</span>
+          </button>
+
+          <!-- Tombol Analitik -->
+          <button
+            type="button"
+            id="headerAnalyticsBtn"
+            onclick="toggleAnalyticsPanel()"
+            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-medium rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-slate-300 hover:bg-slate-50 transition-all shadow-2xs"
+            title="Lihat Statistik Publikasi"
+          >
+            <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-600"></i>
+            <span class="hidden md:inline">Statistik</span>
+          </button>
+
+          <!-- Tombol Koleksi Tersimpan -->
+          <button
+            type="button"
+            id="headerBookmarksBtn"
+            onclick="openBookmarksDrawer()"
+            class="relative flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-medium rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-amber-600 hover:border-slate-300 hover:bg-slate-50 transition-all shadow-2xs"
+            title="Daftar Bacaan Tersimpan"
+          >
+            <i data-lucide="bookmark" class="w-4 h-4 text-amber-500"></i>
+            <span class="hidden sm:inline">Koleksi</span>
+            <span id="savedBadgeCount" class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300/80">0</span>
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== BILAH TOPIK TREN RISET ==================== -->
+  <section class="border-b border-slate-200/80 bg-white/70 py-2 px-3 sm:px-5 lg:px-6 overflow-x-auto">
+    <div class="w-full flex items-center gap-2 text-xs whitespace-nowrap">
+      <div class="flex items-center gap-1 text-slate-500 font-medium pl-1 pr-2 border-r border-slate-200 flex-shrink-0">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600"></i>
+        <span>Tren Riset:</span>
+      </div>
+      <div id="trendingTopicsContainer" class="flex items-center gap-1.5 overflow-x-auto py-0.5">
+        <!-- Dimuat via JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PANEL ANALITIK & STATISTIK PUBLIKASI ==================== -->
+  <section id="analyticsPanel" class="hidden border-b border-slate-200 bg-slate-100/70 backdrop-blur-md px-3 sm:px-5 lg:px-6 py-5 transition-all duration-300">
+    <div class="w-full">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <i data-lucide="activity" class="w-5 h-5 text-indigo-600"></i>
+          <h2 class="text-base font-semibold text-slate-900">Statistik & Bibliometrik Pencarian Terkini</h2>
+          <span class="text-xs text-slate-500 hidden sm:inline">(Dihitung dari data karya ilmiah yang sedang ditampilkan)</span>
+        </div>
+        <button onclick="toggleAnalyticsPanel()" class="text-slate-400 hover:text-slate-700 p-1" title="Tutup Panel">
+          <i data-lucide="chevron-up" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <!-- Kartu KPI Ringkasan -->
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 flex flex-col justify-between shadow-xs">
+          <div>
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">Ringkasan Data</h3>
+            <div class="space-y-3">
+              <div>
+                <p class="text-[11px] text-slate-500">Total Temuan Korpus Ilmiah</p>
+                <p id="kpiTotalResults" class="text-2xl font-bold text-slate-900">—</p>
+              </div>
+              <div class="flex items-center justify-between border-t border-slate-100 pt-2">
+                <span class="text-xs text-slate-500">Rasio Akses Gratis (Open Access)</span>
+                <span id="kpiOARate" class="text-sm font-semibold text-emerald-600">—</span>
+              </div>
+              <div class="flex items-center justify-between border-t border-slate-100 pt-2">
+                <span class="text-xs text-slate-500">Tahun Publikasi Paling Produktif</span>
+                <span id="kpiTopYear" class="text-sm font-semibold text-indigo-600">—</span>
+              </div>
+              <div class="flex items-center justify-between border-t border-slate-100 pt-2">
+                <span class="text-xs text-slate-500">Sitasi Tertinggi di Hasil Ini</span>
+                <span id="kpiMaxCitations" class="text-sm font-semibold text-amber-600">—</span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400">
+            Sumber data: OpenAlex Global Research Corpus
+          </div>
+        </div>
+
+        <!-- Grafik 1: Tren Publikasi per Tahun -->
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2 flex items-center justify-between">
+            <span>Jumlah Publikasi per Tahun</span>
+            <span class="text-[10px] text-indigo-600 font-semibold">Tren Waktu</span>
+          </h3>
+          <div class="h-44 relative">
+            <canvas id="yearsChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Grafik 2: Rasio Model Akses -->
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2 flex items-center justify-between">
+            <span>Distribusi Akses Jurnal</span>
+            <span class="text-[10px] text-emerald-600 font-semibold">Status OA</span>
+          </h3>
+          <div class="h-44 relative flex items-center justify-center">
+            <canvas id="oaChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== AREA UTAMA (SIDEBAR + DAFTAR JURNAL) ==================== -->
+  <main class="flex-1 w-full px-3 sm:px-5 lg:px-6 py-4">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5">
+      
+      <!-- ==================== SIDEBAR FILTER (Kolom 4 di laptop kecil, Kolom 3 di layar lebar) ==================== -->
+      <aside class="lg:col-span-4 xl:col-span-3 2xl:col-span-3 space-y-5">
+        
+        <!-- Toggle Filter Mobile -->
+        <div class="lg:hidden flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl shadow-xs">
+          <span class="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-indigo-600"></i>
+            Filter & Disiplin Ilmu
+          </span>
+          <button
+            type="button"
+            onclick="toggleMobileSidebar()"
+            class="px-2.5 py-1 text-xs rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium"
+          >
+            Buka Filter
+          </button>
+        </div>
+
+        <div id="sidebarFiltersContainer" class="hidden lg:block space-y-5 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
+          
+          <!-- Filter Khusus Open Access -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
+            <div class="flex items-center justify-between">
+              <label for="oaFilterToggle" class="flex items-center gap-2.5 cursor-pointer select-none">
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+                  <i data-lucide="unlock" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <span class="text-sm font-semibold text-slate-800 block">Hanya Open Access</span>
+                  <span class="text-[11px] text-slate-500 block">Akses gratis PDF & teks penuh</span>
+                </div>
+              </label>
+              <input
+                type="checkbox"
+                id="oaFilterToggle"
+                onchange="handleOAToggleChange(this.checked)"
+                class="w-4 h-4 rounded text-emerald-600 bg-white border-slate-300 focus:ring-emerald-500 cursor-pointer"
+              />
+            </div>
+          </div>
+
+          <!-- Kategori Disiplin & Bidang Keilmuan Hirarkis (Makro, Meso, hingga Mikro) -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
+            <div class="flex items-center justify-between mb-2.5">
+              <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <i data-lucide="network" class="w-3.5 h-3.5 text-indigo-600"></i>
+                  Taksonomi Keilmuan
+                </h3>
+                <span class="text-[10px] text-slate-400 font-medium">Makro • Meso • Spesialisasi Mikro</span>
+              </div>
+              <button
+                type="button"
+                id="clearConceptBtn"
+                onclick="selectConcept(null, null)"
+                class="text-[11px] text-indigo-600 hover:text-indigo-800 hidden font-bold px-2 py-0.5 rounded-lg bg-indigo-50 border border-indigo-200"
+              >
+                Reset
+              </button>
+            </div>
+
+            <!-- Pencarian Cepat Topik Mikro & Sub-bidang -->
+            <div class="relative mb-2.5">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
+              <input
+                type="text"
+                id="disciplineSearchInput"
+                oninput="handleDisciplineSearch(this.value)"
+                placeholder="Cari sub-bidang atau topik mikro..."
+                class="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
+              />
+            </div>
+
+            <!-- Legenda Tingkatan Hirarki -->
+            <div class="flex items-center justify-between text-[10px] text-slate-500 mb-2.5 px-1 py-1 rounded-lg bg-slate-50 border border-slate-100">
+              <span class="font-medium text-slate-600">Level:</span>
+              <div class="flex items-center gap-1">
+                <span class="px-1.5 py-0.2 rounded bg-indigo-100/60 text-indigo-700 font-semibold">1. Makro</span>
+                <span class="text-slate-300">/</span>
+                <span class="px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-700 font-semibold">2. Meso</span>
+                <span class="text-slate-300">/</span>
+                <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-bold">3. Mikro</span>
+              </div>
+            </div>
+
+            <div id="disciplinesList" class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+              <!-- Daftar bidang, subbidang, dan topik mikro diisi via JS -->
+            </div>
+          </div>
+
+          <!-- Filter Rentang Tahun Publikasi -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
+              <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-600"></i>
+              Tahun Publikasi
+            </h3>
+            <div class="grid grid-cols-2 gap-1.5 text-xs mb-3">
+              <button type="button" onclick="setYearFilter('all')" class="year-filter-btn px-2.5 py-1.5 rounded-xl border border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold transition-colors" data-year="all">Semua Waktu</button>
+              <button type="button" onclick="setYearFilter('2025-2026')" class="year-filter-btn px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors" data-year="2025-2026">2025–2026</button>
+              <button type="button" onclick="setYearFilter('2024')" class="year-filter-btn px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors" data-year="2024">2024</button>
+              <button type="button" onclick="setYearFilter('2021-2026')" class="year-filter-btn px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors" data-year="2021-2026">5 Thn Terakhir</button>
+            </div>
+            <!-- Masukan Tahun Kustom -->
+            <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+              <input type="number" id="customYearFrom" placeholder="Dari" min="1950" max="2026" class="w-full px-2 py-1 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-600 focus:bg-white" />
+              <span class="text-slate-400 text-xs">-</span>
+              <input type="number" id="customYearTo" placeholder="Sampai" min="1950" max="2026" class="w-full px-2 py-1 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-600 focus:bg-white" />
+              <button type="button" onclick="applyCustomYearRange()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium transition-colors">Terapkan</button>
+            </div>
+          </div>
+
+          <!-- Filter Dampak Sitasi Minimum -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+              <i data-lucide="award" class="w-3.5 h-3.5 text-amber-500"></i>
+              Dampak Sitasi Minimum
+            </h3>
+            <div class="flex flex-wrap gap-1.5 text-xs">
+              <button type="button" onclick="setMinCitations(0)" class="cite-filter-btn px-2.5 py-1 rounded-lg border border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold" data-cites="0">Semua</button>
+              <button type="button" onclick="setMinCitations(10)" class="cite-filter-btn px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50" data-cites="10">10+ Sitasi</button>
+              <button type="button" onclick="setMinCitations(50)" class="cite-filter-btn px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50" data-cites="50">50+ Sitasi</button>
+              <button type="button" onclick="setMinCitations(200)" class="cite-filter-btn px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50" data-cites="200">200+ Sitasi</button>
+            </div>
+          </div>
+
+          <!-- Tombol Reset Semua Filter -->
+          <button
+            type="button"
+            onclick="resetAllFilters()"
+            class="w-full py-2.5 px-3 rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2 shadow-2xs"
+          >
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-slate-400"></i>
+            Atur Ulang Semua Filter
+          </button>
+
+        </div>
+      </aside>
+
+      <!-- ==================== DAFTAR JURNAL UTAMA (Kolom 8 di laptop, Kolom 9 di layar lebar) ==================== -->
+      <section class="lg:col-span-8 xl:col-span-9 2xl:col-span-9 space-y-4 min-w-0">
+        
+        <!-- Bar Kontrol Hasil & Metadata -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-white border border-slate-200/90 p-3.5 rounded-2xl shadow-xs">
+          
+          <!-- Hitungan Hasil & Tag Filter Aktif -->
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="resultsCountText" class="text-xs font-medium text-slate-700">
+              Mencari karya ilmiah...
+            </span>
+            <span id="queryLatencyBadge" class="hidden text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+              ⚡ 0ms
+            </span>
+            <div id="activeFiltersContainer" class="flex flex-wrap items-center gap-1.5"></div>
+          </div>
+
+          <!-- Pilihan Urutan & Mode Tampilan -->
+          <div class="flex items-center gap-3 ml-auto">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs text-slate-500 hidden sm:inline">Urutkan:</span>
+              <select
+                id="sortSelect"
+                onchange="handleSortChange(this.value)"
+                class="bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 py-1.5 px-2.5 focus:outline-none focus:border-indigo-600 focus:bg-white cursor-pointer"
+              >
+                <option value="relevance_score:desc">Paling Relevan</option>
+                <option value="cited_by_count:desc">Paling Banyak Disitasi</option>
+                <option value="publication_date:desc">Tanggal Terbaru</option>
+                <option value="publication_date:asc">Tanggal Terlama</option>
+              </select>
+            </div>
+
+            <!-- Tombol Toggle Sidebar Filter untuk Laptop / Desktop -->
+            <button
+              type="button"
+              id="sidebarToggleBtn"
+              onclick="toggleSidebarCollapse()"
+              class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium shadow-2xs transition-colors"
+              title="Perluas atau sempitkan area baca jurnal (Sembunyikan / Tampilkan Panel Filter)"
+            >
+              <i id="sidebarToggleIcon" data-lucide="panel-left-close" class="w-3.5 h-3.5 text-indigo-600"></i>
+              <span id="sidebarToggleText" class="hidden xl:inline">Filter</span>
+            </button>
+
+            <!-- Pengganti Mode Tampilan (Kartu vs Ringkas) -->
+            <div class="flex items-center bg-slate-100 border border-slate-200 rounded-xl p-0.5">
+              <button
+                type="button"
+                id="viewCardBtn"
+                onclick="setViewMode('card')"
+                class="p-1.5 rounded-lg text-indigo-600 bg-white shadow-2xs transition-colors"
+                title="Tampilan Kartu Lengkap"
+              >
+                <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+              </button>
+              <button
+                type="button"
+                id="viewListBtn"
+                onclick="setViewMode('compact')"
+                class="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 transition-colors"
+                title="Tampilan Daftar Ringkas"
+              >
+                <i data-lucide="list" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Banner Informasi Terjemahan Otomatis Aktif (Ala X / Twitter) -->
+        <div id="translationNoticeBanner" class="p-3.5 bg-indigo-50/80 border border-indigo-200/80 rounded-2xl flex items-center justify-between text-xs text-indigo-950 shadow-xs">
+          <div class="flex items-center gap-2">
+            <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600 flex-shrink-0"></i>
+            <span><strong class="text-indigo-900">Terjemahan Otomatis Aktif</strong>: Semua judul dan abstrak jurnal diterjemahkan langsung ke Bahasa Indonesia seperti pada media sosial X.</span>
+          </div>
+          <button
+            type="button"
+            onclick="toggleAllVisibleOriginalText()"
+            id="toggleAllLangBtn"
+            class="text-[11px] text-indigo-700 hover:text-indigo-900 underline font-semibold ml-2 flex-shrink-0"
+          >
+            Tampilkan Teks Asli Semua
+          </button>
+        </div>
+
+        <!-- Wadah Kartu Jurnal -->
+        <div id="papersContainer" class="space-y-3.5">
+          <!-- Diisi secara dinamis melalui JavaScript -->
+        </div>
+
+        <!-- Skeleton Loader saat memuat -->
+        <div id="skeletonLoader" class="space-y-4">
+          <div class="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-xs animate-pulse space-y-3">
+            <div class="flex gap-2">
+              <div class="h-5 w-24 bg-slate-200 rounded-full"></div>
+              <div class="h-5 w-32 bg-slate-200 rounded-full"></div>
+            </div>
+            <div class="h-6 w-4/5 bg-slate-200 rounded-md"></div>
+            <div class="h-4 w-3/5 bg-slate-200/80 rounded-md"></div>
+            <div class="h-16 w-full bg-slate-100 rounded-xl"></div>
+          </div>
+          <div class="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-xs animate-pulse space-y-3">
+            <div class="flex gap-2">
+              <div class="h-5 w-24 bg-slate-200 rounded-full"></div>
+              <div class="h-5 w-32 bg-slate-200 rounded-full"></div>
+            </div>
+            <div class="h-6 w-3/4 bg-slate-200 rounded-md"></div>
+            <div class="h-4 w-1/2 bg-slate-200/80 rounded-md"></div>
+            <div class="h-16 w-full bg-slate-100 rounded-xl"></div>
+          </div>
+        </div>
+
+        <!-- Tampilan Saat Hasil Kosong -->
+        <div id="emptyState" class="hidden p-12 text-center rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
+          <div class="w-12 h-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <i data-lucide="file-question" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-semibold text-slate-800">Tidak ada jurnal ilmiah yang cocok</h3>
+            <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+              Karya ilmiah dengan filter atau kata kunci saat ini tidak ditemukan. Coba perluas kata kunci atau atur ulang batasan disiplin ilmu.
+            </p>
+          </div>
+          <button
+            type="button"
+            onclick="resetAllFilters()"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-indigo-600/20 transition-colors"
+          >
+            Atur Ulang Semua Filter & Cari Ulang
+          </button>
+        </div>
+
+        <!-- Tampilan Saat Terjadi Kesalahan Jaringan -->
+        <div id="errorState" class="hidden p-8 text-center rounded-2xl bg-rose-50 border border-rose-200 shadow-xs space-y-3">
+          <i data-lucide="alert-triangle" class="w-8 h-8 text-rose-500 mx-auto"></i>
+          <h3 class="text-sm font-semibold text-rose-800">Gagal Mengakses API OpenAlex</h3>
+          <p id="errorMessageText" class="text-xs text-rose-700 max-w-md mx-auto">
+            Terjadi kendala saat meminta data dari server korpus ilmiah global.
+          </p>
+          <button
+            type="button"
+            onclick="fetchPapers()"
+            class="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-medium shadow-xs"
+          >
+            Coba Lagi
+          </button>
+        </div>
+
+        <!-- Navigasi Paginasi Halaman -->
+        <div id="paginationBar" class="hidden pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="text-xs text-slate-500">
+            Halaman <span id="currentPageNum" class="font-semibold text-slate-800">1</span> dari <span id="totalPagesNum" class="font-semibold text-slate-800">1</span>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button
+              type="button"
+              id="prevPageBtn"
+              onclick="changePage(-1)"
+              class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 shadow-2xs transition-all"
+            >
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              <span>Sebelumnya</span>
+            </button>
+            
+            <div id="pageNumberButtons" class="flex items-center gap-1"></div>
+
+            <button
+              type="button"
+              id="nextPageBtn"
+              onclick="changePage(1)"
+              class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 shadow-2xs transition-all"
+            >
+              <span>Berikutnya</span>
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-500">
+            <span>Tampilkan:</span>
+            <select
+              id="perPageSelect"
+              onchange="handlePerPageChange(this.value)"
+              class="bg-white border border-slate-200 rounded-xl text-xs text-slate-700 py-1.5 px-2.5 focus:outline-none focus:border-indigo-600 shadow-2xs"
+            >
+              <option value="10">10 / halaman</option>
+              <option value="20" selected>20 / halaman</option>
+              <option value="50">50 / halaman</option>
+            </select>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ==================== MODAL PRATINJAU DETAIL JURNAL ==================== -->
+  <div id="detailModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm overflow-y-auto">
+    <div class="bg-white border border-slate-200/90 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      
+      <!-- Header Modal -->
+      <div class="p-5 border-b border-slate-200 flex items-start justify-between gap-4 bg-slate-50/80">
+        <div class="space-y-2 flex-1">
+          <div class="flex flex-wrap items-center gap-2" id="modalBadges"></div>
+          
+          <!-- Indikator Terjemahan ala X di Modal -->
+          <div class="flex items-center gap-2 text-[11px] text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2.5 py-1 rounded-lg w-fit">
+            <i data-lucide="languages" class="w-3.5 h-3.5 text-indigo-600"></i>
+            <span id="modalTranslateNoticeText">Diterjemahkan otomatis ke Bahasa Indonesia</span>
+            <span>•</span>
+            <button
+              type="button"
+              onclick="toggleModalTranslationView()"
+              id="modalToggleTranslationBtn"
+              class="font-semibold underline hover:text-indigo-900"
+            >
+              Lihat teks asli
+            </button>
+          </div>
+
+          <h2 id="modalTitle" class="text-lg sm:text-xl font-bold text-slate-900 leading-snug"></h2>
+        </div>
+        <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors" title="Tutup">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Badan Modal -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-1 text-slate-700">
+        
+        <!-- Penulis & Afiliasi -->
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
+            <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-600"></i>
+            Penulis & Afiliasi Institusi
+          </h4>
+          <div id="modalAuthors" class="text-sm text-slate-800 leading-relaxed"></div>
+        </div>
+
+        <!-- Metadata Publikasi -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+          <div>
+            <span class="text-slate-500 block mb-0.5">Jurnal / Venue:</span>
+            <span id="modalSource" class="font-semibold text-slate-900"></span>
+          </div>
+          <div>
+            <span class="text-slate-500 block mb-0.5">Tanggal Publikasi:</span>
+            <span id="modalDate" class="font-medium text-slate-800"></span>
+          </div>
+          <div>
+            <span class="text-slate-500 block mb-0.5">DOI / Pengidentifikasi Permanen:</span>
+            <span id="modalDOI" class="font-mono text-slate-600 break-all"></span>
+          </div>
+          <div>
+            <span class="text-slate-500 block mb-0.5">Total Sitasi Akademik:</span>
+            <span id="modalCitations" class="font-semibold text-amber-600"></span>
+          </div>
+        </div>
+
+        <!-- Abstrak Lengkap -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+              <i data-lucide="align-left" class="w-3.5 h-3.5 text-indigo-600"></i>
+              Abstrak Jurnal
+            </h4>
+            <span id="modalAbstractLangBadge" class="text-[10px] text-indigo-600 font-mono font-semibold">Bahasa Indonesia</span>
+          </div>
+          <div id="modalAbstract" class="text-sm text-slate-700 leading-relaxed bg-slate-50/70 p-4 rounded-xl border border-slate-200 max-h-64 overflow-y-auto"></div>
+        </div>
+
+        <!-- Topik & Konsep Terindeks -->
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+            <i data-lucide="tag" class="w-3.5 h-3.5 text-indigo-600"></i>
+            Konsep & Taksonomi Terindeks
+          </h4>
+          <div id="modalConcepts" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+      </div>
+
+      <!-- Bagian Bawah Modal (Aksi) -->
+      <div class="p-4 border-t border-slate-200 bg-slate-50/80 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            id="modalSaveBtn"
+            class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 shadow-2xs transition-colors"
+          >
+            <i data-lucide="bookmark" class="w-4 h-4 text-amber-500"></i>
+            <span>Simpan Artikel</span>
+          </button>
+          <button
+            type="button"
+            id="modalCiteBtn"
+            class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs"
+          >
+            <i data-lucide="quote" class="w-4 h-4"></i>
+            <span>Sitasi Karya</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2" id="modalExternalLinks">
+          <!-- Tautan PDF Langsung & Web Penerbit -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== PEMBACA NASKAH PDF JURNAL TERJEMAHAN (IN-APP FRAME READER) ==================== -->
+  <div id="pdfReaderModal" class="fixed inset-0 z-50 hidden flex flex-col bg-slate-900/60 backdrop-blur-md p-1 sm:p-3 md:p-4 overflow-hidden">
+    <div class="bg-white border border-slate-200/90 rounded-2xl w-full h-full flex flex-col shadow-2xl overflow-hidden">
+      
+      <!-- Header Bilah Pembaca -->
+      <div id="pdfReaderHeader" class="px-4 py-3 border-b border-slate-200 bg-slate-50/90 flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
+        
+        <!-- Sisi Kiri: Info Naskah Singkat -->
+        <div class="flex items-center gap-3 min-w-0 max-w-xl">
+          <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+            <i data-lucide="book-open" class="w-4 h-4"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span id="readerOaBadge" class="text-[10px] font-bold px-2 py-0.2 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Open Access</span>
+              <span id="readerVenueBadge" class="text-[11px] text-slate-500 font-medium truncate">Jurnal Ilmiah</span>
+            </div>
+            <h3 id="readerHeaderTitle" class="text-xs sm:text-sm font-bold text-slate-900 truncate leading-snug">
+              Judul Karya Ilmiah
+            </h3>
+          </div>
+        </div>
+
+        <!-- Tengah: Pemilih Mode Tampilan (Switcher) -->
+        <div id="readerViewModeSwitcher" class="inline-flex p-1 bg-slate-200/80 rounded-xl text-xs font-semibold text-slate-600 shadow-2xs">
+          <button
+            type="button"
+            id="readerModeSplitBtn"
+            onclick="setReaderViewMode('split')"
+            class="px-3 py-1.5 rounded-lg bg-white text-indigo-700 font-bold shadow-xs transition-all flex items-center gap-1.5"
+            title="Tampilkan PDF asli dan Naskah Bahasa Indonesia berdampingan"
+          >
+            <i data-lucide="columns-2" class="w-3.5 h-3.5"></i>
+            <span class="hidden md:inline">Berdampingan</span>
+          </button>
+          <button
+            type="button"
+            id="readerModeTransBtn"
+            onclick="setReaderViewMode('translated')"
+            class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5"
+            title="Tampilkan Naskah Terjemahan Bahasa Indonesia Penuh"
+          >
+            <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+            <span>Naskah Terjemahan ID</span>
+          </button>
+          <button
+            type="button"
+            id="readerModePdfBtn"
+            onclick="setReaderViewMode('pdf')"
+            class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5"
+            title="Tampilkan PDF Asli Penuh di Frame"
+          >
+            <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
+            <span>PDF Asli</span>
+          </button>
+        </div>
+
+        <!-- Sisi Kanan: Aksi & Navigasi -->
+        <div id="readerActionButtons" class="flex items-center gap-2 flex-shrink-0">
+          <button
+            type="button"
+            onclick="printTranslatedPaper()"
+            class="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all"
+            title="Cetak atau Simpan Naskah Terjemahan Bahasa Indonesia sebagai PDF"
+          >
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Cetak / Simpan PDF ID</span>
+          </button>
+          <a
+            id="readerDownloadOriginalLink"
+            href="#"
+            target="_blank"
+            download
+            class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors"
+            title="Unduh file PDF Asli"
+          >
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Unduh Asli</span>
+          </a>
+          <button
+            type="button"
+            onclick="openCiteModalFromReader()"
+            class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1 transition-colors"
+            title="Sitasi"
+          >
+            <i data-lucide="quote" class="w-3.5 h-3.5"></i>
+          </button>
+          <button
+            type="button"
+            onclick="closePdfReaderModal()"
+            class="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors ml-1"
+            title="Tutup Pembaca"
+          >
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Wadah Konten Utama Pembaca (Split / Single) -->
+      <div id="pdfReaderBody" class="flex-1 flex flex-col lg:flex-row overflow-hidden relative bg-slate-100">
+        
+        <!-- Panel Kiri: Frame Dokumen PDF Asli -->
+        <div id="pdfFramePane" class="w-full lg:w-1/2 h-full flex flex-col border-r border-slate-200 bg-slate-100 transition-all duration-200">
+          <div class="px-4 py-2 bg-slate-200/70 border-b border-slate-300/80 flex items-center justify-between text-xs text-slate-600">
+            <span class="flex items-center gap-1.5 font-semibold text-slate-700">
+              <i data-lucide="file" class="w-3.5 h-3.5 text-slate-500"></i>
+              Dokumen PDF Sumber Asli (Frame In-App)
+            </span>
+            <a id="pdfFrameExternalLink" href="#" target="_blank" class="text-indigo-600 hover:underline flex items-center gap-1 text-[11px]">
+              <span>Buka di tab baru jika dibatasi</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </div>
+          <div class="flex-1 relative bg-slate-200">
+            <div id="pdfFrameLoading" class="absolute inset-0 flex flex-col items-center justify-center p-6 bg-slate-100 text-center gap-3">
+              <div class="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+              <p class="text-xs text-slate-600 font-medium">Memuat dokumen PDF ke dalam frame aplikasi...</p>
+            </div>
+            <iframe id="pdfFrame" class="w-full h-full border-0" allow="fullscreen"></iframe>
+          </div>
+        </div>
+
+        <!-- Panel Kanan: Naskah Jurnal Ilmiah Terjemahan Bahasa Indonesia -->
+        <div id="pdfArticlePane" class="w-full lg:w-1/2 h-full overflow-y-auto bg-white p-6 sm:p-8 lg:p-10 transition-all duration-200">
+          
+          <div id="pdfArticleContainer" class="max-w-3xl mx-auto space-y-6">
+            
+            <!-- Loading State Naskah Terjemahan -->
+            <div id="readerArticleLoading" class="py-12 flex flex-col items-center justify-center text-center space-y-3">
+              <div class="w-10 h-10 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+              <div>
+                <h4 class="text-sm font-bold text-slate-800">Menerjemahkan & Membedah Naskah Ilmiah...</h4>
+                <p class="text-xs text-slate-500 mt-0.5">Menyusun naskah akademik terstruktur Bahasa Indonesia bertenaga Gemini AI</p>
+              </div>
+            </div>
+
+            <!-- Konten Artikel Terjemahan (Disembunyikan saat memuat) -->
+            <div id="readerArticleContent" class="hidden space-y-6">
+              
+              <!-- Kop Dokumen Jurnal Resmi -->
+              <div class="pb-4 border-b border-slate-200">
+                <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 mb-2 font-mono">
+                  <span id="artVenue">Naskah Jurnal Ilmiah Terverifikasi</span>
+                  <span id="artDate">2024</span>
+                </div>
+                <h1 id="artTitle" class="text-xl sm:text-2xl font-extrabold text-slate-900 leading-tight">
+                  Judul Terjemahan Bahasa Indonesia
+                </h1>
+                <div id="artOriginalTitleToggle" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                  <span class="font-semibold text-slate-700">Judul Asli:</span>
+                  <span id="artOriginalTitle" class="italic">Original title</span>
+                </div>
+                <div id="artAuthors" class="mt-3 flex flex-wrap gap-1.5 text-xs text-slate-700"></div>
+                <div id="artMetaBar" class="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-500 pt-2 border-t border-slate-100">
+                  <span id="artDoi">DOI: -</span>
+                  <span id="artCitations" class="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">0 Sitasi</span>
+                </div>
+              </div>
+
+              <!-- Kotak Temuan Kunci (Executive Takeaways) -->
+              <div class="p-5 rounded-2xl bg-gradient-to-br from-indigo-50/90 to-purple-50/50 border border-indigo-200/80 shadow-2xs">
+                <div class="flex items-center gap-2 mb-3 text-indigo-900 font-bold text-sm">
+                  <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600"></i>
+                  <span>Temuan Kunci & Intisari Riset</span>
+                </div>
+                <ul id="artTakeaways" class="space-y-2 text-xs sm:text-sm text-slate-700 list-disc list-inside"></ul>
+              </div>
+
+              <!-- Bagian Abstrak Dokumen Bahasa Indonesia -->
+              <div class="space-y-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <i data-lucide="align-left" class="w-3.5 h-3.5 text-indigo-600"></i>
+                  Abstrak Naskah (Bahasa Indonesia)
+                </h3>
+                <div id="artAbstract" class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 leading-relaxed italic"></div>
+              </div>
+
+              <!-- Bedah Bagian Naskah Ilmiah (Latar Belakang, Kerangka, Metodologi, Temuan, Implikasi, Kesimpulan) -->
+              <div id="artSections" class="space-y-6 pt-2"></div>
+
+              <!-- Kata Kunci Ilmiah -->
+              <div class="pt-4 border-t border-slate-200">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+                  <i data-lucide="tag" class="w-3.5 h-3.5 text-indigo-600"></i>
+                  Kata Kunci & Taksonomi Bidang
+                </h4>
+                <div id="artKeywords" class="flex flex-wrap gap-1.5"></div>
+              </div>
+
+              <!-- Catatan Terjemahan -->
+              <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-500 flex items-center justify-between">
+                <span>Diterjemahkan secara mendalam untuk keperluan telaah literatur ilmiah oleh Scholara AI.</span>
+                <span class="font-mono text-[10px] text-slate-400">Scholara Reader v2.0</span>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== MODAL GENERATOR SITASI ==================== -->
+  <div id="citeModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+    <div class="bg-white border border-slate-200/90 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden">
+      
+      <!-- Header Modal Sitasi -->
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600">
+            <i data-lucide="quote" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Generator Sitasi Akademik</h3>
+            <p class="text-[11px] text-slate-500">Format standar penulisan rujukan karya ilmiah</p>
+          </div>
+        </div>
+        <button onclick="closeCiteModal()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors" title="Tutup">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Tab Format Sitasi -->
+      <div class="px-4 pt-3 border-b border-slate-200 flex gap-2 overflow-x-auto text-xs">
+        <button type="button" onclick="setCiteFormat('apa')" class="cite-tab-btn pb-2.5 px-3 border-b-2 font-medium border-indigo-600 text-indigo-600" data-format="apa">APA 7th</button>
+        <button type="button" onclick="setCiteFormat('mla')" class="cite-tab-btn pb-2.5 px-3 border-b-2 font-medium border-transparent text-slate-500 hover:text-slate-800" data-format="mla">MLA 9th</button>
+        <button type="button" onclick="setCiteFormat('chicago')" class="cite-tab-btn pb-2.5 px-3 border-b-2 font-medium border-transparent text-slate-500 hover:text-slate-800" data-format="chicago">Chicago</button>
+        <button type="button" onclick="setCiteFormat('harvard')" class="cite-tab-btn pb-2.5 px-3 border-b-2 font-medium border-transparent text-slate-500 hover:text-slate-800" data-format="harvard">Harvard</button>
+        <button type="button" onclick="setCiteFormat('bibtex')" class="cite-tab-btn pb-2.5 px-3 border-b-2 font-medium border-transparent text-slate-500 hover:text-slate-800" data-format="bibtex">BibTeX</button>
+      </div>
+
+      <!-- Teks Sitasi Siap Salin -->
+      <div class="p-5 space-y-4">
+        <textarea
+          id="citationOutput"
+          readonly
+          rows="5"
+          class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:border-indigo-600 select-all resize-none shadow-inner leading-relaxed"
+        ></textarea>
+
+        <div class="flex items-center justify-between gap-3 pt-1">
+          <button
+            type="button"
+            id="downloadBibtexBtn"
+            onclick="downloadBibtexFile()"
+            class="hidden px-3.5 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-colors"
+          >
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Unduh File .bib</span>
+          </button>
+
+          <button
+            type="button"
+            onclick="copyCitationToClipboard()"
+            class="ml-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm transition-all active:scale-95"
+          >
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span id="copyBtnLabel">Salin Sitasi</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== DRAWER DAFTAR BACAAN TERSIMPAN ==================== -->
+  <div id="bookmarksDrawer" class="fixed inset-0 z-50 hidden">
+    <div onclick="closeBookmarksDrawer()" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+    
+    <div class="absolute inset-y-0 right-0 max-w-lg w-full bg-white border-l border-slate-200 shadow-2xl flex flex-col z-10">
+      <!-- Header Drawer -->
+      <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500">
+            <i data-lucide="bookmarks" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <span>Daftar Bacaan Tersimpan</span>
+              <span id="drawerCountBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300/80">0</span>
+            </h3>
+            <p class="text-[11px] text-slate-500">Disimpan aman di LocalStorage peramban Anda</p>
+          </div>
+        </div>
+        <button onclick="closeBookmarksDrawer()" class="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors" title="Tutup">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Bilah Alat Drawer -->
+      <div class="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-1.5">
+          <button
+            type="button"
+            onclick="exportReadingListJSON()"
+            class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[11px] font-medium flex items-center gap-1 shadow-2xs"
+            title="Ekspor koleksi ke file JSON"
+          >
+            <i data-lucide="download" class="w-3 h-3 text-slate-500"></i>
+            <span>Ekspor JSON</span>
+          </button>
+          <label class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[11px] font-medium flex items-center gap-1 cursor-pointer shadow-2xs" title="Impor koleksi dari file JSON">
+            <i data-lucide="upload" class="w-3 h-3 text-slate-500"></i>
+            <span>Impor</span>
+            <input type="file" accept=".json" onchange="importReadingListJSON(event)" class="hidden" />
+          </label>
+        </div>
+
+        <button
+          type="button"
+          onclick="clearAllBookmarks()"
+          class="text-rose-600 hover:text-rose-800 text-[11px] font-medium flex items-center gap-1 px-2 py-1 rounded hover:bg-rose-50 transition-colors"
+        >
+          <i data-lucide="trash-2" class="w-3 h-3"></i>
+          <span>Hapus Semua</span>
+        </button>
+      </div>
+
+      <!-- Kontainer Isi Daftar Bacaan -->
+      <div id="bookmarksListContainer" class="p-4 flex-1 overflow-y-auto space-y-3"></div>
+    </div>
+  </div>
+
+  <!-- ==================== NOTIFIKASI TOAST MELAYANG ==================== -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ==================== FOOTER APLIKASI ==================== -->
+  <footer class="mt-auto border-t border-slate-200 bg-white py-6 px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-12 text-xs text-slate-500">
+    <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <div class="w-5 h-5 rounded bg-indigo-600 flex items-center justify-center text-white text-[10px] font-bold shadow-2xs">S</div>
+        <span class="font-semibold text-slate-800">Scholara</span>
+        <span>— Mengindeks korpus riset terbuka OpenAlex dengan lebih dari 250 juta karya ilmiah dunia.</span>
+      </div>
+      <div class="flex items-center gap-4 text-slate-500">
+        <span>Bebas paywall. Terjemahan otomatis cerdas.</span>
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="hover:text-indigo-600 flex items-center gap-1 font-medium transition-colors">
+          <span>Kembali ke atas</span>
+          <i data-lucide="arrow-up" class="w-3 h-3"></i>
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== JAVASCRIPT APLIKASI UTAMA ==================== -->
+  <script>
+    /**
+     * Scholara Academic Search Engine & Auto-Translation Engine
+     */
+
+    // --- STRUKTUR TAKSONOMI KEILMUAN LENGKAP (MAKRO, MESO, HINGGA SPESIALISASI MIKRO) ---
+    const ACADEMIC_FIELDS = [
+      {
+        id: 'C41008148',
+        name: 'Ilmu Komputer & Informatika',
+        icon: 'cpu',
+        subfields: [
+          {
+            id: 'C154945302',
+            name: 'Kecerdasan Buatan (AI) & Machine Learning',
+            microTopics: [
+              { name: 'Model Bahasa Besar (LLM) & Transformer', query: 'large language models transformer attention', conceptId: 'C204321447' },
+              { name: 'Pembelajaran Penguatan (RLHF)', query: 'reinforcement learning human feedback reward model', conceptId: 'C10619213' },
+              { name: 'Pembelajaran Federasi (Federated Learning)', query: 'federated learning differential privacy edge' },
+              { name: 'Graph Neural Networks (GNN)', query: 'graph neural networks relational deep learning' },
+              { name: 'Model Difusi Generatif (Diffusion Models)', query: 'generative diffusion models score matching' },
+              { name: 'AI Terjelaskan (Explainable AI / XAI)', query: 'explainable artificial intelligence interpretability shap' }
+            ]
+          },
+          {
+            id: 'C38652104',
+            name: 'Keamanan Siber & Kriptografi',
+            microTopics: [
+              { name: 'Kriptografi Pasca-Kuantum (PQC)', query: 'post quantum cryptography lattice based', conceptId: 'C11413529' },
+              { name: 'Keamanan Arsitektur Zero Trust', query: 'zero trust architecture enterprise security network' },
+              { name: 'Deteksi Intrusi AI & Malware Analysis', query: 'deep learning malware intrusion detection IDS' }
+            ]
+          },
+          {
+            id: 'C1074576',
+            name: 'Visi Komputer (Computer Vision)',
+            microTopics: [
+              { name: 'Segmentasi Citra Medis AI', query: 'medical image segmentation UNet transformers', conceptId: 'C1074576' },
+              { name: 'NeRF & Rekonstruksi 3D', query: 'neural radiance fields 3D novel view synthesis' },
+              { name: 'Deteksi Objek Real-Time (YOLO)', query: 'real time object detection deep neural network' }
+            ]
+          },
+          {
+            id: 'C77088390',
+            name: 'Sistem Terdistribusi & Komputasi Cloud',
+            microTopics: [
+              { name: 'Komputasi Tepi & IoT (Edge AI)', query: 'edge computing resource allocation latency' },
+              { name: 'Konsensus Blockchain & Web3', query: 'blockchain consensus proof of stake smart contracts' },
+              { name: 'Arsitektur Serverless & Mikroservis', query: 'serverless computing microservices orchestration' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'C71924100',
+        name: 'Kedokteran & Kesehatan',
+        icon: 'heart-pulse',
+        subfields: [
+          {
+            id: 'C143998085',
+            name: 'Onkologi & Riset Kanker',
+            microTopics: [
+              { name: 'Imunoterapi Sel CAR-T', query: 'CAR T cell therapy chimeric antigen receptor oncology', conceptId: 'C143998085' },
+              { name: 'Biopsi Cair & ctDNA', query: 'liquid biopsy circulating tumor DNA early detection' },
+              { name: 'Inhibitor Immune Checkpoint (PD-1/PD-L1)', query: 'immune checkpoint inhibitors pembrolizumab resistance' },
+              { name: 'Terapi Tertarget Kanker Payudara', query: 'targeted therapy HER2 triple negative breast cancer' }
+            ]
+          },
+          {
+            id: 'C126322002',
+            name: 'Kardiologi & Sistem Kardiovaskular',
+            microTopics: [
+              { name: 'Gagal Jantung dengan Fraksi Ejeksi Terjaga (HFpEF)', query: 'heart failure preserved ejection fraction SGLT2', conceptId: 'C126322002' },
+              { name: 'Implan Katup Aorta Transkateter (TAVI)', query: 'transcatheter aortic valve implantation outcomes' },
+              { name: 'Aritmia & Ablasi Kateter Frekuensi Radio', query: 'atrial fibrillation catheter ablation electrophysiology' }
+            ]
+          },
+          {
+            id: 'C203014093',
+            name: 'Imunologi & Vaksinologi',
+            microTopics: [
+              { name: 'Vaksin Platform mRNA & Nanopartikel Lipid (LNP)', query: 'mRNA vaccine lipid nanoparticle delivery immune response', conceptId: 'C203014093' },
+              { name: 'Antibodi Monoklonal Penyakit Autoimun', query: 'monoclonal antibody biological therapy autoimmune disease' }
+            ]
+          },
+          {
+            id: 'C142724271',
+            name: 'Neurologi & Neurosains',
+            microTopics: [
+              { name: 'Biomarker Alzheimer & Amyloid Plasma', query: 'Alzheimer disease plasma phosphorylated tau amyloid PET', conceptId: 'C142724271' },
+              { name: 'Sumbu Mikrobioma Usus-Otak', query: 'gut microbiome brain axis neuroinflammation depression' },
+              { name: 'Antarmuka Otak-Komputer (BCI)', query: 'brain computer interface motor cortex neural decoding' }
+            ]
+          },
+          {
+            id: 'C99454951',
+            name: 'Kesehatan Masyarakat & Epidemiologi',
+            microTopics: [
+              { name: 'Resistensi Antimikroba Global (AMR)', query: 'antimicrobial resistance surveillance multidrug resistant', conceptId: 'C99454951' },
+              { name: 'Epidemiologi Genomik Patogen', query: 'genomic epidemiology viral phylogenetic transmission' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'C121332964',
+        name: 'Fisika & Ilmu Antariksa',
+        icon: 'atom',
+        subfields: [
+          {
+            id: 'C62520636',
+            name: 'Mekanika & Informasi Kuantum',
+            microTopics: [
+              { name: 'Distribusi Kunci Kuantum (QKD)', query: 'quantum key distribution entanglement cryptography', conceptId: 'C62520636' },
+              { name: 'Komputasi Kuantum Skala Menengah (NISQ)', query: 'NISQ variational quantum eigensolver noisy intermediate' },
+              { name: 'Koreksi Kesalahan Kode Permukaan', query: 'quantum error correction surface code fault tolerant' }
+            ]
+          },
+          {
+            id: 'C44870925',
+            name: 'Astrofisika & Kosmologi',
+            microTopics: [
+              { name: 'Deteksi Gelombang Gravitasi (LIGO)', query: 'gravitational waves binary black hole merger LIGO', conceptId: 'C44870925' },
+              { name: 'Spektroskopi Atmosfer Eksoplanet (JWST)', query: 'exoplanet transmission spectroscopy JWST atmosphere' },
+              { name: 'Pencarian Partikel Materi Gelap', query: 'dark matter direct detection WIMPs cosmology' }
+            ]
+          },
+          {
+            id: 'C120665830',
+            name: 'Materi Terkondensasi & Fotonika',
+            microTopics: [
+              { name: 'Superkonduktivitas Suhu Tinggi (Hydrides)', query: 'high temperature superconductivity hydride high pressure' },
+              { name: 'Insulator Topologis & Semimetal Weyl', query: 'topological insulator Weyl semimetal Dirac fermions' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'C127413603',
+        name: 'Teknik, Material & Nanoteknologi',
+        icon: 'wrench',
+        subfields: [
+          {
+            id: 'C205649164',
+            name: 'Nanomaterial Maju & Material 2D',
+            microTopics: [
+              { name: 'Grafena & Material MXenes', query: 'MXene two dimensional materials electrochemical capacitance', conceptId: 'C205649164' },
+              { name: 'Metal-Organic Frameworks (MOF)', query: 'metal organic frameworks carbon capture gas storage' }
+            ]
+          },
+          {
+            id: 'C127413603',
+            name: 'Teknologi Baterai & Energi Elektrokimia',
+            microTopics: [
+              { name: 'Baterai Padat (Solid-State Batteries)', query: 'solid state electrolyte lithium dendrite interface battery' },
+              { name: 'Baterai Natrium-Ion (Na-Ion)', query: 'sodium ion battery cathode hard carbon anode stability' }
+            ]
+          },
+          {
+            id: 'C119599485',
+            name: 'Robotika & Sistem Otonom',
+            microTopics: [
+              { name: 'Robotika Lunak (Soft Robotics)', query: 'soft robotics pneumatic elastomer actuator flexible' },
+              { name: 'Navigasi Otonom & SLAM LiDAR', query: 'simultaneous localization and mapping LiDAR autonomous vehicle' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'C39432304',
+        name: 'Lingkungan, Energi & Iklim',
+        icon: 'globe-2',
+        subfields: [
+          {
+            id: 'C178825841',
+            name: 'Energi Terbarukan & Transisi',
+            microTopics: [
+              { name: 'Sel Surya Tandem Perovskit-Silikon', query: 'perovskite silicon tandem solar cell efficiency degradation', conceptId: 'C178825841' },
+              { name: 'Elektroliser Hidrogen Hijau (PEM)', query: 'PEM water electrolysis green hydrogen catalyst oxygen evolution' }
+            ]
+          },
+          {
+            id: 'C13280743',
+            name: 'Dinamika Iklim & Dekarbonisasi',
+            microTopics: [
+              { name: 'Penangkapan Udara Karbon Langsung (DAC)', query: 'direct air capture carbon dioxide mineralization DAC' },
+              { name: 'Dinamika Kenaikan Muka Air Laut', query: 'sea level rise Antarctic ice sheet climate tipping points' }
+            ]
+          },
+          {
+            id: 'C18903297',
+            name: 'Ekologi & Keanekaragaman Hayati',
+            microTopics: [
+              { name: 'Pemutihan & Restorasi Terumbu Karang', query: 'coral reef bleaching heat tolerance thermal adaptation' },
+              { name: 'Konektivitas Koridor Habitat', query: 'ecological corridors biodiversity fragmentation conservation' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'C86803240',
+        name: 'Biologi & Genetika Terapan',
+        icon: 'dna',
+        subfields: [
+          {
+            id: 'C54355233',
+            name: 'Rekayasa Genomika & CRISPR',
+            microTopics: [
+              { name: 'Penyuntingan Basa (Base Editing & Prime Editing)', query: 'prime editing base editing CRISPR Cas9 precision off target', conceptId: 'C54355233' },
+              { name: 'Biologi Sintetis & Rancang Jalur Metabolik', query: 'synthetic biology metabolic engineering pathway microbial' }
+            ]
+          },
+          {
+            id: 'C104317684',
+            name: 'Biologi Molekuler & Struktural',
+            microTopics: [
+              { name: 'Mikroskopi Krio-Elektron (Cryo-EM)', query: 'cryo electron microscopy single particle protein structure' },
+              { name: 'Transkriptomik Sel Tunggal Spasial', query: 'spatial transcriptomics single cell RNA sequencing tissue heterogeneity' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'C144133568',
+        name: 'Bisnis, Keuangan & Manajemen',
+        icon: 'trending-up',
+        subfields: [
+          {
+            id: 'C162324750',
+            name: 'Teknologi Keuangan (Fintech) & Ekonomi',
+            microTopics: [
+              { name: 'Keuangan Terdesentralisasi (DeFi)', query: 'decentralized finance cryptocurrency smart contracts protocol', conceptId: 'C162324750' },
+              { name: 'Investasi Berkelanjutan & Metrik ESG', query: 'ESG ratings sustainable finance carbon footprint returns' }
+            ]
+          },
+          {
+            id: 'C144133568',
+            name: 'Strategi Inovasi & Transformasi Digital',
+            microTopics: [
+              { name: 'Adopsi AI Perusahaan & Produktivitas', query: 'generative AI corporate adoption workforce productivity' },
+              { name: 'Ketahanan Rantai Pasok Global', query: 'supply chain resilience disruption risk mitigation' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'C144024400',
+        name: 'Ilmu Sosial, Psikologi & Pendidikan',
+        icon: 'users',
+        subfields: [
+          {
+            id: 'C15744967',
+            name: 'Psikologi Kognitif & Neurosains Perilaku',
+            microTopics: [
+              { name: 'Terapi Digital & Kesehatan Mental Remaja', query: 'digital mental health mobile apps adolescent wellbeing', conceptId: 'C15744967' },
+              { name: 'Bias Kognitif dalam Pengambilan Keputusan', query: 'cognitive bias heuristics decision making uncertainty' }
+            ]
+          },
+          {
+            id: 'C19417346',
+            name: 'Teknologi Pendidikan (EdTech)',
+            microTopics: [
+              { name: 'Pembelajaran Adaptif Berbantuan AI', query: 'adaptive learning AI personalized tutoring student outcomes' },
+              { name: 'Literasi Kritis Digital & LLM Generatif', query: 'generative AI academic integrity critical digital literacy' }
+            ]
+          },
+          {
+            id: 'C17744445',
+            name: 'Kebijakan Publik & Tata Kelola Digital',
+            microTopics: [
+              { name: 'Etika & Tata Kelola Regulasi AI', query: 'AI ethics regulatory governance public policy accountability' },
+              { name: 'Polarisasi Politik di Platform Digital', query: 'algorithmic polarization echo chambers political discourse' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'C33923547',
+        name: 'Matematika Terapan & Teori Informasi',
+        icon: 'binary',
+        subfields: [
+          {
+            id: 'C105795698',
+            name: 'Statistika Komputasi & Sains Data',
+            microTopics: [
+              { name: 'Inferensi Kausalitas Machine Learning', query: 'causal inference observational data machine learning', conceptId: 'C105795698' },
+              { name: 'Statistik Dimensi Tinggi & Sparsity', query: 'high dimensional statistics sparse recovery covariance' }
+            ]
+          },
+          {
+            id: 'C11413529',
+            name: 'Kriptografi & Teori Informasi',
+            microTopics: [
+              { name: 'Enkripsi Homomorfik Penuh (FHE)', query: 'fully homomorphic encryption privacy preserving computation' },
+              { name: 'Bukti Nol Pengetahuan (Zero-Knowledge / ZK)', query: 'zero knowledge proofs SNARKs verifiable computation' }
+            ]
+          }
+        ]
+      }
+    ];
+
+    // Topik tren riset kilat
+    const TRENDING_TOPICS = [
+      { label: 'Model Bahasa Besar (LLM)', query: 'large language models transformer' },
+      { label: 'Komputasi Kuantum', query: 'quantum computing algorithms error mitigation' },
+      { label: 'Penyuntingan Gen CRISPR', query: 'CRISPR Cas9 base editing' },
+      { label: 'Baterai Padat (Solid-State)', query: 'solid state battery electrolyte dendrites' },
+      { label: 'Penangkapan Karbon (DAC)', query: 'direct air capture carbon mineralization' },
+      { label: 'Sel Surya Perovskit Tandem', query: 'perovskite silicon tandem solar cell' },
+      { label: 'Imunoterapi Sel CAR-T', query: 'CAR-T cell therapy oncology' },
+      { label: 'Sumbu Usus-Otak', query: 'gut microbiome brain axis' }
+    ];
+
+    // Kamus cepat istilah ilmiah umum untuk terjemahan instan
+    const SCIENTIFIC_GLOSSARY = {
+      'deep learning': 'pembelajaran mendalam (deep learning)',
+      'machine learning': 'pembelajaran mesin',
+      'artificial intelligence': 'kecerdasan buatan',
+      'neural network': 'jaringan saraf tiruan',
+      'neural networks': 'jaringan saraf tiruan',
+      'natural language processing': 'pemrosesan bahasa alami',
+      'computer vision': 'penglihatan komputer (computer vision)',
+      'quantum computing': 'komputasi kuantum',
+      'climate change': 'perubahan iklim',
+      'renewable energy': 'energi terbarukan',
+      'image recognition': 'pengenalan citra',
+      'image classification': 'klasifikasi citra',
+      'object detection': 'deteksi objek',
+      'reinforcement learning': 'pembelajaran penguatan',
+      'supervised learning': 'pembelajaran terarah',
+      'unsupervised learning': 'pembelajaran tak terarah',
+      'large language models': 'model bahasa besar (LLM)',
+      'data analysis': 'analisis data',
+      'case study': 'studi kasus',
+      'a review of': 'tinjauan tentang',
+      'an overview of': 'ikhtisar mengenai',
+      'systematic review': 'tinjauan sistematis',
+      'a novel approach': 'pendekatan baru',
+      'a comprehensive study': 'studi komprehensif',
+      'experimental investigation': 'investigasi eksperimental',
+      'comparative analysis': 'analisis komparatif'
+    };
+
+    // --- STATUS APLIKASI GLOBAL ---
+    const state = {
+      query: 'deep learning',
+      activeConceptId: null,
+      activeConceptName: null,
+      activeMicroTopic: null,
+      hierarchyLevel: null, // 'makro' | 'meso' | 'mikro'
+      expandedFields: new Set(['C41008148']), // Ilmu Komputer terbuka secara default
+      expandedSubfields: new Set(['C154945302']), // AI terbuka secara default
+      disciplineSearch: '',
+      openAccessOnly: false,
+      yearFilter: 'all',
+      minCitations: 0,
+      sort: 'relevance_score:desc',
+      page: 1,
+      perPage: 20,
+      totalCount: 0,
+      results: [],
+      currentActivePaper: null,
+      currentCiteFormat: 'apa',
+      viewMode: 'card',
+      bookmarks: [],
+      analyticsOpen: false,
+      autoTranslate: true, // Auto-translate ala media sosial X
+      globalShowOriginal: false,
+      charts: { years: null, oa: null }
+    };
+
+    // Cache Terjemahan lokal (memori + LocalStorage)
+    const translationMemoryCache = new Map();
+
+    function initTranslationCache() {
+      try {
+        const raw = localStorage.getItem('scholara_translations_v2');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          Object.entries(parsed).forEach(([k, v]) => translationMemoryCache.set(k, v));
+        }
+      } catch (e) {
+        console.warn('Gagal membaca cache terjemahan:', e);
+      }
+    }
+
+    function saveTranslationToCache(sourceText, translatedText) {
+      if (!sourceText || !translatedText) return;
+      const key = sourceText.trim().toLowerCase();
+      translationMemoryCache.set(key, translatedText);
+      try {
+        // Simpan max 300 item terbaru di localStorage
+        if (translationMemoryCache.size <= 300) {
+          const obj = Object.fromEntries(translationMemoryCache);
+          localStorage.setItem('scholara_translations_v2', JSON.stringify(obj));
+        }
+      } catch (e) {}
+    }
+
+    // Mesin Penerjemah Bahasa Inggris ke Bahasa Indonesia Cerdas
+    async function translateTextToIndonesian(text) {
+      if (!text || typeof text !== 'string') return '';
+      const trimmed = text.trim();
+      if (!trimmed) return '';
+
+      const cacheKey = trimmed.toLowerCase();
+      if (translationMemoryCache.has(cacheKey)) {
+        return translationMemoryCache.get(cacheKey);
+      }
+
+      // 1. Coba periksa apakah string persis ada di kamus ilmiah
+      if (SCIENTIFIC_GLOSSARY[cacheKey]) {
+        return SCIENTIFIC_GLOSSARY[cacheKey];
+      }
+
+      // 2. Panggil API Terjemahan Cerdas Server (berbasis Gemini)
+      try {
+        const res = await fetch('/api/translate-text', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: trimmed })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.translated && data.translated.trim()) {
+            saveTranslationToCache(trimmed, data.translated);
+            return data.translated;
+          }
+        }
+      } catch (err) {
+        console.warn('Gagal menerjemahkan via API server:', err);
+      }
+
+      // 3. Fallback Heuristik berbasis kosakata ilmiah
+      let heuristic = trimmed;
+      Object.entries(SCIENTIFIC_GLOSSARY).forEach(([en, id]) => {
+        const regex = new RegExp(`\\b${en}\\b`, 'gi');
+        heuristic = heuristic.replace(regex, id);
+      });
+
+      return heuristic;
+    }
+
+    // --- INISIALISASI APLIKASI ---
+    document.addEventListener('DOMContentLoaded', () => {
+      initTranslationCache();
+      loadBookmarksFromStorage();
+      renderDisciplinesSidebar();
+      renderTrendingTopics();
+      setupKeyboardShortcuts();
+      setupSearchAutocomplete();
+
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) searchInput.value = state.query;
+
+      // Ambil hasil pencarian perdana
+      fetchPapers();
+    });
+
+    function setupKeyboardShortcuts() {
+      window.addEventListener('keydown', (e) => {
+        if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          const searchInput = document.getElementById('searchInput');
+          searchInput.focus();
+          searchInput.select();
+        }
+        if (e.key === 'Escape') {
+          closeDetailModal();
+          closeCiteModal();
+          closeBookmarksDrawer();
+          closeSuggestionsDropdown();
+        }
+      });
+    }
+
+    // --- PEMANGGILAN API OPENALEX ---
+    let searchDebounceTimer = null;
+
+    async function fetchPapers() {
+      const papersContainer = document.getElementById('papersContainer');
+      const skeletonLoader = document.getElementById('skeletonLoader');
+      const emptyState = document.getElementById('emptyState');
+      const errorState = document.getElementById('errorState');
+      const paginationBar = document.getElementById('paginationBar');
+      const latencyBadge = document.getElementById('queryLatencyBadge');
+      const countText = document.getElementById('resultsCountText');
+
+      papersContainer.innerHTML = '';
+      skeletonLoader.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+      errorState.classList.add('hidden');
+      paginationBar.classList.add('hidden');
+      countText.textContent = 'Mencari karya ilmiah di korpus global...';
+
+      const startTime = performance.now();
+
+      try {
+        const baseUrl = 'https://api.openalex.org/works';
+        const params = new URLSearchParams();
+
+        if (state.query && state.query.trim()) {
+          params.append('search', state.query.trim());
+        }
+
+        const filters = [];
+        if (state.openAccessOnly) {
+          filters.push('is_oa:true');
+        }
+        if (state.activeConceptId) {
+          filters.push(`concepts.id:${state.activeConceptId}`);
+        }
+        if (state.yearFilter && state.yearFilter !== 'all') {
+          if (state.yearFilter.includes('-')) {
+            const [fromYear, toYear] = state.yearFilter.split('-');
+            filters.push(`publication_year:${fromYear}-${toYear}`);
+          } else {
+            filters.push(`publication_year:${state.yearFilter}`);
+          }
+        }
+        if (state.minCitations > 0) {
+          filters.push(`cited_by_count:>${state.minCitations - 1}`);
+        }
+
+        if (filters.length > 0) {
+          params.append('filter', filters.join(','));
+        }
+
+        params.append('sort', state.sort);
+        params.append('page', state.page.toString());
+        params.append('per_page', state.perPage.toString());
+
+        const requestUrl = `${baseUrl}?${params.toString()}`;
+        const response = await fetch(requestUrl);
+
+        if (!response.ok) throw new Error(`HTTP error status: ${response.status}`);
+
+        const data = await response.json();
+        const endTime = performance.now();
+        const latency = Math.round(endTime - startTime);
+
+        state.totalCount = data.meta?.count || 0;
+        state.results = (data.results || []).map(p => ({
+          ...p,
+          // Properti terjemahan ala X
+          translatedTitle: null,
+          translatedAbstract: null,
+          isTranslating: false,
+          showOriginal: false
+        }));
+
+        // Perbarui badge latensi
+        latencyBadge.textContent = `⚡ ${latency}ms`;
+        latencyBadge.classList.remove('hidden');
+
+        skeletonLoader.classList.add('hidden');
+
+        if (state.results.length === 0) {
+          emptyState.classList.remove('hidden');
+          countText.textContent = 'Tidak ditemukan hasil.';
+          updateAnalyticsView();
+          return;
+        }
+
+        countText.innerHTML = `Ditemukan <strong class="text-slate-900 font-bold">${state.totalCount.toLocaleString('id-ID')}</strong> karya ilmiah`;
+        renderActiveFilterPills();
+        renderPapersList();
+        renderPaginationControls();
+        updateAnalyticsView();
+
+        // Picu terjemahan otomatis bahasa Indonesia di latar belakang (ala media sosial X)
+        if (state.autoTranslate) {
+          triggerAutoTranslateForResults();
+        }
+
+      } catch (err) {
+        console.error('Error fetching OpenAlex papers:', err);
+        skeletonLoader.classList.add('hidden');
+        errorState.classList.remove('hidden');
+        document.getElementById('errorMessageText').textContent = err.message || 'Gagal tersambung ke jaringan OpenAlex.';
+      }
+    }
+
+    // --- SISTEM TERJEMAHAN OTOMATIS CERDAS (BERBASIS GEMINI) ---
+    async function triggerAutoTranslateForResults() {
+      if (!state.results || state.results.length === 0) return;
+
+      // 1. Identifikasi mana saja yang butuh terjemahan
+      const pendingPapers = [];
+      state.results.forEach(paper => {
+        const originalTitle = paper.display_name || paper.title || '';
+        const originalAbstract = reconstructAbstract(paper.abstract_inverted_index) || '';
+
+        const titleKey = originalTitle.trim().toLowerCase();
+        const absKey = originalAbstract.trim().toLowerCase();
+
+        // Cek apakah sudah ada di cache
+        if (translationMemoryCache.has(titleKey)) {
+          paper.translatedTitle = translationMemoryCache.get(titleKey);
+        }
+        if (originalAbstract && translationMemoryCache.has(absKey)) {
+          paper.translatedAbstract = translationMemoryCache.get(absKey);
+        }
+
+        const needsTitle = !paper.translatedTitle && originalTitle;
+        const needsAbs = !paper.translatedAbstract && originalAbstract && originalAbstract !== 'Abstrak tidak tersedia secara terbuka.';
+
+        if (needsTitle || needsAbs) {
+          paper.isTranslating = true;
+          pendingPapers.push({
+            id: paper.id,
+            title: originalTitle,
+            abstract: originalAbstract
+          });
+        } else {
+          paper.isTranslating = false;
+        }
+
+        updateCardTranslationInDOM(paper.id);
+      });
+
+      if (pendingPapers.length === 0) return;
+
+      // 2. Kirim permintaan batch ke endpoint server Gemini
+      try {
+        const res = await fetch('/api/translate-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: pendingPapers })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const translations = data.translations || [];
+
+          translations.forEach(tr => {
+            const paper = state.results.find(p => p.id === tr.id);
+            if (paper) {
+              paper.isTranslating = false;
+              if (tr.title) {
+                paper.translatedTitle = tr.title;
+                saveTranslationToCache(paper.display_name || paper.title || '', tr.title);
+              }
+              if (tr.abstract) {
+                paper.translatedAbstract = tr.abstract;
+                saveTranslationToCache(reconstructAbstract(paper.abstract_inverted_index) || '', tr.abstract);
+              }
+              updateCardTranslationInDOM(paper.id);
+            }
+          });
+        } else {
+          throw new Error('Server mengembalikan kode status non-OK.');
+        }
+      } catch (err) {
+        console.warn('Gagal memproses batch translation via Gemini, menjalankan fallback otomatis:', err);
+        // Fallback per item jika batch gagal
+        for (const item of pendingPapers) {
+          const paper = state.results.find(p => p.id === item.id);
+          if (paper) {
+            paper.translatedTitle = await translateTextToIndonesian(item.title);
+            if (item.abstract && item.abstract !== 'Abstrak tidak tersedia secara terbuka.') {
+              paper.translatedAbstract = await translateTextToIndonesian(item.abstract);
+            }
+            paper.isTranslating = false;
+            updateCardTranslationInDOM(paper.id);
+          }
+        }
+      }
+    }
+
+    function updateCardTranslationInDOM(paperId) {
+      const paper = state.results.find(p => p.id === paperId);
+      if (!paper) return;
+
+      const safeId = paper.id.replace(/[^a-zA-Z0-9]/g, '');
+      const titleEl = document.getElementById(`paper-title-${safeId}`);
+      const absEl = document.getElementById(`paper-abs-${safeId}`);
+      const noticeEl = document.getElementById(`paper-notice-${safeId}`);
+
+      const shouldShowOriginal = paper.showOriginal || !state.autoTranslate;
+      const originalTitle = paper.display_name || paper.title || 'Untitled Academic Paper';
+      const originalAbs = reconstructAbstract(paper.abstract_inverted_index) || 'Abstrak tidak tersedia secara terbuka.';
+
+      if (titleEl) {
+        titleEl.textContent = shouldShowOriginal ? originalTitle : (paper.translatedTitle || originalTitle);
+      }
+      if (absEl) {
+        absEl.textContent = shouldShowOriginal ? originalAbs : (paper.translatedAbstract || originalAbs);
+      }
+      if (noticeEl) {
+        if (paper.isTranslating && state.autoTranslate) {
+          noticeEl.innerHTML = `
+            <div class="flex items-center gap-1.5 text-[11px] text-indigo-700 bg-indigo-50/80 border border-indigo-200/80 px-2.5 py-0.5 rounded-lg w-fit animate-pulse">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600 animate-spin"></i>
+              <span class="font-medium">Menerjemahkan ke Bahasa Indonesia...</span>
+            </div>
+          `;
+        } else if (shouldShowOriginal) {
+          noticeEl.innerHTML = `
+            <div class="flex items-center gap-1.5 text-[11px] text-slate-500 py-0.5">
+              <span class="inline-flex items-center gap-1 text-slate-700 font-medium bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                <i data-lucide="globe" class="w-3 h-3 text-slate-500"></i> Bahasa asli: Inggris
+              </span>
+              <span>•</span>
+              <button
+                type="button"
+                onclick="togglePaperLanguage('${paper.id}')"
+                class="text-indigo-600 hover:text-indigo-800 font-semibold underline"
+              >
+                Terjemahkan ke Bahasa Indonesia
+              </button>
+            </div>
+          `;
+        } else {
+          noticeEl.innerHTML = `
+            <div class="flex items-center gap-1.5 text-[11px] text-slate-500 py-0.5">
+              <span class="inline-flex items-center gap-1 text-emerald-800 font-medium bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80">
+                <i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> Diterjemahkan ke Bahasa Indonesia
+              </span>
+              <span>•</span>
+              <button
+                type="button"
+                onclick="togglePaperLanguage('${paper.id}')"
+                class="text-indigo-600 hover:text-indigo-800 font-semibold underline"
+              >
+                Tampilkan teks asli
+              </button>
+            </div>
+          `;
+        }
+        lucide.createIcons();
+      }
+    }
+
+    function togglePaperLanguage(paperId) {
+      const paper = state.results.find(p => p.id === paperId);
+      if (!paper) return;
+      paper.showOriginal = !paper.showOriginal;
+      updateCardTranslationInDOM(paperId);
+    }
+
+    function toggleAllVisibleOriginalText() {
+      state.globalShowOriginal = !state.globalShowOriginal;
+      state.results.forEach(p => p.showOriginal = state.globalShowOriginal);
+      state.results.forEach(p => updateCardTranslationInDOM(p.id));
+      
+      const btn = document.getElementById('toggleAllLangBtn');
+      if (btn) {
+        btn.textContent = state.globalShowOriginal ? 'Terjemahkan Semua ke Indonesia' : 'Tampilkan Teks Asli Semua';
+      }
+    }
+
+    function toggleAutoTranslateGlobal() {
+      state.autoTranslate = !state.autoTranslate;
+      const badge = document.getElementById('autoTranslateStatusBadge');
+      if (badge) {
+        badge.textContent = state.autoTranslate ? 'AKTIF' : 'NONAKTIF';
+        badge.className = state.autoTranslate 
+          ? 'text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono font-bold'
+          : 'text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-500 border border-slate-200 font-mono';
+      }
+      showToast(state.autoTranslate ? 'Terjemahan otomatis Bahasa Indonesia diaktifkan' : 'Terjemahan otomatis dinonaktifkan', 'info');
+
+      if (state.autoTranslate) {
+        triggerAutoTranslateForResults();
+      }
+      state.results.forEach(p => updateCardTranslationInDOM(p.id));
+    }
+
+    // --- REKONSTRUKSI ABSTRAK DARI INVERTED INDEX OPENALEX ---
+    function reconstructAbstract(invertedIndex) {
+      if (!invertedIndex || Object.keys(invertedIndex).length === 0) {
+        return 'Abstrak tidak tersedia secara terbuka.';
+      }
+      try {
+        const wordPositions = [];
+        for (const [word, positions] of Object.entries(invertedIndex)) {
+          for (const pos of positions) {
+            wordPositions.push({ word, pos });
+          }
+        }
+        wordPositions.sort((a, b) => a.pos - b.pos);
+        return wordPositions.map(wp => wp.word).join(' ');
+      } catch (e) {
+        return 'Gagal menyusun teks abstrak.';
+      }
+    }
+
+    // --- MERENDER DAFTAR KARTU JURNAL ---
+    function renderPapersList() {
+      const container = document.getElementById('papersContainer');
+      container.innerHTML = '';
+
+      state.results.forEach(paper => {
+        const isSaved = isPaperSaved(paper.id);
+        const originalTitle = paper.display_name || paper.title || 'Untitled Academic Paper';
+        const displayTitle = (state.autoTranslate && paper.translatedTitle && !paper.showOriginal) ? paper.translatedTitle : originalTitle;
+
+        const originalAbs = reconstructAbstract(paper.abstract_inverted_index);
+        const displayAbs = (state.autoTranslate && paper.translatedAbstract && !paper.showOriginal) ? paper.translatedAbstract : originalAbs;
+
+        const isOA = paper.open_access?.is_oa || false;
+        const oaStatus = (paper.open_access?.oa_status || 'closed').toUpperCase();
+        const pdfUrl = paper.open_access?.oa_url || paper.best_oa_location?.pdf_url || null;
+        const pubYear = paper.publication_year || 'N/A';
+        const citations = paper.cited_by_count || 0;
+        const venueName = paper.primary_location?.source?.display_name || paper.host_venue?.display_name || 'Jurnal / Konferensi Akademik';
+        const authorsStr = formatAuthorsShort(paper.authorships);
+        const topConcepts = (paper.concepts || []).slice(0, 3);
+        const cleanDoi = paper.doi ? paper.doi.replace('https://doi.org/', '') : null;
+        const safeId = paper.id.replace(/[^a-zA-Z0-9]/g, '');
+
+        if (state.viewMode === 'compact') {
+          // Mode List / Compact yang bersih
+          const row = document.createElement('div');
+          row.className = 'group p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-indigo-300 hover:shadow-xs transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs';
+          row.innerHTML = `
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                ${isOA ? `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <i data-lucide="unlock" class="w-3 h-3"></i> OA
+                  </span>
+                ` : `
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                    <i data-lucide="lock" class="w-3 h-3"></i> Berbayar
+                  </span>
+                `}
+                <span class="text-xs text-indigo-700 font-semibold truncate max-w-xs">${venueName}</span>
+                <span class="text-xs text-slate-400">•</span>
+                <span class="text-xs text-slate-500 font-medium">${pubYear}</span>
+              </div>
+              <h4 id="paper-title-${safeId}" class="text-sm font-bold text-slate-900 group-hover:text-indigo-600 cursor-pointer transition-colors leading-snug line-clamp-1" onclick="openDetailModal('${paper.id}')">
+                ${displayTitle}
+              </h4>
+              <p class="text-xs text-slate-500 truncate mt-0.5">${authorsStr}</p>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <span class="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">${citations} sitasi</span>
+              ${pdfUrl ? `
+                <button
+                  type="button"
+                  onclick="openPdfReaderModal('${paper.id}')"
+                  class="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1 shadow-2xs transition-all active:scale-95"
+                  title="Buka & Baca PDF di Frame (Terjemahan Bahasa Indonesia)"
+                >
+                  <i data-lucide="book-open" class="w-3.5 h-3.5"></i> Baca PDF (ID)
+                </button>
+              ` : `
+                <button
+                  type="button"
+                  onclick="openPdfReaderModal('${paper.id}')"
+                  class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1 transition-all"
+                  title="Baca Naskah (Bahasa Indonesia)"
+                >
+                  <i data-lucide="book-open" class="w-3.5 h-3.5 text-indigo-600"></i> Baca (ID)
+                </button>
+              `}
+              <button type="button" onclick="openCiteModalForPaper('${paper.id}')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium" title="Sitasi">
+                Sitasi
+              </button>
+              <button type="button" onclick="toggleBookmark('${paper.id}')" class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs ${isSaved ? 'text-amber-500 bg-amber-50 border-amber-300' : 'text-slate-400'}" title="Bookmark">
+                <i data-lucide="bookmark" class="w-4 h-4 ${isSaved ? 'fill-amber-500' : ''}"></i>
+              </button>
+              <button type="button" onclick="openDetailModal('${paper.id}')" class="px-2.5 py-1 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium">
+                Detail
+              </button>
+            </div>
+          `;
+          container.appendChild(row);
+          return;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'group p-5 rounded-2xl bg-white border border-slate-200/90 hover:border-indigo-300 hover:shadow-md transition-all duration-200 shadow-xs relative';
+
+        const renderNoticeHtml = () => {
+          if (paper.isTranslating && state.autoTranslate) {
+            return `
+              <div class="flex items-center gap-1.5 text-[11px] text-indigo-700 bg-indigo-50/80 border border-indigo-200/80 px-2.5 py-0.5 rounded-lg w-fit animate-pulse">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600 animate-spin"></i>
+                <span class="font-medium">Menerjemahkan ke Bahasa Indonesia...</span>
+              </div>
+            `;
+          }
+          if (paper.showOriginal || !state.autoTranslate) {
+            return `
+              <div class="flex items-center gap-1.5 text-[11px] text-slate-500 py-0.5">
+                <span class="inline-flex items-center gap-1 text-slate-700 font-medium bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                  <i data-lucide="globe" class="w-3 h-3 text-slate-500"></i> Bahasa asli: Inggris
+                </span>
+                <span>•</span>
+                <button
+                  type="button"
+                  onclick="togglePaperLanguage('${paper.id}')"
+                  class="text-indigo-600 hover:text-indigo-800 font-semibold underline"
+                >
+                  Terjemahkan ke Bahasa Indonesia
+                </button>
+              </div>
+            `;
+          }
+          return `
+            <div class="flex items-center gap-1.5 text-[11px] text-slate-500 py-0.5">
+              <span class="inline-flex items-center gap-1 text-emerald-800 font-medium bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80">
+                <i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> Diterjemahkan ke Bahasa Indonesia
+              </span>
+              <span>•</span>
+              <button
+                type="button"
+                onclick="togglePaperLanguage('${paper.id}')"
+                class="text-indigo-600 hover:text-indigo-800 font-semibold underline"
+              >
+                Tampilkan teks asli
+              </button>
+            </div>
+          `;
+        };
+
+        card.innerHTML = `
+          <!-- Baris Atas: Badge Open Access & Metrik -->
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+            <div class="flex flex-wrap items-center gap-2">
+              ${isOA ? `
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <i data-lucide="unlock" class="w-3 h-3"></i> Open Access (${oaStatus})
+                </span>
+              ` : `
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                  <i data-lucide="lock" class="w-3 h-3"></i> Langganan
+                </span>
+              `}
+              <span class="text-xs text-indigo-700 font-semibold">${venueName}</span>
+              <span class="text-xs text-slate-300">•</span>
+              <span class="text-xs text-slate-500 font-medium">${pubYear}</span>
+            </div>
+
+            <!-- Sitasi -->
+            <div class="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
+              <i data-lucide="star" class="w-3 h-3 fill-amber-500 text-amber-500"></i>
+              <span>${citations.toLocaleString('id-ID')} sitasi</span>
+            </div>
+          </div>
+
+          <!-- Indikator Terjemahan ala Media Sosial X -->
+          <div id="paper-notice-${safeId}" class="mb-1">
+            ${renderNoticeHtml()}
+          </div>
+
+          <!-- Judul Jurnal -->
+          <h3
+            id="paper-title-${safeId}"
+            class="text-base sm:text-lg font-bold text-slate-900 group-hover:text-indigo-600 cursor-pointer transition-colors leading-snug mb-2"
+            onclick="openDetailModal('${paper.id}')"
+          >
+            ${displayTitle}
+          </h3>
+
+          <!-- Penulis -->
+          <div class="flex items-center gap-1.5 text-xs text-slate-600 mb-3">
+            <i data-lucide="users" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
+            <span class="truncate">${authorsStr}</span>
+          </div>
+
+          <!-- Abstrak Cuplikan -->
+          <p
+            id="paper-abs-${safeId}"
+            class="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3 mb-4 font-normal"
+          >
+            ${displayAbs}
+          </p>
+
+          <!-- Baris Bawah: Konsep & Tombol Aksi -->
+          <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+            
+            <div class="flex flex-wrap items-center gap-1.5">
+              ${topConcepts.map(c => `
+                <button
+                  type="button"
+                  onclick="filterBySpecificConcept('${c.id}', '${c.display_name.replace(/'/g, "\\'")}')"
+                  class="px-2 py-0.5 rounded-lg bg-slate-50 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50 text-[11px] text-slate-600 hover:text-indigo-700 transition-colors"
+                >
+                  ${c.display_name}
+                </button>
+              `).join('')}
+              ${cleanDoi ? `
+                <span class="text-[10px] font-mono text-slate-400 truncate max-w-[140px] hidden sm:inline" title="DOI: ${cleanDoi}">
+                  doi:${cleanDoi}
+                </span>
+              ` : ''}
+            </div>
+
+            <div class="flex items-center gap-2">
+              ${pdfUrl ? `
+                <button
+                  type="button"
+                  onclick="openPdfReaderModal('${paper.id}')"
+                  class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all active:scale-95"
+                  title="Buka dan baca PDF di dalam frame aplikasi dalam bahasa Indonesia"
+                >
+                  <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                  <span>Baca PDF (ID)</span>
+                </button>
+                <a
+                  href="${pdfUrl}"
+                  target="_blank"
+                  download
+                  class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition-colors"
+                  title="Unduh PDF Asli"
+                >
+                  <i data-lucide="download" class="w-4 h-4"></i>
+                </a>
+              ` : `
+                <button
+                  type="button"
+                  onclick="openPdfReaderModal('${paper.id}')"
+                  class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors"
+                  title="Baca naskah terjemahan Bahasa Indonesia"
+                >
+                  <i data-lucide="book-open" class="w-3.5 h-3.5 text-indigo-600"></i>
+                  <span>Baca (ID)</span>
+                </button>
+              `}
+
+              <button
+                type="button"
+                onclick="openCiteModalForPaper('${paper.id}')"
+                class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1 transition-colors"
+                title="Buat Sitasi Ilmiah"
+              >
+                <i data-lucide="quote" class="w-3.5 h-3.5 text-indigo-600"></i>
+                <span class="hidden sm:inline">Sitasi</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="toggleBookmark('${paper.id}')"
+                class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-medium transition-colors ${isSaved ? 'text-amber-500 border-amber-300 bg-amber-50' : 'text-slate-400'}"
+                title="${isSaved ? 'Hapus dari Tersimpan' : 'Simpan ke Koleksi Bacaan'}"
+              >
+                <i data-lucide="bookmark" class="w-4 h-4 ${isSaved ? 'fill-amber-500' : ''}"></i>
+              </button>
+
+              <button
+                type="button"
+                onclick="openDetailModal('${paper.id}')"
+                class="px-2.5 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 bg-white text-slate-700 text-xs font-medium transition-colors shadow-2xs"
+              >
+                Detail
+              </button>
+            </div>
+
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    function formatAuthorsShort(authorships) {
+      if (!authorships || authorships.length === 0) return 'Penulis Tidak Diketahui';
+      const names = authorships.map(a => a.author?.display_name).filter(Boolean);
+      if (names.length === 0) return 'Penulis Anonim';
+      if (names.length === 1) return names[0];
+      if (names.length === 2) return `${names[0]} & ${names[1]}`;
+      if (names.length === 3) return `${names[0]}, ${names[1]} & ${names[2]}`;
+      return `${names[0]}, ${names[1]}, ${names[2]} et al.`;
+    }
+
+    // --- SIDEBAR BIDANG KEILMUAN BERJENJANG (MAKRO, MESO, HINGGA SPESIALISASI MIKRO) ---
+    function renderDisciplinesSidebar() {
+      const container = document.getElementById('disciplinesList');
+      if (!container) return;
+
+      const searchTerm = (state.disciplineSearch || '').trim().toLowerCase();
+
+      // Saring bidang berdasarkan pencarian teks
+      const filteredFields = ACADEMIC_FIELDS.map(field => {
+        const fieldMatch = field.name.toLowerCase().includes(searchTerm);
+
+        const matchingSubfields = field.subfields.map(sub => {
+          const subMatch = sub.name.toLowerCase().includes(searchTerm);
+          const matchingMicro = (sub.microTopics || []).filter(m =>
+            m.name.toLowerCase().includes(searchTerm) || m.query.toLowerCase().includes(searchTerm)
+          );
+
+          if (!searchTerm || subMatch || matchingMicro.length > 0) {
+            return {
+              ...sub,
+              subMatch,
+              matchingMicro: searchTerm ? (subMatch ? sub.microTopics : matchingMicro) : sub.microTopics
+            };
+          }
+          return null;
+        }).filter(Boolean);
+
+        if (!searchTerm || fieldMatch || matchingSubfields.length > 0) {
+          return {
+            ...field,
+            fieldMatch,
+            matchingSubfields: searchTerm && fieldMatch ? field.subfields : matchingSubfields
+          };
+        }
+        return null;
+      }).filter(Boolean);
+
+      if (filteredFields.length === 0) {
+        container.innerHTML = `
+          <div class="p-4 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-slate-200">
+            <i data-lucide="search-x" class="w-5 h-5 mx-auto mb-1 text-slate-400"></i>
+            <p>Tidak ditemukan bidang atau topik mikro untuk kata kunci tersebut.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = filteredFields.map(field => {
+        const isFieldActive = state.activeConceptId === field.id && state.hierarchyLevel === 'makro';
+        const isExpanded = searchTerm ? true : state.expandedFields.has(field.id);
+        const subfieldsToRender = field.matchingSubfields || field.subfields;
+        const totalMicro = field.subfields.reduce((acc, s) => acc + (s.microTopics ? s.microTopics.length : 0), 0);
+
+        return `
+          <div class="rounded-xl border ${isFieldActive ? 'border-indigo-500 bg-indigo-50/20' : 'border-slate-200/90 bg-white'} overflow-hidden shadow-2xs transition-all">
+            <!-- Header Bidang Makro (Tingkat 1) -->
+            <div class="p-2 flex items-center justify-between gap-1.5 hover:bg-slate-50/80 transition-colors">
+              <button
+                type="button"
+                onclick="toggleExpandField('${field.id}')"
+                class="flex items-center gap-2 text-left min-w-0 flex-1 group"
+                title="Buka atau tutup rincian sub-bidang & topik mikro"
+              >
+                <div class="w-6 h-6 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 flex-shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                  <i data-lucide="${field.icon}" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-xs font-bold text-slate-800 group-hover:text-indigo-600 transition-colors leading-tight break-words">${field.name}</span>
+                    <span class="px-1 py-0.2 rounded text-[8px] font-bold bg-indigo-100 text-indigo-700 flex-shrink-0">Makro</span>
+                  </div>
+                  <span class="text-[10px] text-slate-400 block mt-0.5">${field.subfields.length} Sub-bidang • ${totalMicro} Mikro</span>
+                </div>
+              </button>
+
+              <div class="flex items-center gap-1 flex-shrink-0">
+                <button
+                  type="button"
+                  onclick="selectField('${field.id}', '${field.name.replace(/'/g, "\\'")}')"
+                  class="px-2 py-0.5 text-[10px] font-semibold rounded-lg border ${isFieldActive ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'} transition-all shadow-2xs"
+                  title="Pilih seluruh bidang makro ini"
+                >
+                  Pilih
+                </button>
+                <button
+                  type="button"
+                  onclick="toggleExpandField('${field.id}')"
+                  class="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                >
+                  <i data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Bagian Sub-bidang (Skala Meso, Tingkat 2) & Spesialisasi Mikro -->
+            ${isExpanded ? `
+              <div class="px-2 pb-2 pt-1 border-t border-slate-100 bg-slate-50/50 space-y-1.5">
+                ${subfieldsToRender.map(sub => {
+                  const isSubActive = state.activeConceptId === sub.id && state.hierarchyLevel === 'meso';
+                  const isSubExpanded = searchTerm ? true : state.expandedSubfields.has(sub.id);
+                  const microList = sub.matchingMicro || sub.microTopics || [];
+
+                  return `
+                    <div class="rounded-lg border ${isSubActive ? 'border-indigo-400 bg-indigo-50/40' : 'border-slate-200/80 bg-white'} overflow-hidden shadow-2xs">
+                      <!-- Subfield Header (Meso) -->
+                      <div class="px-2 py-1.5 flex items-center justify-between gap-1.5 hover:bg-slate-50/60 transition-colors">
+                        <button
+                          type="button"
+                          onclick="toggleExpandSubfield('${sub.id}')"
+                          class="flex items-center gap-1.5 text-left min-w-0 flex-1 group"
+                        >
+                          <i data-lucide="${isSubExpanded ? 'folder-open' : 'folder'}" class="w-3 h-3 text-slate-400 group-hover:text-indigo-600 flex-shrink-0"></i>
+                          <span class="text-[11px] font-semibold text-slate-700 break-words leading-tight group-hover:text-indigo-600">${sub.name}</span>
+                          <span class="px-1 py-0.2 rounded text-[8px] font-bold bg-slate-100 text-slate-600 flex-shrink-0">Meso</span>
+                        </button>
+
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            type="button"
+                            onclick="selectSubfield('${sub.id}', '${sub.name.replace(/'/g, "\\'")}', '${field.name.replace(/'/g, "\\'")}')"
+                            class="px-1.5 py-0.5 text-[9px] font-semibold rounded ${isSubActive ? 'bg-indigo-600 text-white' : 'bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-600'} transition-all"
+                            title="Pilih sub-bidang ini"
+                          >
+                            Pilih
+                          </button>
+                          <button
+                            type="button"
+                            onclick="toggleExpandSubfield('${sub.id}')"
+                            class="p-0.5 text-slate-400 hover:text-slate-600"
+                          >
+                            <i data-lucide="${isSubExpanded ? 'chevron-up' : 'chevron-down'}" class="w-3 h-3"></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Daftar Spesialisasi Mikro (Skala Mikro, Tingkat 3) -->
+                      ${isSubExpanded && microList.length > 0 ? `
+                        <div class="p-2 border-t border-slate-100 bg-slate-50/90">
+                          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1">
+                            <i data-lucide="sparkles" class="w-2.5 h-2.5 text-amber-500"></i>
+                            Spesialisasi Mikro:
+                          </div>
+                          <div class="flex flex-wrap gap-1">
+                            ${microList.map(micro => {
+                              const isMicroActive = state.activeMicroTopic?.name === micro.name;
+                              return `
+                                <button
+                                  type="button"
+                                  onclick="selectMicroTopic('${micro.name.replace(/'/g, "\\'")}', '${micro.query.replace(/'/g, "\\'")}', '${micro.conceptId || ''}', '${field.name.replace(/'/g, "\\'")}', '${sub.name.replace(/'/g, "\\'")}')"
+                                  class="px-2 py-1 rounded-md text-[10px] font-medium transition-all text-left flex items-start gap-1.5 ${
+                                    isMicroActive
+                                      ? 'bg-amber-500 text-white font-bold shadow-xs'
+                                      : 'bg-white border border-slate-200 text-slate-700 hover:border-amber-400 hover:bg-amber-50/50 hover:text-amber-900 shadow-2xs'
+                                  }"
+                                  title="Saring jurnal spesialisasi mikro: ${micro.name}"
+                                >
+                                  <span class="w-1.5 h-1.5 rounded-full ${isMicroActive ? 'bg-white' : 'bg-amber-400'} flex-shrink-0 mt-1"></span>
+                                  <span class="break-words leading-tight">${micro.name}</span>
+                                </button>
+                              `;
+                            }).join('')}
+                          </div>
+                        </div>
+                      ` : ''}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function renderTrendingTopics() {
+      const container = document.getElementById('trendingTopicsContainer');
+      if (!container) return;
+
+      container.innerHTML = TRENDING_TOPICS.map(item => `
+        <button
+          type="button"
+          onclick="applySearchKeyword('${item.query.replace(/'/g, "\\'")}')"
+          class="px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/30 text-slate-700 hover:text-indigo-700 transition-all text-xs flex items-center gap-1 shadow-2xs font-medium"
+        >
+          <span>${item.label}</span>
+        </button>
+      `).join('');
+    }
+
+    function renderActiveFilterPills() {
+      const container = document.getElementById('activeFiltersContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (state.openAccessOnly) {
+        container.innerHTML += `
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+            <i data-lucide="unlock" class="w-3 h-3 text-emerald-600"></i>
+            Open Access
+            <button onclick="handleOAToggleChange(false)" class="hover:text-emerald-950 ml-0.5"><i data-lucide="x" class="w-3 h-3"></i></button>
+          </span>
+        `;
+      }
+
+      if (state.activeConceptName) {
+        const levelBadgeClass = state.hierarchyLevel === 'mikro'
+          ? 'bg-amber-100 text-amber-900 border-amber-300'
+          : state.hierarchyLevel === 'meso'
+          ? 'bg-indigo-100 text-indigo-800 border-indigo-200'
+          : 'bg-slate-100 text-slate-700 border-slate-200';
+        const levelLabel = state.hierarchyLevel === 'mikro' ? 'Mikro' : state.hierarchyLevel === 'meso' ? 'Meso' : 'Makro';
+
+        container.innerHTML += `
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-white text-slate-800 border border-slate-200 shadow-2xs">
+            <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border ${levelBadgeClass}">${levelLabel}</span>
+            <span class="font-semibold truncate max-w-[280px]">${state.activeConceptName}</span>
+            <button onclick="selectConcept(null, null)" class="hover:text-slate-900 text-slate-400 ml-0.5" title="Hapus filter bidang"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+          </span>
+        `;
+      }
+
+      if (state.yearFilter !== 'all') {
+        container.innerHTML += `
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
+            Thn: ${state.yearFilter}
+            <button onclick="setYearFilter('all')" class="hover:text-slate-900 ml-0.5"><i data-lucide="x" class="w-3 h-3"></i></button>
+          </span>
+        `;
+      }
+
+      if (state.minCitations > 0) {
+        container.innerHTML += `
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs">
+            ≥${state.minCitations} Sitasi
+            <button onclick="setMinCitations(0)" class="hover:text-amber-950 ml-0.5"><i data-lucide="x" class="w-3 h-3"></i></button>
+          </span>
+        `;
+      }
+
+      lucide.createIcons();
+    }
+
+    // --- MODAL DETAIL JURNAL ---
+    let modalShowingOriginal = false;
+
+    async function openDetailModal(paperId) {
+      const paper = state.results.find(p => p.id === paperId) || state.bookmarks.find(b => b.id === paperId);
+      if (!paper) return;
+
+      state.currentActivePaper = paper;
+      modalShowingOriginal = false;
+
+      const modal = document.getElementById('detailModal');
+      const titleEl = document.getElementById('modalTitle');
+      const authorsEl = document.getElementById('modalAuthors');
+      const sourceEl = document.getElementById('modalSource');
+      const dateEl = document.getElementById('modalDate');
+      const doiEl = document.getElementById('modalDOI');
+      const citesEl = document.getElementById('modalCitations');
+      const absEl = document.getElementById('modalAbstract');
+      const conceptsEl = document.getElementById('modalConcepts');
+      const badgesEl = document.getElementById('modalBadges');
+      const linksEl = document.getElementById('modalExternalLinks');
+      const saveBtn = document.getElementById('modalSaveBtn');
+      const citeBtn = document.getElementById('modalCiteBtn');
+      const toggleBtn = document.getElementById('modalToggleTranslationBtn');
+
+      const isOA = paper.open_access?.is_oa || false;
+      const oaStatus = (paper.open_access?.oa_status || 'closed').toUpperCase();
+      const pdfUrl = paper.open_access?.oa_url || paper.best_oa_location?.pdf_url || null;
+      const doiUrl = paper.doi || null;
+      const originalTitle = paper.display_name || paper.title || 'Untitled Academic Paper';
+      const originalAbs = reconstructAbstract(paper.abstract_inverted_index);
+
+      // Badge OA
+      badgesEl.innerHTML = isOA ? `
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <i data-lucide="unlock" class="w-3.5 h-3.5"></i> Open Access (${oaStatus})
+        </span>
+      ` : `
+        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+          <i data-lucide="lock" class="w-3.5 h-3.5"></i> Akses Berbayar / Langganan
+        </span>
+      `;
+
+      // Tampilkan teks terjemahan jika sudah ada, atau teks asli sementara proses
+      titleEl.textContent = paper.translatedTitle || originalTitle;
+      absEl.textContent = paper.translatedAbstract || originalAbs;
+      toggleBtn.textContent = 'Lihat teks asli';
+
+      const noticeText = document.getElementById('modalTranslateNoticeText');
+      if (noticeText) {
+        noticeText.textContent = paper.translatedTitle 
+          ? 'Diterjemahkan otomatis ke Bahasa Indonesia' 
+          : 'Sedang menerjemahkan ke Bahasa Indonesia...';
+      }
+
+      authorsEl.innerHTML = (paper.authorships || []).map(a => {
+        const authorName = a.author?.display_name || 'Penulis';
+        const institution = a.institutions?.[0]?.display_name || '';
+        return `
+          <span class="inline-block mr-2 mb-1 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs">
+            <strong class="text-slate-800">${authorName}</strong>
+            ${institution ? `<span class="text-slate-500 text-[11px]"> (${institution})</span>` : ''}
+          </span>
+        `;
+      }).join('') || '<span class="text-slate-400 italic">Informasi penulis tidak tercatat.</span>';
+
+      sourceEl.textContent = paper.primary_location?.source?.display_name || 'Tidak tercatat';
+      dateEl.textContent = paper.publication_date || `${paper.publication_year || 'N/A'}`;
+      doiEl.innerHTML = doiUrl ? `<a href="${doiUrl}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:underline">${doiUrl}</a>` : 'Tidak tersedia';
+      citesEl.textContent = `${(paper.cited_by_count || 0).toLocaleString('id-ID')} Sitasi Akademik Terverifikasi`;
+
+      conceptsEl.innerHTML = (paper.concepts || []).map(c => `
+        <span class="px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700">
+          ${c.display_name} <span class="text-slate-400 font-mono text-[10px]">(${Math.round(c.score * 100)}%)</span>
+        </span>
+      `).join('') || '<span class="text-slate-400 text-xs">Tidak ada data taksonomi.</span>';
+
+      linksEl.innerHTML = `
+        ${pdfUrl ? `
+          <button
+            type="button"
+            onclick="openPdfReaderModal('${paper.id}')"
+            class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all active:scale-95"
+            title="Buka naskah PDF langsung di dalam frame aplikasi dalam kondisi diterjemahkan ke Bahasa Indonesia"
+          >
+            <i data-lucide="book-open" class="w-4 h-4"></i>
+            <span>Baca PDF di Frame (Terjemahan ID)</span>
+          </button>
+          <a
+            href="${pdfUrl}"
+            target="_blank"
+            download
+            class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1 transition-colors"
+            title="Unduh berkas PDF Asli"
+          >
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Unduh Asli</span>
+          </a>
+        ` : `
+          <button
+            type="button"
+            onclick="openPdfReaderModal('${paper.id}')"
+            class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all active:scale-95"
+            title="Buka telaah naskah ilmiah Bahasa Indonesia lengkap"
+          >
+            <i data-lucide="book-open" class="w-4 h-4"></i>
+            <span>Baca Naskah (Bahasa Indonesia)</span>
+          </button>
+        `}
+        ${doiUrl ? `
+          <a href="${doiUrl}" target="_blank" rel="noopener noreferrer" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Penerbit
+          </a>
+        ` : ''}
+      `;
+
+      updateModalSaveButtonState(paper.id);
+      saveBtn.onclick = () => {
+        toggleBookmark(paper.id);
+        updateModalSaveButtonState(paper.id);
+      };
+
+      citeBtn.onclick = () => {
+        openCiteModalForPaper(paper.id);
+      };
+
+      modal.classList.remove('hidden');
+      lucide.createIcons();
+
+      // Jika belum diterjemahkan, proses di latar belakang dan perbarui modal secara reaktif
+      if (!paper.translatedTitle || (!paper.translatedAbstract && originalAbs && originalAbs !== 'Abstrak tidak tersedia secara terbuka.')) {
+        if (!paper.translatedTitle) {
+          paper.translatedTitle = await translateTextToIndonesian(originalTitle);
+        }
+        if (!paper.translatedAbstract && originalAbs && originalAbs !== 'Abstrak tidak tersedia secara terbuka.') {
+          paper.translatedAbstract = await translateTextToIndonesian(originalAbs);
+        }
+        if (!modalShowingOriginal && state.currentActivePaper && state.currentActivePaper.id === paper.id) {
+          titleEl.textContent = paper.translatedTitle || originalTitle;
+          absEl.textContent = paper.translatedAbstract || originalAbs;
+          if (noticeText) noticeText.textContent = 'Diterjemahkan otomatis ke Bahasa Indonesia';
+        }
+        updateCardTranslationInDOM(paper.id);
+      }
+    }
+
+    function toggleModalTranslationView() {
+      if (!state.currentActivePaper) return;
+      const paper = state.currentActivePaper;
+      modalShowingOriginal = !modalShowingOriginal;
+
+      const titleEl = document.getElementById('modalTitle');
+      const absEl = document.getElementById('modalAbstract');
+      const toggleBtn = document.getElementById('modalToggleTranslationBtn');
+      const langBadge = document.getElementById('modalAbstractLangBadge');
+      const noticeText = document.getElementById('modalTranslateNoticeText');
+
+      const originalTitle = paper.display_name || paper.title;
+      const originalAbs = reconstructAbstract(paper.abstract_inverted_index);
+
+      if (modalShowingOriginal) {
+        titleEl.textContent = originalTitle;
+        absEl.textContent = originalAbs;
+        toggleBtn.textContent = 'Terjemahkan ke Bahasa Indonesia';
+        langBadge.textContent = 'Bahasa Inggris (Asli)';
+        noticeText.textContent = 'Menampilkan teks asli (Bahasa Inggris)';
+      } else {
+        titleEl.textContent = paper.translatedTitle || originalTitle;
+        absEl.textContent = paper.translatedAbstract || originalAbs;
+        toggleBtn.textContent = 'Lihat teks asli';
+        langBadge.textContent = 'Bahasa Indonesia';
+        noticeText.textContent = 'Diterjemahkan otomatis ke Bahasa Indonesia';
+      }
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').classList.add('hidden');
+    }
+
+    // --- PEMBACA NASKAH PDF JURNAL TERJEMAHAN DI DALAM FRAME APLIKASI ---
+    let currentReaderPaper = null;
+    let readerCurrentMode = 'split'; // 'split' | 'translated' | 'pdf'
+
+    async function openPdfReaderModal(paperId) {
+      const paper = state.results.find(p => p.id === paperId) || state.bookmarks.find(b => b.id === paperId) || state.currentActivePaper;
+      if (!paper) return;
+
+      currentReaderPaper = paper;
+      const modal = document.getElementById('pdfReaderModal');
+      const headerTitle = document.getElementById('readerHeaderTitle');
+      const oaBadge = document.getElementById('readerOaBadge');
+      const venueBadge = document.getElementById('readerVenueBadge');
+      const downloadLink = document.getElementById('readerDownloadOriginalLink');
+      const pdfFrame = document.getElementById('pdfFrame');
+      const pdfFrameLoading = document.getElementById('pdfFrameLoading');
+      const pdfFrameExternalLink = document.getElementById('pdfFrameExternalLink');
+      
+      const articleLoading = document.getElementById('readerArticleLoading');
+      const articleContent = document.getElementById('readerArticleContent');
+
+      const originalTitle = paper.display_name || paper.title || 'Untitled Academic Paper';
+      const pdfUrl = paper.open_access?.oa_url || paper.best_oa_location?.pdf_url || null;
+      const originalAbs = reconstructAbstract(paper.abstract_inverted_index);
+      const isOA = paper.open_access?.is_oa || false;
+      const oaStatus = (paper.open_access?.oa_status || 'closed').toUpperCase();
+      const venueName = paper.primary_location?.source?.display_name || paper.host_venue?.display_name || 'Jurnal Ilmiah Internasional';
+      const pubYear = paper.publication_year || 'N/A';
+      const doiUrl = paper.doi || null;
+      const authorsStr = (paper.authorships || []).map(a => a.author?.display_name).filter(Boolean).join(', ') || 'Peneliti Ilmiah';
+
+      // Set header info
+      headerTitle.textContent = paper.translatedTitle || originalTitle;
+      oaBadge.textContent = isOA ? `Open Access (${oaStatus})` : 'Akses Terbatas';
+      oaBadge.className = isOA
+        ? 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200'
+        : 'text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200';
+      venueBadge.textContent = `${venueName} (${pubYear})`;
+
+      if (pdfUrl) {
+        downloadLink.href = pdfUrl;
+        downloadLink.classList.remove('hidden');
+        pdfFrameExternalLink.href = pdfUrl;
+        pdfFrameExternalLink.classList.remove('hidden');
+        
+        // Muat berkas PDF ke dalam frame menggunakan proxy backend yang aman dari CORS & X-Frame-Options
+        pdfFrameLoading.classList.remove('hidden');
+        pdfFrame.onload = () => {
+          pdfFrameLoading.classList.add('hidden');
+        };
+        pdfFrame.src = `/api/pdf-proxy?url=${encodeURIComponent(pdfUrl)}`;
+      } else {
+        downloadLink.classList.add('hidden');
+        pdfFrameExternalLink.classList.add('hidden');
+        pdfFrameLoading.classList.remove('hidden');
+        pdfFrameLoading.innerHTML = `
+          <div class="p-6 text-center space-y-3">
+            <i data-lucide="info" class="w-8 h-8 text-amber-500 mx-auto"></i>
+            <p class="text-xs font-semibold text-slate-800">Berkas PDF Langsung Tidak Terbuka Bebas</p>
+            <p class="text-[11px] text-slate-500 max-w-xs mx-auto">Jurnal ini berstatus langganan atau tidak menyediakan tautan unduhan langsung. Anda dapat membaca naskah telaah terjemahan komprehensif di panel kanan.</p>
+            ${doiUrl ? `<a href="${doiUrl}" target="_blank" class="inline-flex items-center gap-1 text-xs text-indigo-600 hover:underline">Buka Berkas di Portal Penerbit <i data-lucide="external-link" class="w-3 h-3"></i></a>` : ''}
+          </div>
+        `;
+        pdfFrame.src = 'about:blank';
+      }
+
+      // Tampilkan modal
+      modal.classList.remove('hidden');
+      
+      // Atur mode tampilan
+      if (pdfUrl && window.innerWidth >= 1024) {
+        setReaderViewMode('split');
+      } else if (!pdfUrl) {
+        setReaderViewMode('translated');
+      } else {
+        setReaderViewMode('split');
+      }
+
+      lucide.createIcons();
+
+      // Mulai siapkan konten naskah terjemahan komprehensif
+      articleLoading.classList.remove('hidden');
+      articleContent.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/paper-deep-read', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: paper.id,
+            title: originalTitle,
+            abstract: originalAbs,
+            authors: authorsStr,
+            venue: venueName,
+            year: pubYear
+          })
+        });
+
+        if (!res.ok) throw new Error('Gagal memuat naskah');
+        const data = await res.json();
+
+        // Update state paper cache jika ada data baru
+        if (data.translatedTitle) {
+          paper.translatedTitle = data.translatedTitle;
+          headerTitle.textContent = data.translatedTitle;
+          updateCardTranslationInDOM(paper.id);
+        }
+        if (data.translatedAbstract) {
+          paper.translatedAbstract = data.translatedAbstract;
+          updateCardTranslationInDOM(paper.id);
+        }
+
+        // Render konten naskah terjemahan di panel kanan
+        renderPaperArticleInReader(paper, data, { venueName, pubYear, doiUrl, citations: paper.cited_by_count || 0 });
+
+        articleLoading.classList.add('hidden');
+        articleContent.classList.remove('hidden');
+        lucide.createIcons();
+      } catch (err) {
+        console.error('Error deep reading paper:', err);
+        renderPaperArticleInReader(paper, {
+          translatedTitle: paper.translatedTitle || originalTitle,
+          translatedAbstract: paper.translatedAbstract || originalAbs || 'Abstrak belum tersedia.',
+          takeaways: ['Naskah siap ditelaah.'],
+          sections: [
+            { heading: '1. Ringkasan Naskah Jurnal', content: paper.translatedAbstract || originalAbs || 'Naskah teks lengkap.' }
+          ],
+          keywordsId: (paper.concepts || []).map(c => c.display_name)
+        }, { venueName, pubYear, doiUrl, citations: paper.cited_by_count || 0 });
+
+        articleLoading.classList.add('hidden');
+        articleContent.classList.remove('hidden');
+        lucide.createIcons();
+      }
+    }
+
+    function renderPaperArticleInReader(paper, data, meta) {
+      const artVenue = document.getElementById('artVenue');
+      const artDate = document.getElementById('artDate');
+      const artTitle = document.getElementById('artTitle');
+      const artOriginalTitle = document.getElementById('artOriginalTitle');
+      const artAuthors = document.getElementById('artAuthors');
+      const artDoi = document.getElementById('artDoi');
+      const artCitations = document.getElementById('artCitations');
+      const artTakeaways = document.getElementById('artTakeaways');
+      const artAbstract = document.getElementById('artAbstract');
+      const artSections = document.getElementById('artSections');
+      const artKeywords = document.getElementById('artKeywords');
+
+      artVenue.textContent = meta.venueName;
+      artDate.textContent = `Tahun Publikasi: ${meta.pubYear}`;
+      artTitle.textContent = data.translatedTitle || paper.translatedTitle || paper.display_name || paper.title;
+      artOriginalTitle.textContent = paper.display_name || paper.title;
+
+      artAuthors.innerHTML = (paper.authorships || []).map(a => {
+        const authorName = a.author?.display_name || 'Penulis';
+        const inst = a.institutions?.[0]?.display_name || '';
+        return `
+          <span class="inline-block px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs border border-slate-200">
+            <strong>${authorName}</strong>${inst ? ` <span class="text-slate-500 text-[11px]">(${inst})</span>` : ''}
+          </span>
+        `;
+      }).join('') || '<span class="text-slate-400 italic">Penulis tidak tercatat</span>';
+
+      artDoi.innerHTML = meta.doiUrl ? `<a href="${meta.doiUrl}" target="_blank" class="text-indigo-600 hover:underline">DOI: ${meta.doiUrl}</a>` : 'DOI: Tidak tersedia';
+      artCitations.textContent = `${meta.citations.toLocaleString('id-ID')} Sitasi Akademik Terverifikasi`;
+
+      // Takeaways
+      if (data.takeaways && data.takeaways.length > 0) {
+        artTakeaways.innerHTML = data.takeaways.map(t => `<li class="leading-relaxed"><strong class="text-indigo-950">${t}</strong></li>`).join('');
+      } else {
+        artTakeaways.innerHTML = '<li>Hasil dan gagasan utama naskah disajikan dalam dokumen.</li>';
+      }
+
+      // Abstract
+      artAbstract.textContent = data.translatedAbstract || paper.translatedAbstract || reconstructAbstract(paper.abstract_inverted_index) || 'Abstrak tidak tersedia.';
+
+      // Sections
+      if (data.sections && data.sections.length > 0) {
+        artSections.innerHTML = data.sections.map(s => `
+          <div class="space-y-2 pb-4 border-b border-slate-100 last:border-0">
+            <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+              ${s.heading}
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed text-justify">
+              ${s.content}
+            </p>
+          </div>
+        `).join('');
+      } else {
+        artSections.innerHTML = '';
+      }
+
+      // Keywords
+      const keywords = data.keywordsId || (paper.concepts || []).map(c => c.display_name);
+      artKeywords.innerHTML = keywords.map(k => `
+        <span class="px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-medium">
+          ${k}
+        </span>
+      `).join('') || '<span class="text-slate-400 text-xs">Tidak ada kata kunci terdaftar</span>';
+    }
+
+    function setReaderViewMode(mode) {
+      readerCurrentMode = mode;
+      const splitBtn = document.getElementById('readerModeSplitBtn');
+      const transBtn = document.getElementById('readerModeTransBtn');
+      const pdfBtn = document.getElementById('readerModePdfBtn');
+      const framePane = document.getElementById('pdfFramePane');
+      const articlePane = document.getElementById('pdfArticlePane');
+
+      // Reset style tombol switcher
+      [splitBtn, transBtn, pdfBtn].forEach(btn => {
+        btn.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5 font-medium';
+      });
+
+      if (mode === 'split') {
+        splitBtn.className = 'px-3 py-1.5 rounded-lg bg-white text-indigo-700 font-bold shadow-xs transition-all flex items-center gap-1.5';
+        framePane.className = 'w-full lg:w-1/2 h-full flex flex-col border-r border-slate-200 bg-slate-100 transition-all duration-200';
+        articlePane.className = 'w-full lg:w-1/2 h-full overflow-y-auto bg-white p-6 sm:p-8 lg:p-10 transition-all duration-200';
+        framePane.classList.remove('hidden');
+        articlePane.classList.remove('hidden');
+      } else if (mode === 'translated') {
+        transBtn.className = 'px-3 py-1.5 rounded-lg bg-white text-indigo-700 font-bold shadow-xs transition-all flex items-center gap-1.5';
+        framePane.classList.add('hidden');
+        articlePane.classList.remove('hidden');
+        articlePane.className = 'w-full h-full overflow-y-auto bg-white p-6 sm:p-12 lg:p-16 transition-all duration-200';
+      } else if (mode === 'pdf') {
+        pdfBtn.className = 'px-3 py-1.5 rounded-lg bg-white text-indigo-700 font-bold shadow-xs transition-all flex items-center gap-1.5';
+        framePane.classList.remove('hidden');
+        articlePane.classList.add('hidden');
+        framePane.className = 'w-full h-full flex flex-col bg-slate-100 transition-all duration-200';
+      }
+      lucide.createIcons();
+    }
+
+    function closePdfReaderModal() {
+      const modal = document.getElementById('pdfReaderModal');
+      const pdfFrame = document.getElementById('pdfFrame');
+      modal.classList.add('hidden');
+      pdfFrame.src = 'about:blank';
+    }
+
+    function printTranslatedPaper() {
+      window.print();
+    }
+
+    function openCiteModalFromReader() {
+      if (currentReaderPaper) {
+        openCiteModalForPaper(currentReaderPaper.id);
+      }
+    }
+
+    function updateModalSaveButtonState(paperId) {
+      const saveBtn = document.getElementById('modalSaveBtn');
+      const isSaved = isPaperSaved(paperId);
+      saveBtn.innerHTML = `
+        <i data-lucide="bookmark" class="w-4 h-4 ${isSaved ? 'fill-amber-500 text-amber-500' : ''}"></i>
+        <span>${isSaved ? 'Tersimpan di Koleksi' : 'Simpan Artikel'}</span>
+      `;
+      saveBtn.className = isSaved 
+        ? 'px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-700 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs'
+        : 'px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors';
+      lucide.createIcons();
+    }
+
+    // --- GENERATOR SITASI AKADEMIK (APA, MLA, CHICAGO, HARVARD, BIBTEX) ---
+    let currentCitePaper = null;
+
+    function openCiteModalForPaper(paperId) {
+      const paper = state.results.find(p => p.id === paperId) || state.bookmarks.find(b => b.id === paperId);
+      if (!paper) return;
+
+      currentCitePaper = paper;
+      setCiteFormat(state.currentCiteFormat || 'apa');
+      document.getElementById('citeModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeCiteModal() {
+      document.getElementById('citeModal').classList.add('hidden');
+    }
+
+    function setCiteFormat(format) {
+      state.currentCiteFormat = format;
+      document.querySelectorAll('.cite-tab-btn').forEach(btn => {
+        const match = btn.getAttribute('data-format') === format;
+        btn.className = match
+          ? 'cite-tab-btn pb-2.5 px-3 border-b-2 font-semibold border-indigo-600 text-indigo-600'
+          : 'cite-tab-btn pb-2.5 px-3 border-b-2 font-medium border-transparent text-slate-500 hover:text-slate-800';
+      });
+
+      const outputEl = document.getElementById('citationOutput');
+      const bibtexBtn = document.getElementById('downloadBibtexBtn');
+
+      if (format === 'bibtex') {
+        bibtexBtn.classList.remove('hidden');
+      } else {
+        bibtexBtn.classList.add('hidden');
+      }
+
+      if (currentCitePaper) {
+        outputEl.value = generateCitationString(currentCitePaper, format);
+      }
+    }
+
+    function generateCitationString(paper, format) {
+      const authors = (paper.authorships || []).map(a => a.author?.display_name || '').filter(Boolean);
+      const title = paper.display_name || paper.title || 'Untitled Paper';
+      const year = paper.publication_year || 'n.d.';
+      const venue = paper.primary_location?.source?.display_name || paper.host_venue?.display_name || 'Academic Journal';
+      const doi = paper.doi || '';
+
+      switch (format) {
+        case 'apa': {
+          let authorStr = 'Anon.';
+          if (authors.length === 1) authorStr = authors[0];
+          else if (authors.length === 2) authorStr = `${authors[0]}, & ${authors[1]}`;
+          else if (authors.length > 2) authorStr = `${authors[0]}, et al.`;
+          return `${authorStr} (${year}). ${title}. ${venue}.${doi ? ' ' + doi : ''}`;
+        }
+        case 'mla': {
+          let authorStr = 'Anon.';
+          if (authors.length > 0) authorStr = authors[0] + (authors.length > 1 ? ', et al.' : '');
+          return `${authorStr}. "${title}." ${venue}, ${year}.${doi ? ' ' + doi : ''}`;
+        }
+        case 'chicago': {
+          let authorStr = authors.length > 0 ? authors[0] : 'Anon.';
+          return `${authorStr}. ${year}. "${title}." ${venue}.${doi ? ' ' + doi : ''}`;
+        }
+        case 'harvard': {
+          let authorStr = authors.join(', ');
+          if (!authorStr) authorStr = 'Anon.';
+          return `${authorStr} (${year}) '${title}', ${venue}.${doi ? ' Available at: ' + doi : ''}`;
+        }
+        case 'bibtex': {
+          const firstAuthor = authors[0] ? authors[0].split(' ').pop().toLowerCase() : 'scholara';
+          const citeKey = `${firstAuthor}${year}${paper.id.split('/').pop() || 'paper'}`;
+          return `@article{${citeKey},\n  author = {${authors.join(' and ')}},\n  title = {${title}},\n  journal = {${venue}},\n  year = {${year}},\n  doi = {${doi}}\n}`;
+        }
+        default:
+          return `${title} (${year}).`;
+      }
+    }
+
+    function copyCitationToClipboard() {
+      const text = document.getElementById('citationOutput').value;
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        const label = document.getElementById('copyBtnLabel');
+        const old = label.textContent;
+        label.textContent = 'Tersalin!';
+        showToast('Sitasi berhasil disalin ke clipboard!', 'success');
+        setTimeout(() => { label.textContent = old; }, 2000);
+      });
+    }
+
+    function downloadBibtexFile() {
+      const content = document.getElementById('citationOutput').value;
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `scholara-citation-${Date.now()}.bib`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('File .bib berhasil diunduh', 'success');
+    }
+
+    // --- MANAJEMEN DAFTAR BACAAN (LOCALSTORAGE) ---
+    function loadBookmarksFromStorage() {
+      try {
+        const raw = localStorage.getItem('scholara_bookmarks_v1');
+        state.bookmarks = raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        state.bookmarks = [];
+      }
+      updateBookmarksBadge();
+    }
+
+    function saveBookmarksToStorage() {
+      localStorage.setItem('scholara_bookmarks_v1', JSON.stringify(state.bookmarks));
+      updateBookmarksBadge();
+    }
+
+    function updateBookmarksBadge() {
+      const count = state.bookmarks.length;
+      document.getElementById('savedBadgeCount').textContent = count.toString();
+      document.getElementById('drawerCountBadge').textContent = count.toString();
+    }
+
+    function isPaperSaved(paperId) {
+      return state.bookmarks.some(b => b.id === paperId);
+    }
+
+    function toggleBookmark(paperId) {
+      const isSaved = isPaperSaved(paperId);
+      if (isSaved) {
+        state.bookmarks = state.bookmarks.filter(b => b.id !== paperId);
+        showToast('Artikel dihapus dari daftar bacaan', 'info');
+      } else {
+        const paper = state.results.find(p => p.id === paperId);
+        if (paper) {
+          state.bookmarks.unshift(paper);
+          showToast('Artikel disimpan ke daftar bacaan', 'success');
+        }
+      }
+      saveBookmarksToStorage();
+      renderPapersList();
+      renderBookmarksDrawerList();
+    }
+
+    function openBookmarksDrawer() {
+      renderBookmarksDrawerList();
+      document.getElementById('bookmarksDrawer').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeBookmarksDrawer() {
+      document.getElementById('bookmarksDrawer').classList.add('hidden');
+    }
+
+    function renderBookmarksDrawerList() {
+      const container = document.getElementById('bookmarksListContainer');
+      if (!container) return;
+
+      if (state.bookmarks.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-slate-400 space-y-3">
+            <i data-lucide="bookmark" class="w-8 h-8 mx-auto text-slate-300"></i>
+            <p class="text-xs font-medium text-slate-600">Belum ada karya ilmiah yang disimpan.</p>
+            <p class="text-[11px] text-slate-400">Klik ikon bookmark pada kartu jurnal untuk menambahkan ke daftar ini.</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = state.bookmarks.map(paper => {
+        const title = (state.autoTranslate && paper.translatedTitle) ? paper.translatedTitle : (paper.display_name || paper.title || 'Untitled');
+        const year = paper.publication_year || 'N/A';
+        const pdfUrl = paper.open_access?.oa_url || paper.best_oa_location?.pdf_url || null;
+
+        return `
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/90 hover:border-slate-300 space-y-2 transition-colors">
+            <h4 class="text-xs font-bold text-slate-900 hover:text-indigo-600 cursor-pointer leading-snug line-clamp-2" onclick="openDetailModal('${paper.id}')">
+              ${title}
+            </h4>
+            <div class="flex items-center justify-between text-[11px] text-slate-500">
+              <span>Tahun: ${year}</span>
+              <div class="flex items-center gap-2">
+                ${pdfUrl ? `
+                  <a href="${pdfUrl}" target="_blank" rel="noopener noreferrer" class="text-emerald-700 hover:underline flex items-center gap-0.5 font-semibold">
+                    <i data-lucide="file-down" class="w-3 h-3"></i> PDF
+                  </a>
+                ` : ''}
+                <button type="button" onclick="openCiteModalForPaper('${paper.id}')" class="text-indigo-600 hover:underline font-medium">
+                  Sitasi
+                </button>
+                <button type="button" onclick="toggleBookmark('${paper.id}')" class="text-rose-500 hover:text-rose-700" title="Hapus">
+                  <i data-lucide="trash-2" class="w-3 h-3"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function clearAllBookmarks() {
+      if (confirm('Apakah Anda yakin ingin menghapus seluruh koleksi daftar bacaan?')) {
+        state.bookmarks = [];
+        saveBookmarksToStorage();
+        renderBookmarksDrawerList();
+        renderPapersList();
+        showToast('Semua koleksi telah dibersihkan', 'info');
+      }
+    }
+
+    function exportReadingListJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.bookmarks, null, 2));
+      const dlAnchorElem = document.createElement('a');
+      dlAnchorElem.setAttribute("href", dataStr);
+      dlAnchorElem.setAttribute("download", `scholara-reading-list-${Date.now()}.json`);
+      dlAnchorElem.click();
+      showToast('Koleksi berhasil diekspor ke JSON', 'success');
+    }
+
+    function importReadingListJSON(e) {
+      const fileReader = new FileReader();
+      fileReader.onload = function(event) {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (Array.isArray(imported)) {
+            state.bookmarks = imported;
+            saveBookmarksToStorage();
+            renderBookmarksDrawerList();
+            renderPapersList();
+            showToast(`Berhasil mengimpor ${imported.length} karya ilmiah!`, 'success');
+          }
+        } catch (err) {
+          showToast('Format file JSON tidak valid', 'error');
+        }
+      };
+      if (e.target.files[0]) fileReader.readAsText(e.target.files[0]);
+    }
+
+    // --- DASHBOARD ANALITIK (CHART.JS) ---
+    function toggleAnalyticsPanel() {
+      const panel = document.getElementById('analyticsPanel');
+      state.analyticsOpen = !state.analyticsOpen;
+      if (state.analyticsOpen) {
+        panel.classList.remove('hidden');
+        updateAnalyticsView();
+      } else {
+        panel.classList.add('hidden');
+      }
+    }
+
+    function updateAnalyticsView() {
+      if (!state.analyticsOpen) return;
+
+      const totalResults = state.totalCount || state.results.length;
+      document.getElementById('kpiTotalResults').textContent = totalResults.toLocaleString('id-ID');
+
+      if (state.results.length === 0) return;
+
+      // Hitung rasio Open Access
+      const oaCount = state.results.filter(p => p.open_access?.is_oa).length;
+      const oaPercent = Math.round((oaCount / state.results.length) * 100);
+      document.getElementById('kpiOARate').textContent = `${oaPercent}% (${oaCount}/${state.results.length})`;
+
+      // Hitung sitasi maksimum
+      const maxCites = Math.max(...state.results.map(p => p.cited_by_count || 0));
+      document.getElementById('kpiMaxCitations').textContent = `${maxCites.toLocaleString('id-ID')} sitasi`;
+
+      // Kelompokkan tahun publikasi
+      const yearMap = {};
+      state.results.forEach(p => {
+        const y = p.publication_year;
+        if (y) yearMap[y] = (yearMap[y] || 0) + 1;
+      });
+
+      const sortedYears = Object.keys(yearMap).sort((a, b) => Number(a) - Number(b));
+      const yearValues = sortedYears.map(y => yearMap[y]);
+
+      let topYear = '—';
+      let maxYearCount = 0;
+      for (const [y, cnt] of Object.entries(yearMap)) {
+        if (cnt > maxYearCount) {
+          maxYearCount = cnt;
+          topYear = `${y} (${cnt} paper)`;
+        }
+      }
+      document.getElementById('kpiTopYear').textContent = topYear;
+
+      // Render Grafik Batang Tahun (Chart.js)
+      const yearsCtx = document.getElementById('yearsChart')?.getContext('2d');
+      if (yearsCtx) {
+        if (state.charts.years) state.charts.years.destroy();
+        state.charts.years = new Chart(yearsCtx, {
+          type: 'bar',
+          data: {
+            labels: sortedYears,
+            datasets: [{
+              label: 'Jumlah Karya',
+              data: yearValues,
+              backgroundColor: 'rgba(79, 70, 229, 0.85)',
+              borderColor: '#4f46e5',
+              borderWidth: 1,
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: 'rgba(0, 0, 0, 0.04)' }, ticks: { color: '#64748b', font: { size: 10 } } },
+              y: { grid: { color: 'rgba(0, 0, 0, 0.04)' }, ticks: { color: '#64748b', font: { size: 10 }, precision: 0 } }
+            }
+          }
+        });
+      }
+
+      // Render Diagram Donut Akses (Chart.js)
+      const oaCtx = document.getElementById('oaChart')?.getContext('2d');
+      if (oaCtx) {
+        if (state.charts.oa) state.charts.oa.destroy();
+        state.charts.oa = new Chart(oaCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Open Access (Gratis)', 'Berbayar (Subscription)'],
+            datasets: [{
+              data: [oaCount, state.results.length - oaCount],
+              backgroundColor: ['#10b981', '#e2e8f0'],
+              borderColor: '#ffffff',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: '#475569', font: { size: 10 }, boxWidth: 10 }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // --- KONTROL FILTER & PENCARIAN ---
+    function handleSearchSubmit(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('searchInput');
+      state.query = input.value.trim();
+      state.page = 1;
+      closeSuggestionsDropdown();
+      fetchPapers();
+    }
+
+    function applySearchKeyword(query) {
+      const input = document.getElementById('searchInput');
+      input.value = query;
+      state.query = query;
+      state.page = 1;
+      closeSuggestionsDropdown();
+      fetchPapers();
+    }
+
+    function clearSearchInput() {
+      const input = document.getElementById('searchInput');
+      input.value = '';
+      input.focus();
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+      closeSuggestionsDropdown();
+    }
+
+    function handleOAToggleChange(checked) {
+      state.openAccessOnly = checked;
+      state.page = 1;
+      document.getElementById('oaFilterToggle').checked = checked;
+      fetchPapers();
+    }
+
+    // --- KONTROL TAKSONOMI KEILMUAN BERJENJANG (MAKRO, MESO, MIKRO) ---
+    function handleDisciplineSearch(val) {
+      state.disciplineSearch = val;
+      renderDisciplinesSidebar();
+    }
+
+    function toggleExpandField(fieldId) {
+      if (state.expandedFields.has(fieldId)) {
+        state.expandedFields.delete(fieldId);
+      } else {
+        state.expandedFields.add(fieldId);
+      }
+      renderDisciplinesSidebar();
+    }
+
+    function toggleExpandSubfield(subId) {
+      if (state.expandedSubfields.has(subId)) {
+        state.expandedSubfields.delete(subId);
+      } else {
+        state.expandedSubfields.add(subId);
+      }
+      renderDisciplinesSidebar();
+    }
+
+    function selectField(id, name) {
+      state.activeConceptId = id;
+      state.activeConceptName = name;
+      state.activeMicroTopic = null;
+      state.hierarchyLevel = 'makro';
+      state.page = 1;
+      const clearBtn = document.getElementById('clearConceptBtn');
+      if (clearBtn) clearBtn.classList.remove('hidden');
+      renderDisciplinesSidebar();
+      renderActiveFilterPills();
+      fetchPapers();
+      showToast(`Menyaring bidang makro: ${name}`, 'info');
+    }
+
+    function selectSubfield(id, name, fieldName) {
+      state.activeConceptId = id;
+      state.activeConceptName = `${fieldName} › ${name}`;
+      state.activeMicroTopic = null;
+      state.hierarchyLevel = 'meso';
+      state.page = 1;
+      const clearBtn = document.getElementById('clearConceptBtn');
+      if (clearBtn) clearBtn.classList.remove('hidden');
+      renderDisciplinesSidebar();
+      renderActiveFilterPills();
+      fetchPapers();
+      showToast(`Menyaring sub-bidang (Meso): ${name}`, 'info');
+    }
+
+    function selectMicroTopic(name, query, conceptId, fieldName, subfieldName) {
+      state.activeConceptId = conceptId || null;
+      state.activeConceptName = `${subfieldName} › ${name}`;
+      state.activeMicroTopic = { name, query, fieldName, subfieldName };
+      state.hierarchyLevel = 'mikro';
+
+      if (query) {
+        state.query = query;
+        const input = document.getElementById('searchInput');
+        if (input) input.value = query;
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (clearBtn) clearBtn.classList.remove('hidden');
+      }
+
+      state.page = 1;
+      const clearBtn = document.getElementById('clearConceptBtn');
+      if (clearBtn) clearBtn.classList.remove('hidden');
+      renderDisciplinesSidebar();
+      renderActiveFilterPills();
+      fetchPapers();
+      showToast(`Menyaring spesialisasi mikro: ${name}`, 'info');
+    }
+
+    function selectConcept(id, name) {
+      state.activeConceptId = id;
+      state.activeConceptName = name;
+      state.activeMicroTopic = null;
+      state.hierarchyLevel = id ? 'meso' : null;
+      state.page = 1;
+      const clearBtn = document.getElementById('clearConceptBtn');
+      if (id) {
+        if (clearBtn) clearBtn.classList.remove('hidden');
+      } else {
+        if (clearBtn) clearBtn.classList.add('hidden');
+      }
+      renderDisciplinesSidebar();
+      renderActiveFilterPills();
+      fetchPapers();
+    }
+
+    function filterBySpecificConcept(id, name) {
+      selectConcept(id, name);
+    }
+
+    function setYearFilter(val) {
+      state.yearFilter = val;
+      state.page = 1;
+      document.querySelectorAll('.year-filter-btn').forEach(btn => {
+        const match = btn.getAttribute('data-year') === val;
+        btn.className = match
+          ? 'year-filter-btn px-2.5 py-1.5 rounded-lg border border-indigo-500 bg-indigo-50 text-indigo-700 font-semibold transition-colors shadow-2xs'
+          : 'year-filter-btn px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors';
+      });
+      fetchPapers();
+    }
+
+    function applyCustomYearRange() {
+      const from = document.getElementById('customYearFrom').value.trim();
+      const to = document.getElementById('customYearTo').value.trim();
+      if (!from && !to) return;
+      state.yearFilter = `${from || '1950'}-${to || '2026'}`;
+      state.page = 1;
+      fetchPapers();
+    }
+
+    function setMinCitations(cites) {
+      state.minCitations = cites;
+      state.page = 1;
+      document.querySelectorAll('.cite-filter-btn').forEach(btn => {
+        const match = Number(btn.getAttribute('data-cites')) === cites;
+        btn.className = match
+          ? 'cite-filter-btn px-2.5 py-1 rounded-md border border-indigo-500 bg-indigo-50 text-indigo-700 font-semibold shadow-2xs'
+          : 'cite-filter-btn px-2.5 py-1 rounded-md border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50';
+      });
+      fetchPapers();
+    }
+
+    function handleSortChange(sortVal) {
+      state.sort = sortVal;
+      state.page = 1;
+      fetchPapers();
+    }
+
+    function handlePerPageChange(perPageVal) {
+      state.perPage = Number(perPageVal);
+      state.page = 1;
+      fetchPapers();
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      const cardBtn = document.getElementById('viewCardBtn');
+      const listBtn = document.getElementById('viewListBtn');
+
+      if (mode === 'card') {
+        cardBtn.className = 'p-1 rounded text-indigo-600 bg-indigo-50 transition-colors';
+        listBtn.className = 'p-1 rounded text-slate-400 hover:text-slate-700 transition-colors';
+      } else {
+        listBtn.className = 'p-1 rounded text-indigo-600 bg-indigo-50 transition-colors';
+        cardBtn.className = 'p-1 rounded text-slate-400 hover:text-slate-700 transition-colors';
+      }
+      renderPapersList();
+    }
+
+    function resetAllFilters() {
+      state.openAccessOnly = false;
+      document.getElementById('oaFilterToggle').checked = false;
+      state.activeConceptId = null;
+      state.activeConceptName = null;
+      state.activeMicroTopic = null;
+      state.hierarchyLevel = null;
+      state.disciplineSearch = '';
+      const discInput = document.getElementById('disciplineSearchInput');
+      if (discInput) discInput.value = '';
+      state.yearFilter = 'all';
+      state.minCitations = 0;
+      state.page = 1;
+      document.getElementById('clearConceptBtn').classList.add('hidden');
+      document.getElementById('customYearFrom').value = '';
+      document.getElementById('customYearTo').value = '';
+      setYearFilter('all');
+      setMinCitations(0);
+      renderDisciplinesSidebar();
+      renderActiveFilterPills();
+      fetchPapers();
+      showToast('Semua filter berhasil diatur ulang', 'info');
+    }
+
+    function resetToHome() {
+      const searchInput = document.getElementById('searchInput');
+      searchInput.value = 'deep learning';
+      state.query = 'deep learning';
+      resetAllFilters();
+    }
+
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('sidebarFiltersContainer');
+      sidebar.classList.toggle('hidden');
+    }
+
+    function toggleSidebarCollapse() {
+      const aside = document.querySelector('aside');
+      const resultsSection = document.querySelector('main > div > section');
+      const toggleIcon = document.getElementById('sidebarToggleIcon');
+      const toggleText = document.getElementById('sidebarToggleText');
+      if (!aside || !resultsSection) return;
+
+      const isHidden = aside.classList.contains('lg:hidden');
+      if (isHidden) {
+        aside.classList.remove('lg:hidden');
+        resultsSection.className = 'lg:col-span-8 xl:col-span-9 2xl:col-span-9 space-y-4 min-w-0';
+        if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'panel-left-close');
+        if (toggleText) toggleText.textContent = 'Filter';
+        showToast('Panel filter ditampilkan', 'info');
+      } else {
+        aside.classList.add('lg:hidden');
+        resultsSection.className = 'lg:col-span-12 xl:col-span-12 2xl:col-span-12 space-y-4 min-w-0';
+        if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'panel-left-open');
+        if (toggleText) toggleText.textContent = 'Buka Filter';
+        showToast('Panel filter disembunyikan (Mode Layar Penuh)', 'info');
+      }
+      lucide.createIcons();
+    }
+
+    // --- SARAN PENCARIAN (AUTOCOMPLETE) ---
+    function setupSearchAutocomplete() {
+      const searchInput = document.getElementById('searchInput');
+      const clearBtn = document.getElementById('clearSearchBtn');
+      const drop = document.getElementById('suggestionsDropdown');
+
+      if (!searchInput) return;
+
+      searchInput.addEventListener('input', (e) => {
+        const val = e.target.value.trim().toLowerCase();
+        if (val) {
+          clearBtn.classList.remove('hidden');
+        } else {
+          clearBtn.classList.add('hidden');
+          closeSuggestionsDropdown();
+          return;
+        }
+
+        // Cari pencocokan dari topik tren, subfields, spesialisasi mikro, dan glosarium ilmiah
+        const matches = [];
+
+        TRENDING_TOPICS.forEach(t => {
+          if (t.label.toLowerCase().includes(val) || t.query.toLowerCase().includes(val)) {
+            matches.push({ title: t.label, subtitle: `Tren Riset • "${t.query}"`, query: t.query, type: 'trend' });
+          }
+        });
+
+        ACADEMIC_FIELDS.forEach(f => {
+          if (f.name.toLowerCase().includes(val)) {
+            matches.push({ title: f.name, subtitle: 'Bidang Utama (Makro)', query: f.name, type: 'field' });
+          }
+          f.subfields.forEach(s => {
+            if (s.name.toLowerCase().includes(val)) {
+              matches.push({ title: s.name, subtitle: `Sub-bidang (Meso) › ${f.name}`, query: s.name, type: 'subfield' });
+            }
+            (s.microTopics || []).forEach(m => {
+              if (m.name.toLowerCase().includes(val) || m.query.toLowerCase().includes(val)) {
+                matches.push({
+                  title: m.name,
+                  subtitle: `Spesialisasi Mikro › ${s.name}`,
+                  query: m.query,
+                  type: 'micro'
+                });
+              }
+            });
+          });
+        });
+
+        Object.entries(SCIENTIFIC_GLOSSARY).forEach(([en, id]) => {
+          if (en.includes(val) || id.includes(val)) {
+            matches.push({ title: id, subtitle: `Istilah Ilmiah (${en})`, query: en, type: 'term' });
+          }
+        });
+
+        const uniqueMatches = [];
+        const seen = new Set();
+        matches.forEach(m => {
+          if (!seen.has(m.title) && uniqueMatches.length < 6) {
+            seen.add(m.title);
+            uniqueMatches.push(m);
+          }
+        });
+
+        if (uniqueMatches.length > 0) {
+          drop.innerHTML = uniqueMatches.map(m => `
+            <div
+              onclick="applySearchKeyword('${m.query.replace(/'/g, "\\'")}')"
+              class="px-4 py-2.5 hover:bg-slate-50 cursor-pointer flex items-center justify-between gap-3 text-left transition-colors"
+            >
+              <div class="min-w-0">
+                <p class="text-xs font-semibold text-slate-800 truncate flex items-center gap-1.5">
+                  ${m.type === 'micro' ? '<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-amber-100 text-amber-800">Mikro</span>' : ''}
+                  ${m.type === 'subfield' ? '<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-indigo-100 text-indigo-700">Meso</span>' : ''}
+                  <span>${m.title}</span>
+                </p>
+                <p class="text-[10px] text-slate-400 truncate">${m.subtitle}</p>
+              </div>
+              <span class="text-[10px] text-indigo-600 font-medium px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-100 flex-shrink-0">
+                Pilih
+              </span>
+            </div>
+          `).join('');
+          drop.classList.remove('hidden');
+        } else {
+          closeSuggestionsDropdown();
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !drop.contains(e.target)) {
+          closeSuggestionsDropdown();
+        }
+      });
+    }
+
+    // --- PAGINASI ---
+    function renderPaginationControls() {
+      const paginationBar = document.getElementById('paginationBar');
+      const totalPages = Math.min(Math.ceil(state.totalCount / state.perPage), 500); // Batas aman OpenAlex
+
+      if (totalPages <= 1) {
+        paginationBar.classList.add('hidden');
+        return;
+      }
+
+      paginationBar.classList.remove('hidden');
+      document.getElementById('currentPageNum').textContent = state.page.toLocaleString('id-ID');
+      document.getElementById('totalPagesNum').textContent = totalPages.toLocaleString('id-ID');
+
+      document.getElementById('prevPageBtn').disabled = state.page <= 1;
+      document.getElementById('nextPageBtn').disabled = state.page >= totalPages;
+
+      const btnContainer = document.getElementById('pageNumberButtons');
+      btnContainer.innerHTML = '';
+
+      let startPage = Math.max(1, state.page - 2);
+      let endPage = Math.min(totalPages, startPage + 4);
+      if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+      }
+
+      for (let p = startPage; p <= endPage; p++) {
+        const isCurrent = p === state.page;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = p.toString();
+        btn.className = isCurrent
+          ? 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-bold text-xs shadow-xs'
+          : 'px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-indigo-300 text-xs font-medium shadow-2xs transition-colors';
+        btn.onclick = () => {
+          state.page = p;
+          fetchPapers();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        btnContainer.appendChild(btn);
+      }
+
+      lucide.createIcons();
+    }
+
+    function changePage(delta) {
+      state.page += delta;
+      fetchPapers();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function closeSuggestionsDropdown() {
+      const drop = document.getElementById('suggestionsDropdown');
+      if (drop) {
+        drop.classList.add('hidden');
+        drop.innerHTML = '';
+      }
+    }
+
+    // --- NOTIFIKASI TOAST ---
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      let icon = 'info';
+      let borderCol = 'border-indigo-200 text-slate-800';
+      let iconCol = 'text-indigo-600';
+      if (type === 'success') {
+        icon = 'check-circle-2';
+        borderCol = 'border-emerald-200 text-emerald-900';
+        iconCol = 'text-emerald-600';
+      } else if (type === 'error') {
+        icon = 'alert-triangle';
+        borderCol = 'border-rose-200 text-rose-900';
+        iconCol = 'text-rose-600';
+      }
+
+      toast.className = `p-3 rounded-xl bg-white border ${borderCol} shadow-xl backdrop-blur-md text-xs font-medium flex items-center gap-2 pointer-events-auto transition-all animate-in slide-in-from-bottom-5 duration-200`;
+      toast.innerHTML = `
+        <i data-lucide="${icon}" class="w-4 h-4 flex-shrink-0 ${iconCol}"></i>
+        <span>${message}</span>
+      `;
+
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // --- PINTASAN KEYBOARD GLOBAL ---
+    document.addEventListener('keydown', (e) => {
+      // Pintasan Escape: Menutup modal yang sedang terbuka
+      if (e.key === 'Escape') {
+        const readerModal = document.getElementById('pdfReaderModal');
+        const detailModal = document.getElementById('detailModal');
+        const citeModal = document.getElementById('citeModal');
+        const drawer = document.getElementById('bookmarksDrawer');
+        const drop = document.getElementById('suggestionsDropdown');
+
+        if (readerModal && !readerModal.classList.contains('hidden')) {
+          closePdfReaderModal();
+        } else if (detailModal && !detailModal.classList.contains('hidden')) {
+          closeDetailModal();
+        } else if (citeModal && !citeModal.classList.contains('hidden')) {
+          closeCiteModal();
+        } else if (drawer && !drawer.classList.contains('hidden')) {
+          closeBookmarksDrawer();
+        }
+        if (drop) closeSuggestionsDropdown();
+      }
+
+      // Pintasan '/': Fokus ke kolom pencarian jika tidak sedang mengetik di form
+      if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+        e.preventDefault();
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
