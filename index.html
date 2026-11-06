@@ -2185,14 +2185,75 @@
         modelInput.value = 'gemini-2.5-flash';
       } else if (provider === 'sumopod') {
         options = [
-          { value: 'gpt-4o-mini', label: 'gpt-4o-mini (Cepat & Hemat - Default)' },
-          { value: 'gpt-4o', label: 'gpt-4o (Frontier Model)' },
-          { value: 'claude-3-5-sonnet-20241022', label: 'claude-3-5-sonnet-20241022' },
-          { value: 'deepseek-chat', label: 'deepseek-chat (DeepSeek V3)' },
-          { value: 'deepseek-reasoner', label: 'deepseek-reasoner (DeepSeek R1)' },
-          { value: 'gemini-1.5-flash', label: 'gemini-1.5-flash' },
-          { value: 'gemini-1.5-pro', label: 'gemini-1.5-pro' },
-          { value: 'qwen-turbo', label: 'qwen-turbo' }
+          // OpenAI Models
+          { value: 'gpt-4o-mini', label: 'gpt-4o-mini — OpenAI ($0.15/1M, Cepat & Hemat - Rekomendasi)' },
+          { value: 'gpt-4o', label: 'gpt-4o — OpenAI ($2.50/1M, Frontier)' },
+          { value: 'gpt-4.1', label: 'gpt-4.1 — OpenAI ($2.00/1M, 1M Context)' },
+          { value: 'gpt-4.1-mini', label: 'gpt-4.1-mini — OpenAI ($0.40/1M, 1M Context)' },
+          { value: 'gpt-5', label: 'gpt-5 — OpenAI ($1.25/1M, 272k Context)' },
+          { value: 'gpt-5-mini', label: 'gpt-5-mini — OpenAI ($0.25/1M, 272k Context)' },
+          { value: 'gpt-5-nano', label: 'gpt-5-nano — OpenAI ($0.05/1M, Super Murah)' },
+          { value: 'gpt-5.4', label: 'gpt-5.4 — OpenAI ($2.50/1M, 1.05M Context)' },
+          { value: 'gpt-5.4-mini', label: 'gpt-5.4-mini — OpenAI ($0.75/1M)' },
+          { value: 'gpt-5.4-nano', label: 'gpt-5.4-nano — OpenAI ($0.20/1M)' },
+          { value: 'gpt-5.6-luna', label: 'gpt-5.6-luna — OpenAI ($0.20/1M, 922k Context)' },
+          { value: 'gpt-5.6-sol', label: 'gpt-5.6-sol — OpenAI ($4.00/1M)' },
+          { value: 'gpt-5.6-terra', label: 'gpt-5.6-terra — OpenAI ($2.00/1M)' },
+          { value: 'gpt-6-luna', label: 'gpt-6-luna — OpenAI ($0.10/1M, 1.05M Context)' },
+
+          // Anthropic Claude
+          { value: 'claude-haiku-5-5', label: 'claude-haiku-5-5 — Anthropic ($0.10/1M, 1M Context)' },
+          { value: 'claude-haiku-4-5', label: 'claude-haiku-4-5 — Anthropic ($1.00/1M, 200k Context)' },
+          { value: 'claude-sonnet-5', label: 'claude-sonnet-5 — Anthropic ($2.00/1M, 1M Context)' },
+          { value: 'claude-sonnet-5-5', label: 'claude-sonnet-5-5 — Anthropic ($2.00/1M, 1M Context)' },
+          { value: 'claude-opus-4-8', label: 'claude-opus-4-8 — Anthropic ($5.00/1M, 1M Context)' },
+          { value: 'claude-opus-5', label: 'claude-opus-5 — Anthropic ($5.00/1M, 1M Context)' },
+          { value: 'claude-opus-5-5', label: 'claude-opus-5-5 — Anthropic ($4.00/1M, 1M Context)' },
+          { value: 'claude-fable-5-1', label: 'claude-fable-5-1 — Anthropic ($10.00/1M, 1M Context)' },
+
+          // DeepSeek
+          { value: 'deepseek-flash', label: 'deepseek-flash — DeepSeek ($0.15/1M, 1M Context)' },
+          { value: 'deepseek-v4-flash', label: 'deepseek-v4-flash — DeepSeek ($0.15/1M, 1M Context)' },
+          { value: 'deepseek-v4-pro', label: 'deepseek-v4-pro — DeepSeek ($0.66/1M)' },
+          { value: 'deepseek-v4.1-flash-1017', label: 'deepseek-v4.1-flash-1017 — DeepSeek ($0.30/1M)' },
+          { value: 'deepseek-v4.1-flash:fast', label: 'deepseek-v4.1-flash:fast — DeepSeek ($0.30/1M)' },
+          { value: 'deepseek-v4.1-flash:netra', label: 'deepseek-v4.1-flash:netra — Netra Runtime (Diskon 40%)' },
+
+          // Google Gemini (via SumoPod Gateway)
+          { value: 'gemini/gemini-3.5-flash-lite', label: 'gemini/gemini-3.5-flash-lite — Gemini ($0.30/1M, 1.05M Context)' },
+          { value: 'gemini/gemini-3.5-flash', label: 'gemini/gemini-3.5-flash — Gemini ($1.50/1M, 1.05M Context)' },
+          { value: 'gemini/gemini-3.1-flash-lite', label: 'gemini/gemini-3.1-flash-lite — Gemini ($0.25/1M, 1.05M Context)' },
+          { value: 'gemini/gemini-3.7-flash', label: 'gemini/gemini-3.7-flash — Gemini ($0.75/1M, 1.05M Context)' },
+          { value: 'gemini/gemini-3.8-flash', label: 'gemini/gemini-3.8-flash — Gemini ($0.75/1M, 1.05M Context)' },
+          { value: 'gemini/gemini-3-flash-preview', label: 'gemini/gemini-3-flash-preview — Gemini ($0.50/1M, 1.05M Context)' },
+          { value: 'gemini/gemini-3.1-pro-preview', label: 'gemini/gemini-3.1-pro-preview — Gemini ($2.00/1M, 1.05M Context)' },
+          { value: 'gemini/gemini-4-argon', label: 'gemini/gemini-4-argon — Gemini ($2.00/1M, 1.05M Context)' },
+
+          // Alibaba Qwen
+          { value: 'qwen3.8-flash', label: 'qwen3.8-flash — Alibaba ($0.15/1M, 1M Context)' },
+          { value: 'qwen3.7-plus', label: 'qwen3.7-plus — Alibaba ($0.32/1M, 1M Context)' },
+          { value: 'qwen3.8-max', label: 'qwen3.8-max — Alibaba (Diskon 50% $1.00/1M)' },
+
+          // GLM (Zhipu AI)
+          { value: 'glm-5.3-flash', label: 'glm-5.3-flash — Z.AI ($0.015/1M, Diskon 50%)' },
+          { value: 'glm-5.3-flash:fast', label: 'glm-5.3-flash:fast — Z.AI ($0.37/1M)' },
+          { value: 'glm-5.2', label: 'glm-5.2 — Z.AI (Diskon 25% $1.05/1M)' },
+          { value: 'glm-5.3', label: 'glm-5.3 — Z.AI ($1.40/1M)' },
+
+          // xAI & Moonshot & MiniMax & Tencent & Mimo & BytePlus
+          { value: 'grok-4.7', label: 'grok-4.7 — xAI ($2.00/1M, 500k Context)' },
+          { value: 'kimi-k3', label: 'kimi-k3 — Moonshot AI ($3.00/1M, 1M Context)' },
+          { value: 'MiniMax-M3.1-Flash', label: 'MiniMax-M3.1-Flash — Minimax ($0.15/1M, 1M Context)' },
+          { value: 'hy3', label: 'hy3 — Tencent ($0.132/1M, 256k Context)' },
+          { value: 'mimo-v2.6-flash', label: 'mimo-v2.6-flash — Mimo ($0.14/1M, 1.1M Context)' },
+          { value: 'mimo-v2.6-pro', label: 'mimo-v2.6-pro — Mimo ($0.435/1M, 1.1M Context)' },
+          { value: 'mimo-v2.6-pro-ultraspeed', label: 'mimo-v2.6-pro-ultraspeed — Mimo ($4.35/1M)' },
+          { value: 'seed-2-0-mini', label: 'seed-2-0-mini — BytePlus ($0.10/1M, 224k Context)' },
+          { value: 'seed-2-0-lite', label: 'seed-2-0-lite — BytePlus ($0.25/1M, 224k Context)' },
+          { value: 'seed-2-0-pro', label: 'seed-2-0-pro — BytePlus ($0.50/1M, 256k Context)' },
+          { value: 'seed-2-0-code', label: 'seed-2-0-code — BytePlus ($0.50/1M, 256k Context)' },
+          { value: 'jev-1.13.0', label: 'jev-1.13.0 — TypeSafe ($0.042/1M)' },
+          { value: 'jev-1.14.0', label: 'jev-1.14.0 — TypeSafe ($0.042/1M)' }
         ];
         modelInput.value = 'gpt-4o-mini';
       } else if (provider === 'openai') {
