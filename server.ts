@@ -11,6 +11,9 @@ import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const CURATED_JOURNALS_PATH = path.join(process.cwd(), "data", "curated_journals.json");
+const AI_SETTINGS_PATH = path.join(process.cwd(), "data", "ai_settings.json");
+
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
@@ -33,6 +36,18 @@ app.use((req, _res, next) => {
       req.url = "/api" + parsed.pathname + parsed.search;
     } catch (e) {}
   }
+  next();
+});
+
+// Middleware Inisialisasi Otomatis Tabel Neon Postgres (Aman untuk Serverless & Lokal)
+let dbInitPromise: Promise<void> | null = null;
+app.use(async (_req, _res, next) => {
+  if (!dbInitPromise) {
+    dbInitPromise = initNeonDb().catch((err) => {
+      console.warn("Neon DB lazy-init warning:", err);
+    });
+  }
+  await dbInitPromise;
   next();
 });
 
@@ -726,7 +741,6 @@ Format JSON yang Wajib Dihasilkan:
 // ==========================================
 // KONFIGURASI MESIN & OTAK AI DINAMIS (GLOBAL & LOKAL)
 // ==========================================
-const AI_SETTINGS_PATH = path.join(process.cwd(), "data", "ai_settings.json");
 
 interface AiSettings {
   provider: string;
@@ -1122,7 +1136,6 @@ app.post("/api/admin/test-connection", async (req, res) => {
 // ==========================================
 // PORTAL ADMIN & PENYIMPANAN JURNAL TERKURASI
 // ==========================================
-const CURATED_JOURNALS_PATH = path.join(process.cwd(), "data", "curated_journals.json");
 
 async function getCuratedJournals(): Promise<any[]> {
   const sql = getSql();
@@ -1797,7 +1810,13 @@ async function startServer() {
   }
 }
 
-if (!process.env.VERCEL) {
+const isServerless = !!(process.env.VERCEL || process.env.NOW_REGION || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const isDirectExecution = Boolean(
+  process.argv[1] &&
+  fileURLToPath(import.meta.url).toLowerCase() === path.resolve(process.argv[1]).toLowerCase()
+);
+
+if (!isServerless && isDirectExecution) {
   startServer();
 }
 
