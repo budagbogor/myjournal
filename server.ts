@@ -5,7 +5,6 @@ import express from "express";
 import path from "path";
 import fs from "fs/promises";
 import { fileURLToPath } from "url";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 
@@ -16,6 +15,26 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json({ limit: "10mb" }));
+
+// Middleware kompatibilitas rute Vercel Serverless
+app.use((req, _res, next) => {
+  if (
+    req.url &&
+    !req.url.startsWith("/api") &&
+    !req.url.startsWith("/@") &&
+    !req.url.startsWith("/src") &&
+    !req.url.startsWith("/node_modules") &&
+    !req.url.startsWith("/assets") &&
+    req.url !== "/" &&
+    !req.url.startsWith("/?")
+  ) {
+    try {
+      const parsed = new URL(req.url, "http://localhost");
+      req.url = "/api" + parsed.pathname + parsed.search;
+    } catch (e) {}
+  }
+  next();
+});
 
 // Inisialisasi Klien Neon Lakebase Postgres
 let sqlClient: NeonQueryFunction<false, false> | null = null;
@@ -1639,31 +1658,148 @@ Format output JSON di dalam \`\`\`json ... \`\`\`:
   }
 });
 
-// Setup Vite middleware untuk mode pengembangan dan penyajian statis untuk produksi
+// Endpoint Pencarian Naskah Multi-Repositori Cerdas (Fallback Crossref & Curated saat OpenAlex terkena limit 429)
+app.get("/api/papers/search", async (req, res) => {
+  const query = typeof req.query.query === "string" ? req.query.query.trim() : "";
+  const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
+  const perPage = Math.min(50, Math.max(5, parseInt(req.query.per_page as string, 10) || 20));
+  const openAlexKey = (process.env.OPENALEX_API_KEY || "").trim();
+
+  // 1. Coba OpenAlex jika API key dikonfigurasi
+  if (openAlexKey) {
+    try {
+      const oaUrl = `https://api.openalex.org/works?search=${encodeURIComponent(query || "science")}&page=${page}&per_page=${perPage}&api_key=${openAlexKey}`;
+      const oaRes = await fetch(oaUrl, { signal: AbortSignal.timeout(5000) });
+      if (oaRes.ok) {
+        const oaData = await oaRes.json();
+        res.json({
+          provider: "openalex_auth",
+          meta: oaData.meta,
+          results: oaData.results || []
+        });
+        return;
+      }
+    } catch (e) {
+      console.warn("Pencarian OpenAlex dengan key gagal, beralih ke Crossref:", e);
+    }
+  }
+
+  // 2. Fallback cerdas: Crossref API (Stabil, terpercaya, bebas kuota IP)
+  try {
+    const crUrl = `https://api.crossref.org/works?query=${encodeURIComponent(query || "science")}&rows=${perPage}&offset=${(page - 1) * perPage}`;
+    const crRes = await fetch(crUrl, {
+      headers: { "User-Agent": "ScholaraApp/1.0 (mailto:budagbogor@gmail.com)" },
+      signal: AbortSignal.timeout(6000)
+    });
+
+    if (crRes.ok) {
+      const crJson: any = await crRes.json();
+      const message = crJson.message || {};
+      const totalCount = message["total-results"] || 0;
+      const items = message.items || [];
+
+      const formatted = items.map((item: any) => {
+        const titleStr = Array.isArray(item.title) ? item.title[0] : (item.title || "Karya Ilmiah");
+        const pubYear = item.published?.["date-parts"]?.[0]?.[0] || item.created?.["date-parts"]?.[0]?.[0] || new Date().getFullYear();
+        const venue = item["container-title"]?.[0] || item.publisher || "Jurnal Akademik Internasional";
+        const doiStr = item.DOI ? `https://doi.org/${item.DOI}` : `crossref_${Math.random()}`;
+
+        let directPdf = null;
+        if (Array.isArray(item.link)) {
+          const pdfLink = item.link.find((l: any) => (l["content-type"] || "").includes("pdf") || (l.URL || "").endsWith(".pdf"));
+          if (pdfLink) directPdf = pdfLink.URL;
+        }
+
+        return {
+          id: doiStr,
+          display_name: titleStr,
+          title: titleStr,
+          publication_year: pubYear,
+          cited_by_count: item["is-referenced-by-count"] || 0,
+          doi: item.DOI ? `https://doi.org/${item.DOI}` : null,
+          primary_location: {
+            source: { display_name: venue }
+          },
+          host_venue: { display_name: venue },
+          authorships: (item.author || []).map((a: any) => ({
+            author: { display_name: `${a.given || ""} ${a.family || ""}`.trim() || "Peneliti Ilmiah" },
+            institutions: (a.affiliation || []).map((aff: any) => ({ display_name: aff.name }))
+          })),
+          open_access: {
+            is_oa: !!directPdf,
+            oa_url: directPdf,
+            oa_status: directPdf ? "gold" : "closed"
+          },
+          best_oa_location: directPdf ? { pdf_url: directPdf } : null,
+          abstract_inverted_index: null,
+          abstract: typeof item.abstract === "string" ? item.abstract.replace(/<[^>]+>/g, "").trim() : null,
+          concepts: (item.subject || []).slice(0, 4).map((s: string) => ({ id: s, display_name: s })),
+          sourceProvider: "Crossref Global Repository (Fallback Kuota)"
+        };
+      });
+
+      res.json({
+        provider: "crossref_fallback",
+        meta: { count: totalCount, page, per_page: perPage },
+        results: formatted
+      });
+      return;
+    }
+  } catch (err: any) {
+    console.warn("Crossref fallback error:", err);
+  }
+
+  // 3. Fallback terakhir: Katalog Terkurasi Lokal / Neon
+  const curated = await getCuratedJournals();
+  res.json({
+    provider: "curated_fallback",
+    meta: { count: curated.length, page: 1, per_page: perPage },
+    results: curated
+  });
+});
+
+// Middleware Global Error Handler (Menjamin output selalu berupa JSON yang valid, bukan HTML error Vercel)
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("Express Global Error:", err);
+  res.status(500).json({
+    error: err?.message || "Terjadi kesalahan pada server.",
+    details: process.env.NODE_ENV !== "production" ? String(err?.stack || err) : undefined
+  });
+});
+
+// Setup Vite middleware untuk mode pengembangan lokal dan penyajian statis
 async function startServer() {
   await initNeonDb();
 
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (_req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
-  }
-
   if (!process.env.VERCEL) {
+    if (process.env.NODE_ENV !== "production") {
+      try {
+        const { createServer: createViteServer } = await import("vite");
+        const vite = await createViteServer({
+          server: { middlewareMode: true },
+          appType: "spa",
+        });
+        app.use(vite.middlewares);
+      } catch (err) {
+        console.warn("Gagal memuat Vite middleware:", err);
+      }
+    } else {
+      const distPath = path.join(process.cwd(), "dist");
+      app.use(express.static(distPath));
+      app.get("*", (_req, res) => {
+        res.sendFile(path.join(distPath, "index.html"));
+      });
+    }
+
     app.listen(PORT, () => {
       console.log(`Scholara Server berjalan di http://localhost:${PORT}`);
     });
   }
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
 
+export { initNeonDb };
 export default app;

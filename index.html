@@ -1665,7 +1665,7 @@
       <div class="p-4 sm:p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500">
-            <i data-lucide="bookmarks" class="w-4 h-4"></i>
+            <i data-lucide="bookmark" class="w-4 h-4"></i>
           </div>
           <div>
             <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -2517,7 +2517,15 @@
           })
         });
 
-        const data = await res.json();
+        let data = {};
+        const contentType = res.headers.get("content-type") || "";
+        if (contentType.includes("json")) {
+          data = await res.json().catch(() => ({}));
+        } else {
+          const rawText = await res.text().catch(() => "");
+          data = { error: rawText.slice(0, 160) || `Server status ${res.status}: ${res.statusText}` };
+        }
+
         if (res.ok && data.success) {
           resultEl.className = "p-3.5 rounded-xl text-xs flex items-start gap-2.5 transition-all bg-emerald-50 border-emerald-200 text-emerald-950 border";
           resultEl.innerHTML = `
@@ -2587,7 +2595,14 @@
             localStorage.removeItem('scholara_local_ai_settings');
             showToast('Pengaturan AI Global berhasil disimpan aman di server!', 'success');
           } else {
-            const data = await res.json();
+            let data = {};
+            const ct = res.headers.get("content-type") || "";
+            if (ct.includes("json")) {
+              data = await res.json().catch(() => ({}));
+            } else {
+              const txt = await res.text().catch(() => "");
+              data = { error: txt.slice(0, 160) || `Server error (${res.status})` };
+            }
             throw new Error(data.error || 'Server gagal menyimpan data');
           }
         } catch (err) {
@@ -2866,12 +2881,12 @@
           return;
         }
 
-        // ==================== MODE 3: EXPLORASI GLOBAL OPENALEX (DEFAULT) ====================
+        // ==================== MODE 3: EXPLORASI GLOBAL OPENALEX (DEFAULT) DENGAN FALLBACK MULTI-SUMBER ====================
         const baseUrl = 'https://api.openalex.org/works';
         const params = new URLSearchParams();
 
-        // Aktifkan OpenAlex Polite Pool (10x lebih cepat dan batas kuota tinggi)
-        params.append('mailto', 'scholara-academic@openalex-polite.org');
+        // Aktifkan OpenAlex Polite Pool
+        params.append('mailto', 'budagbogor@gmail.com');
 
         const cleanQuery = (state.query || '').trim();
         const doiMatch = cleanQuery.match(/(?:https?:\/\/doi\.org\/)?(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+)/i);
@@ -2909,20 +2924,50 @@
         params.append('page', state.page.toString());
         params.append('per_page', state.perPage.toString());
 
-        const requestUrl = `${baseUrl}?${params.toString()}`;
-        const response = await fetch(requestUrl);
+        let data = null;
+        let isFallbackUsed = false;
 
-        if (!response.ok) throw new Error(`HTTP error status: ${response.status}`);
+        try {
+          const requestUrl = `${baseUrl}?${params.toString()}`;
+          const response = await fetch(requestUrl);
+          if (response.ok) {
+            data = await response.json();
+          } else {
+            console.warn(`OpenAlex mengembalikan status ${response.status}. Mengaktifkan fallback cerdas...`);
+          }
+        } catch (e) {
+          console.warn('Gagal koneksi langsung ke OpenAlex:', e);
+        }
 
-        const data = await response.json();
+        // Jika OpenAlex dibatasi (429) atau gagal, gunakan Fallback Cerdas Crossref API & Curated
+        if (!data || !data.results || data.results.length === 0) {
+          try {
+            const fbRes = await fetch(`/api/papers/search?query=${encodeURIComponent(cleanQuery || 'science')}&page=${state.page}&per_page=${state.perPage}`);
+            if (fbRes.ok) {
+              const fbData = await fbRes.json();
+              data = {
+                meta: fbData.meta || { count: (fbData.results || []).length },
+                results: fbData.results || []
+              };
+              isFallbackUsed = true;
+            }
+          } catch (fbErr) {
+            console.warn('Fallback search error:', fbErr);
+          }
+        }
+
+        if (!data || !data.results) {
+          throw new Error('Repositori rujukan sedang sibuk. Silakan coba beberapa saat lagi.');
+        }
+
         const endTime = performance.now();
         const latency = Math.round(endTime - startTime);
 
-        state.totalCount = data.meta?.count || 0;
+        state.totalCount = data.meta?.count || (data.results || []).length;
         let openAlexResults = (data.results || []).map(p => ({
           ...p,
-          translatedTitle: null,
-          translatedAbstract: null,
+          translatedTitle: p.translatedTitle || null,
+          translatedAbstract: p.translatedAbstract || null,
           isTranslating: false,
           showOriginal: false
         }));
@@ -3019,7 +3064,11 @@
           return;
         }
 
-        countText.innerHTML = `Ditemukan <strong class="text-slate-900 font-bold">${state.totalCount.toLocaleString('id-ID')}</strong> karya ilmiah`;
+        if (isFallbackUsed) {
+          countText.innerHTML = `Ditemukan <strong class="text-indigo-700 font-bold">${state.totalCount.toLocaleString('id-ID')}</strong> karya ilmiah <span class="text-indigo-600 font-medium text-xs bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md ml-1">Crossref & Kurasi (Cadangan Cerdas)</span>`;
+        } else {
+          countText.innerHTML = `Ditemukan <strong class="text-slate-900 font-bold">${state.totalCount.toLocaleString('id-ID')}</strong> karya ilmiah`;
+        }
         renderActiveFilterPills();
         renderPapersList();
         renderPaginationControls();
@@ -5616,8 +5665,10 @@
 
       try {
         const response = await fetch('/api/admin/journals');
-        if (!response.ok) throw new Error('Gagal mengambil data');
-        const data = await response.json();
+        let data = { journals: [] };
+        if (response.ok) {
+          data = await response.json().catch(() => ({ journals: [] }));
+        }
         
         state.curatedJournals = data.journals || [];
         countBadge.textContent = state.curatedJournals.length.toString();
