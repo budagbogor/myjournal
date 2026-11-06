@@ -5583,12 +5583,14 @@
         const resData = await response.json();
 
         if (resData.success) {
-          appendLog(`Koneksi berhasil. AI berhasil memanen ${resData.count} rujukan baru!`);
+          const count = resData.addedCount ?? resData.count ?? 0;
+          const dbName = resData.dbTarget || 'Neon Lakebase Postgres';
+          appendLog(`Koneksi berhasil. AI berhasil memanen ${count} rujukan baru!`);
           (resData.addedJournals || []).forEach(j => {
             appendLog(`[DIPANEN] "${j.translatedTitle || j.title}" (${j.publication_year || '2025'}) - DOI: ${j.doi || 'N/A'}`);
           });
-          appendLog(`Sinkronisasi selesai dengan sukses. Semua data telah didepositkan ke database lokal!`, false);
-          showToast(`Sinkronisasi sukses! Memanen ${resData.count} karya ilmiah baru.`, 'success');
+          appendLog(`Sinkronisasi selesai dengan sukses. Semua data telah didepositkan ke ${dbName}!`, false);
+          showToast(`Sinkronisasi sukses! Memanen ${count} karya ilmiah baru ke ${dbName}.`, 'success');
         } else {
           appendLog(`Error: ${resData.error || 'Gagal menyinkronkan rujukan.'}`, true);
           showToast(resData.error || 'Sinkronisasi gagal.', 'error');

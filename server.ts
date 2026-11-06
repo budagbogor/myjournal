@@ -1368,7 +1368,8 @@ Format output JSON di dalam \`\`\`json ... \`\`\`:
       await saveCuratedJournals(currentList);
     }
 
-    res.json({ success: true, addedCount, totalCurated: currentList.length });
+    const dbTarget = process.env.DATABASE_URL ? `Neon Lakebase Postgres (${process.env.NEON_BRANCH || "production"})` : "Database Lokal";
+    res.json({ success: true, addedCount, count: addedCount, totalCurated: currentList.length, dbTarget });
   } catch (err: any) {
     res.status(500).json({ error: "Gagal sinkronisasi live: " + err.message });
   }
