@@ -86,7 +86,7 @@
 
   <!-- ==================== HEADER UTAMA ==================== -->
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-    <div class="max-w-[1536px] w-full mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[1750px] w-full mx-auto px-3 sm:px-5 lg:px-6">
       <div class="flex items-center justify-between h-16 gap-3 sm:gap-6">
         
         <!-- Logo Brand -->
@@ -196,7 +196,7 @@
 
   <!-- ==================== BILAH TOPIK TREN RISET ==================== -->
   <section class="border-b border-slate-200/70 bg-white/60 backdrop-blur-xs py-2">
-    <div class="max-w-[1536px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2.5 text-xs whitespace-nowrap">
+    <div class="max-w-[1750px] w-full mx-auto px-3 sm:px-5 lg:px-6 flex items-center gap-2.5 text-xs whitespace-nowrap">
       <div class="flex items-center gap-1.5 text-slate-400 font-semibold text-[11px] uppercase tracking-wider pl-1 pr-3 border-r border-slate-200 flex-shrink-0">
         <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600"></i>
         <span>Tren Riset</span>
@@ -276,11 +276,11 @@
   </section>
 
   <!-- ==================== AREA UTAMA (SIDEBAR + DAFTAR JURNAL) ==================== -->
-  <main class="flex-1 max-w-[1536px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
+  <main class="flex-1 max-w-[1750px] w-full mx-auto px-3 sm:px-5 lg:px-6 py-5">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6">
       
-      <!-- ==================== SIDEBAR FILTER (Kolom 4 di laptop kecil, Kolom 3 di layar lebar) ==================== -->
-      <aside class="lg:col-span-4 xl:col-span-3 2xl:col-span-3 space-y-4">
+      <!-- ==================== SIDEBAR FILTER (Lebar proporsional, geser ke kiri tanpa teks terpotong) ==================== -->
+      <aside class="lg:col-span-5 xl:col-span-4 2xl:col-span-4 space-y-4">
         
         <!-- Toggle Filter Mobile -->
         <div class="lg:hidden flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl shadow-xs">
@@ -426,8 +426,8 @@
         </div>
       </aside>
 
-      <!-- ==================== DAFTAR JURNAL UTAMA (Kolom 8 di laptop, Kolom 9 di layar lebar) ==================== -->
-      <section class="lg:col-span-8 xl:col-span-9 2xl:col-span-9 space-y-4 min-w-0">
+      <!-- ==================== DAFTAR JURNAL UTAMA ==================== -->
+      <section class="lg:col-span-7 xl:col-span-8 2xl:col-span-8 space-y-4 min-w-0">
         
         <!-- Segmented Search Mode Tab & Controls Bar (Modern Clean Design) -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
@@ -3521,7 +3521,7 @@
                   <i data-lucide="${field.icon}" class="w-4 h-4"></i>
                 </div>
                 <div class="min-w-0 flex-1">
-                  <span class="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors block truncate leading-snug">${field.name}</span>
+                  <span class="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors block leading-snug break-words">${field.name}</span>
                   <span class="text-xs text-slate-400 block mt-0.5">${field.subfields.length} Sub-bidang</span>
                 </div>
               </button>
@@ -3562,7 +3562,7 @@
                           title="${sub.name}"
                         >
                           <i data-lucide="${isSubExpanded ? 'folder-open' : 'folder'}" class="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600 flex-shrink-0"></i>
-                          <span class="text-xs sm:text-[13px] font-semibold text-slate-800 truncate group-hover:text-indigo-600 leading-tight">${sub.name}</span>
+                          <span class="text-xs sm:text-[13px] font-semibold text-slate-800 group-hover:text-indigo-600 leading-snug break-words">${sub.name}</span>
                         </button>
 
                         <div class="flex items-center gap-1 flex-shrink-0">
@@ -5021,7 +5021,7 @@
       const isHidden = aside.classList.contains('lg:hidden');
       if (isHidden) {
         aside.classList.remove('lg:hidden');
-        resultsSection.className = 'lg:col-span-8 xl:col-span-9 2xl:col-span-9 space-y-4 min-w-0';
+        resultsSection.className = 'lg:col-span-7 xl:col-span-8 2xl:col-span-8 space-y-4 min-w-0';
         if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'panel-left-close');
         if (toggleText) toggleText.textContent = 'Filter';
         showToast('Panel filter ditampilkan', 'info');
