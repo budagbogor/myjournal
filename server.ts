@@ -170,6 +170,47 @@ app.get("/api/health", async (_req, res) => {
   });
 });
 
+// Mesin Terjemahan Cepat Cadangan (Bebas Kuota & Selalu Aktif)
+async function translateToIndonesianFallback(text: string): Promise<string> {
+  if (!text || !text.trim()) return "";
+  const clean = text.trim();
+  const parts = clean.split(/([:—–|])/);
+  try {
+    const translatedParts = await Promise.all(
+      parts.map(async (part) => {
+        const trimmed = part.trim();
+        if (!trimmed || /^[:—–|]$/.test(trimmed)) return part;
+        try {
+          const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(trimmed.slice(0, 450))}&langpair=en|id`;
+          const r = await fetch(url, { signal: AbortSignal.timeout(3500) });
+          if (r.ok) {
+            const j: any = await r.json();
+            const resText = j.responseData?.translatedText;
+            if (resText && !resText.includes("MYMEMORY WARNING")) {
+              return resText;
+            }
+          }
+        } catch (e) {}
+        return part;
+      })
+    );
+    return translatedParts.join(" ") || clean;
+  } catch (err) {
+    return clean;
+  }
+}
+
+// Endpoint Terjemahan Teks Tunggal
+app.post("/api/translate-text", async (req, res) => {
+  const { text } = req.body as { text?: string };
+  if (!text || !text.trim()) {
+    res.json({ translated: "" });
+    return;
+  }
+  const translated = await translateToIndonesianFallback(text);
+  res.json({ translated });
+});
+
 // Endpoint Terjemahan Batch untuk Judul dan Abstrak Karya Ilmiah
 app.post("/api/translate-batch", async (req, res) => {
   const { items } = req.body as {
@@ -200,34 +241,28 @@ app.post("/api/translate-batch", async (req, res) => {
     return;
   }
 
-  // Hubungi model AI terpilih dinamis
-  let aiConfig;
+  // Coba konfigurasi AI jika tersedia
+  let aiConfig: any = null;
   try {
     aiConfig = await resolveAiConfig(req);
   } catch (err) {
-    // Fallback ke OpenAlex original jika penyelesaian AI gagal
-    for (const item of uncachedItems) {
-      results.push({ id: item.id, title: item.title, abstract: item.abstract });
-    }
-    res.json({ translations: results, fallback: true });
-    return;
+    aiConfig = null;
   }
 
-  // Bagi dalam batch kecil (maksimal 8 per panggilan) untuk keandalan dan kecepatan tinggi
-  const BATCH_SIZE = 8;
-  for (let i = 0; i < uncachedItems.length; i += BATCH_SIZE) {
-    const chunk = uncachedItems.slice(i, i + BATCH_SIZE);
-    
-    // Siapkan payload yang bersih
-    const payload = chunk.map(c => ({
-      id: c.id,
-      title: (c.title || "").slice(0, 350),
-      abstract: (c.abstract && c.abstract !== "Abstrak tidak tersedia secara terbuka.") 
-        ? c.abstract.slice(0, 1000) 
-        : ""
-    }));
+  // Skenario A: Ada API Key AI yang valid -> Gunakan AI untuk terjemahan kontekstual akademik tingkat lanjut
+  if (aiConfig && aiConfig.apiKey && aiConfig.apiKey.trim()) {
+    const BATCH_SIZE = 8;
+    for (let i = 0; i < uncachedItems.length; i += BATCH_SIZE) {
+      const chunk = uncachedItems.slice(i, i + BATCH_SIZE);
+      const payload = chunk.map(c => ({
+        id: c.id,
+        title: (c.title || "").slice(0, 350),
+        abstract: (c.abstract && c.abstract !== "Abstrak tidak tersedia secara terbuka.") 
+          ? c.abstract.slice(0, 1000) 
+          : ""
+      }));
 
-    const systemPrompt = `Anda adalah penerjemah akademis profesional untuk literatur jurnal ilmiah bereputasi internasional.
+      const systemPrompt = `Anda adalah penerjemah akademis profesional untuk literatur jurnal ilmiah bereputasi internasional.
 Terjemahkan judul dan abstrak berikut dari Bahasa Inggris ke Bahasa Indonesia akademik yang baku, lugas, dan akurat.
 Aturan:
 1. Pertahankan akronim umum/teknis (contoh: AI, CRISPR, DNA, COVID-19, LLM, BERT, IoT, GPU).
@@ -235,29 +270,40 @@ Aturan:
 3. Jika abstrak kosong, biarkan kosong.
 Kembalikan format JSON murni berbentuk ARRAY objek: [{"id": "...", "title": "judul terjemahan", "abstract": "abstrak terjemahan"}]`;
 
-    const userPrompt = `Data yang wajib diterjemahkan: ${JSON.stringify(payload)}`;
+      const userPrompt = `Data yang wajib diterjemahkan: ${JSON.stringify(payload)}`;
 
-    try {
-      const responseText = await callAiChat(aiConfig, systemPrompt, userPrompt, "application/json");
-      if (responseText) {
-        // Bersihkan blok markdown ```json jika ada
-        const cleanText = responseText.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, "$1").trim();
-        const parsed = JSON.parse(cleanText) as Array<{ id: string; title: string; abstract?: string }>;
-        for (const tr of parsed) {
-          const matchedOriginal = chunk.find(c => c.id === tr.id);
-          const finalTitle = tr.title || (matchedOriginal ? matchedOriginal.title : "");
-          const finalAbstract = tr.abstract || (matchedOriginal ? matchedOriginal.abstract : "");
+      try {
+        const responseText = await callAiChat(aiConfig, systemPrompt, userPrompt, "application/json");
+        if (responseText) {
+          const cleanText = responseText.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, "$1").trim();
+          const parsed = JSON.parse(cleanText) as Array<{ id: string; title: string; abstract?: string }>;
+          for (const tr of parsed) {
+            const matchedOriginal = chunk.find(c => c.id === tr.id);
+            const finalTitle = tr.title || (matchedOriginal ? matchedOriginal.title : "");
+            const finalAbstract = tr.abstract || (matchedOriginal ? matchedOriginal.abstract : "");
 
-          serverTranslationCache.set(tr.id, { title: finalTitle, abstract: finalAbstract });
-          results.push({ id: tr.id, title: finalTitle, abstract: finalAbstract });
+            serverTranslationCache.set(tr.id, { title: finalTitle, abstract: finalAbstract });
+            results.push({ id: tr.id, title: finalTitle, abstract: finalAbstract });
+          }
+        }
+      } catch (err) {
+        console.warn("AI batch translation gagal, beralih ke fallback terjemahan bebas kuota:", err);
+        // Fallback untuk chunk ini menggunakan engine terjemahan cadangan
+        for (const item of chunk) {
+          const trTitle = await translateToIndonesianFallback(item.title);
+          const trAbs = item.abstract ? await translateToIndonesianFallback(item.abstract) : "";
+          serverTranslationCache.set(item.id, { title: trTitle, abstract: trAbs });
+          results.push({ id: item.id, title: trTitle, abstract: trAbs });
         }
       }
-    } catch (err) {
-      console.error("Gagal menerjemahkan chunk batch:", err);
-      // Fallback untuk chunk ini jika terjadi kegagalan jaringan
-      for (const item of chunk) {
-        results.push({ id: item.id, title: item.title, abstract: item.abstract });
-      }
+    }
+  } else {
+    // Skenario B: Belum ada API Key AI -> Otomatis terjemahkan ke Bahasa Indonesia menggunakan engine bebas kuota
+    for (const item of uncachedItems) {
+      const trTitle = await translateToIndonesianFallback(item.title);
+      const trAbs = item.abstract ? await translateToIndonesianFallback(item.abstract) : "";
+      serverTranslationCache.set(item.id, { title: trTitle, abstract: trAbs });
+      results.push({ id: item.id, title: trTitle, abstract: trAbs });
     }
   }
 

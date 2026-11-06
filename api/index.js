@@ -123,6 +123,44 @@ app.get("/api/health", async (_req, res) => {
     timestamp: (/* @__PURE__ */ new Date()).toISOString()
   });
 });
+async function translateToIndonesianFallback(text) {
+  if (!text || !text.trim()) return "";
+  const clean = text.trim();
+  const parts = clean.split(/([:—–|])/);
+  try {
+    const translatedParts = await Promise.all(
+      parts.map(async (part) => {
+        const trimmed = part.trim();
+        if (!trimmed || /^[:—–|]$/.test(trimmed)) return part;
+        try {
+          const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(trimmed.slice(0, 450))}&langpair=en|id`;
+          const r = await fetch(url, { signal: AbortSignal.timeout(3500) });
+          if (r.ok) {
+            const j = await r.json();
+            const resText = j.responseData?.translatedText;
+            if (resText && !resText.includes("MYMEMORY WARNING")) {
+              return resText;
+            }
+          }
+        } catch (e) {
+        }
+        return part;
+      })
+    );
+    return translatedParts.join(" ") || clean;
+  } catch (err) {
+    return clean;
+  }
+}
+app.post("/api/translate-text", async (req, res) => {
+  const { text } = req.body;
+  if (!text || !text.trim()) {
+    res.json({ translated: "" });
+    return;
+  }
+  const translated = await translateToIndonesianFallback(text);
+  res.json({ translated });
+});
 app.post("/api/translate-batch", async (req, res) => {
   const { items } = req.body;
   if (!items || !Array.isArray(items) || items.length === 0) {
@@ -143,50 +181,58 @@ app.post("/api/translate-batch", async (req, res) => {
     res.json({ translations: results });
     return;
   }
-  let aiConfig;
+  let aiConfig = null;
   try {
     aiConfig = await resolveAiConfig(req);
   } catch (err) {
-    for (const item of uncachedItems) {
-      results.push({ id: item.id, title: item.title, abstract: item.abstract });
-    }
-    res.json({ translations: results, fallback: true });
-    return;
+    aiConfig = null;
   }
-  const BATCH_SIZE = 8;
-  for (let i = 0; i < uncachedItems.length; i += BATCH_SIZE) {
-    const chunk = uncachedItems.slice(i, i + BATCH_SIZE);
-    const payload = chunk.map((c) => ({
-      id: c.id,
-      title: (c.title || "").slice(0, 350),
-      abstract: c.abstract && c.abstract !== "Abstrak tidak tersedia secara terbuka." ? c.abstract.slice(0, 1e3) : ""
-    }));
-    const systemPrompt = `Anda adalah penerjemah akademis profesional untuk literatur jurnal ilmiah bereputasi internasional.
+  if (aiConfig && aiConfig.apiKey && aiConfig.apiKey.trim()) {
+    const BATCH_SIZE = 8;
+    for (let i = 0; i < uncachedItems.length; i += BATCH_SIZE) {
+      const chunk = uncachedItems.slice(i, i + BATCH_SIZE);
+      const payload = chunk.map((c) => ({
+        id: c.id,
+        title: (c.title || "").slice(0, 350),
+        abstract: c.abstract && c.abstract !== "Abstrak tidak tersedia secara terbuka." ? c.abstract.slice(0, 1e3) : ""
+      }));
+      const systemPrompt = `Anda adalah penerjemah akademis profesional untuk literatur jurnal ilmiah bereputasi internasional.
 Terjemahkan judul dan abstrak berikut dari Bahasa Inggris ke Bahasa Indonesia akademik yang baku, lugas, dan akurat.
 Aturan:
 1. Pertahankan akronim umum/teknis (contoh: AI, CRISPR, DNA, COVID-19, LLM, BERT, IoT, GPU).
 2. Pertahankan istilah ilmiah yang lazim tidak diterjemahkan dalam komunitas riset Indonesia (contoh: deep learning, transformer, machine learning, in vitro).
 3. Jika abstrak kosong, biarkan kosong.
 Kembalikan format JSON murni berbentuk ARRAY objek: [{"id": "...", "title": "judul terjemahan", "abstract": "abstrak terjemahan"}]`;
-    const userPrompt = `Data yang wajib diterjemahkan: ${JSON.stringify(payload)}`;
-    try {
-      const responseText = await callAiChat(aiConfig, systemPrompt, userPrompt, "application/json");
-      if (responseText) {
-        const cleanText = responseText.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, "$1").trim();
-        const parsed = JSON.parse(cleanText);
-        for (const tr of parsed) {
-          const matchedOriginal = chunk.find((c) => c.id === tr.id);
-          const finalTitle = tr.title || (matchedOriginal ? matchedOriginal.title : "");
-          const finalAbstract = tr.abstract || (matchedOriginal ? matchedOriginal.abstract : "");
-          serverTranslationCache.set(tr.id, { title: finalTitle, abstract: finalAbstract });
-          results.push({ id: tr.id, title: finalTitle, abstract: finalAbstract });
+      const userPrompt = `Data yang wajib diterjemahkan: ${JSON.stringify(payload)}`;
+      try {
+        const responseText = await callAiChat(aiConfig, systemPrompt, userPrompt, "application/json");
+        if (responseText) {
+          const cleanText = responseText.replace(/```(?:json)?\s*([\s\S]*?)\s*```/g, "$1").trim();
+          const parsed = JSON.parse(cleanText);
+          for (const tr of parsed) {
+            const matchedOriginal = chunk.find((c) => c.id === tr.id);
+            const finalTitle = tr.title || (matchedOriginal ? matchedOriginal.title : "");
+            const finalAbstract = tr.abstract || (matchedOriginal ? matchedOriginal.abstract : "");
+            serverTranslationCache.set(tr.id, { title: finalTitle, abstract: finalAbstract });
+            results.push({ id: tr.id, title: finalTitle, abstract: finalAbstract });
+          }
+        }
+      } catch (err) {
+        console.warn("AI batch translation gagal, beralih ke fallback terjemahan bebas kuota:", err);
+        for (const item of chunk) {
+          const trTitle = await translateToIndonesianFallback(item.title);
+          const trAbs = item.abstract ? await translateToIndonesianFallback(item.abstract) : "";
+          serverTranslationCache.set(item.id, { title: trTitle, abstract: trAbs });
+          results.push({ id: item.id, title: trTitle, abstract: trAbs });
         }
       }
-    } catch (err) {
-      console.error("Gagal menerjemahkan chunk batch:", err);
-      for (const item of chunk) {
-        results.push({ id: item.id, title: item.title, abstract: item.abstract });
-      }
+    }
+  } else {
+    for (const item of uncachedItems) {
+      const trTitle = await translateToIndonesianFallback(item.title);
+      const trAbs = item.abstract ? await translateToIndonesianFallback(item.abstract) : "";
+      serverTranslationCache.set(item.id, { title: trTitle, abstract: trAbs });
+      results.push({ id: item.id, title: trTitle, abstract: trAbs });
     }
   }
   res.json({ translations: results });
