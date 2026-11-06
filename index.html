@@ -373,8 +373,10 @@
                   autocapitalize="off"
                   spellcheck="false"
                   data-lpignore="true"
+                  data-form-type="other"
+                  onfocus="if (this.value && (this.value.includes('@') || this.value.includes('.com'))) { this.value = ''; handleDisciplineSearch(''); }"
                   oninput="handleDisciplineSearch(this.value)"
-                  placeholder="Cari sub-bidang atau topik mikro..."
+                  placeholder="Contoh: Kedokteran, Informatika, Bisnis..."
                   class="w-full pl-8 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
                 />
                 <button
@@ -1486,6 +1488,8 @@
                     <input
                       type="password"
                       id="aiSettingsApiKey"
+                      autocomplete="new-password"
+                      data-lpignore="true"
                       class="w-full pl-3 pr-10 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600 bg-white font-mono"
                       placeholder="Masukkan API Key Anda..."
                     />
@@ -3440,13 +3444,18 @@
       const container = document.getElementById('disciplinesList');
       if (!container) return;
 
+      const input = document.getElementById('disciplineSearchInput');
+      if (input && input.value && (input.value.includes('@') || input.value.includes('.com'))) {
+        input.value = '';
+        state.disciplineSearch = '';
+      }
+
       let searchTerm = (state.disciplineSearch || '').trim().toLowerCase();
 
       // Deteksi & bersihkan jika browser secara keliru mengisi alamat email pengguna (seperti Chrome autofill)
       if (searchTerm.includes('@') || searchTerm.includes('.com')) {
         searchTerm = '';
         state.disciplineSearch = '';
-        const input = document.getElementById('disciplineSearchInput');
         if (input) input.value = '';
         const clearBtn = document.getElementById('clearDisciplineSearchBtn');
         if (clearBtn) clearBtn.classList.add('hidden');
