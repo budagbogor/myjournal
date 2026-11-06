@@ -1434,6 +1434,10 @@
                     <option value="openai">OpenAI (ChatGPT)</option>
                     <option value="anthropic">Anthropic Claude</option>
                   </select>
+                  <p id="aiEndpointInfo" class="text-[10px] text-emerald-600 font-medium flex items-center gap-1 pt-0.5">
+                    <i data-lucide="shield-check" class="w-3 h-3 text-emerald-500"></i>
+                    <span>Base URL: <code class="font-mono bg-emerald-50 text-emerald-800 px-1 rounded">https://ai.sumopod.com/v1</code> (Otomatis)</span>
+                  </p>
                 </div>
 
                 <div class="space-y-1.5">
@@ -2285,6 +2289,20 @@
           keyInput.placeholder = 'sk-ant-... (Anthropic Console)';
         }
       }
+
+      const endpointInfo = document.getElementById('aiEndpointInfo');
+      if (endpointInfo) {
+        if (provider === 'sumopod') {
+          endpointInfo.innerHTML = '<i data-lucide="shield-check" class="w-3 h-3 text-emerald-500"></i><span>Base URL: <code class="font-mono bg-emerald-50 text-emerald-800 px-1 rounded">https://ai.sumopod.com/v1</code> (Otomatis)</span>';
+        } else if (provider === 'gemini') {
+          endpointInfo.innerHTML = '<i data-lucide="shield-check" class="w-3 h-3 text-emerald-500"></i><span>SDK: <code class="font-mono bg-emerald-50 text-emerald-800 px-1 rounded">Google AI Studio</code> (Otomatis)</span>';
+        } else if (provider === 'openai') {
+          endpointInfo.innerHTML = '<i data-lucide="shield-check" class="w-3 h-3 text-emerald-500"></i><span>Base URL: <code class="font-mono bg-emerald-50 text-emerald-800 px-1 rounded">https://api.openai.com/v1</code> (Otomatis)</span>';
+        } else if (provider === 'anthropic') {
+          endpointInfo.innerHTML = '<i data-lucide="shield-check" class="w-3 h-3 text-emerald-500"></i><span>Base URL: <code class="font-mono bg-emerald-50 text-emerald-800 px-1 rounded">https://api.anthropic.com/v1</code> (Otomatis)</span>';
+        }
+        lucide.createIcons();
+      }
     }
 
     function toggleApiKeyVisibility() {
@@ -2339,13 +2357,18 @@
           if (localConfig && localConfig.scope === 'local') {
             document.getElementById('aiSettingsProvider').value = localConfig.provider || 'sumopod';
             onAiProviderChanged();
-            document.getElementById('aiSettingsModel').value = localConfig.model || '';
+            if (localConfig.model) {
+              document.getElementById('aiSettingsModel').value = localConfig.model;
+            }
             document.getElementById('aiSettingsApiKey').value = localConfig.apiKey || '';
             setAiSettingsScope('local');
           } else {
-            document.getElementById('aiSettingsProvider').value = global.provider || 'sumopod';
+            const activeProv = global.provider || 'sumopod';
+            document.getElementById('aiSettingsProvider').value = activeProv;
             onAiProviderChanged();
-            document.getElementById('aiSettingsModel').value = global.model || '';
+            if (global.model) {
+              document.getElementById('aiSettingsModel').value = global.model;
+            }
             // Masukkan placeholder bertopeng jika kunci API global sudah ada di server
             document.getElementById('aiSettingsApiKey').value = global.hasApiKey ? '••••••••••••••••••••••••••••••••' : '';
             setAiSettingsScope('global');
@@ -2356,7 +2379,9 @@
         if (localConfig) {
           document.getElementById('aiSettingsProvider').value = localConfig.provider || 'sumopod';
           onAiProviderChanged();
-          document.getElementById('aiSettingsModel').value = localConfig.model || '';
+          if (localConfig.model) {
+            document.getElementById('aiSettingsModel').value = localConfig.model;
+          }
           document.getElementById('aiSettingsApiKey').value = localConfig.apiKey || '';
           setAiSettingsScope('local');
         }
