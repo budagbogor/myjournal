@@ -382,7 +382,12 @@ async function resolveAiConfig(req: express.Request) {
   if (localProvider && localApiKey) {
     return {
       provider: localProvider,
-      model: localModel || (localProvider === "gemini" ? "gemini-2.5-flash" : localProvider === "openai" ? "gpt-4o-mini" : "claude-3-5-haiku-20241022"),
+      model: localModel || (
+        localProvider === "gemini" ? "gemini-2.5-flash" :
+        localProvider === "sumopod" ? "gpt-4o-mini" :
+        localProvider === "openai" ? "gpt-4o-mini" :
+        "claude-3-5-haiku-20241022"
+      ),
       apiKey: localApiKey
     };
   }
@@ -403,7 +408,7 @@ async function resolveAiConfig(req: express.Request) {
   return {
     provider: "gemini",
     model: "gemini-2.5-flash",
-    apiKey: process.env.GEMINI_API_KEY || ""
+    apiKey: process.env.GEMINI_API_KEY || process.env.SUMOPOD_API_KEY || ""
   };
 }
 
@@ -451,6 +456,29 @@ async function callAiChat(
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(`OpenAI API Error: ${err.error?.message || res.statusText}`);
+    }
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || "";
+  } else if (provider === "sumopod") {
+    // SumoPod AI: OpenAI-compatible gateway/proxy (ai.sumopod.com)
+    const res = await fetch("https://ai.sumopod.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: model || "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        response_format: responseMimeType === "application/json" ? { type: "json_object" } : undefined
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(`SumoPod API Error: ${err.error?.message || err.message || res.statusText}`);
     }
     const data = await res.json();
     return data.choices?.[0]?.message?.content || "";
@@ -563,7 +591,13 @@ app.post("/api/admin/ai-settings", async (req, res) => {
 // Endpoint Tes Koneksi API Mesin AI Terpilih
 app.post("/api/admin/test-connection", async (req, res) => {
   const { provider, model, apiKey } = req.body;
-  if (!apiKey) {
+  let effectiveApiKey = apiKey;
+  if (!effectiveApiKey || effectiveApiKey.includes("TERENKRIPSI") || effectiveApiKey.includes("•")) {
+    const current = await getAiSettings();
+    effectiveApiKey = current.apiKey;
+  }
+
+  if (!effectiveApiKey) {
     res.status(400).json({ error: "API Key diperlukan untuk uji koneksi." });
     return;
   }
@@ -572,7 +606,7 @@ app.post("/api/admin/test-connection", async (req, res) => {
     const startTime = performance.now();
     if (provider === "gemini") {
       const testClient = new GoogleGenAI({
-        apiKey: apiKey,
+        apiKey: effectiveApiKey,
         httpOptions: { headers: { "User-Agent": "aistudio-build" } }
       });
       const response = await testClient.models.generateContent({
@@ -585,9 +619,32 @@ app.post("/api/admin/test-connection", async (req, res) => {
         res.json({ success: true, latency, message: "Koneksi Google Gemini API berhasil terjalin!" });
         return;
       }
+    } else if (provider === "sumopod") {
+      // Uji coba koneksi ke SumoPod AI gateway
+      const testRes = await fetch("https://ai.sumopod.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${effectiveApiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: model || "gpt-4o-mini",
+          messages: [{ role: "user", content: "Hi" }],
+          max_tokens: 5
+        })
+      });
+      const endTime = performance.now();
+      const latency = Math.round(endTime - startTime);
+      if (testRes.ok) {
+        res.json({ success: true, latency, message: "Koneksi SumoPod AI API berhasil terjalin! Latensi: " + latency + "ms" });
+        return;
+      } else {
+        const errData = await testRes.json().catch(() => ({}));
+        throw new Error(errData.error?.message || errData.message || "Kunci API SumoPod tidak valid atau kuota habis.");
+      }
     } else if (provider === "openai") {
       const testRes = await fetch("https://api.openai.com/v1/models", {
-        headers: { "Authorization": `Bearer ${apiKey}` }
+        headers: { "Authorization": `Bearer ${effectiveApiKey}` }
       });
       const endTime = performance.now();
       const latency = Math.round(endTime - startTime);
@@ -602,7 +659,7 @@ app.post("/api/admin/test-connection", async (req, res) => {
       const testRes = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
-          "x-api-key": apiKey,
+          "x-api-key": effectiveApiKey,
           "anthropic-version": "2023-06-01",
           "content-type": "application/json"
         },

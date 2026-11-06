@@ -1430,6 +1430,7 @@
                     class="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600 bg-white text-slate-800 font-medium"
                   >
                     <option value="gemini">Google Gemini AI</option>
+                    <option value="sumopod">SumoPod AI (Proxy OpenAI IDR/QRIS)</option>
                     <option value="openai">OpenAI (ChatGPT)</option>
                     <option value="anthropic">Anthropic Claude</option>
                   </select>
@@ -1515,9 +1516,10 @@
                     Panduan Kunci API
                   </h5>
                   <ul class="text-[10.5px] text-slate-500 list-disc list-inside space-y-1 leading-relaxed">
-                    <li>Gemini API diperoleh dari <strong>Google AI Studio</strong>.</li>
-                    <li>OpenAI API diperoleh dari <strong>platform.openai.com</strong>.</li>
-                    <li>Anthropic API diperoleh dari <strong>console.anthropic.com</strong>.</li>
+                    <li><strong>SumoPod AI</strong>: Diperoleh dari <strong>ai.sumopod.com</strong> (Gateway lokal hemat, bayar via QRIS/IDR).</li>
+                    <li><strong>Gemini API</strong>: Diperoleh dari <strong>Google AI Studio</strong> (Gratis & Cepat).</li>
+                    <li><strong>OpenAI API</strong>: Diperoleh dari <strong>platform.openai.com</strong>.</li>
+                    <li><strong>Anthropic API</strong>: Diperoleh dari <strong>console.anthropic.com</strong>.</li>
                   </ul>
                 </div>
               </div>
@@ -2181,6 +2183,18 @@
           { value: 'gemini-1.5-pro', label: 'gemini-1.5-pro' }
         ];
         modelInput.value = 'gemini-2.5-flash';
+      } else if (provider === 'sumopod') {
+        options = [
+          { value: 'gpt-4o-mini', label: 'gpt-4o-mini (Cepat & Hemat - Default)' },
+          { value: 'gpt-4o', label: 'gpt-4o (Frontier Model)' },
+          { value: 'claude-3-5-sonnet-20241022', label: 'claude-3-5-sonnet-20241022' },
+          { value: 'deepseek-chat', label: 'deepseek-chat (DeepSeek V3)' },
+          { value: 'deepseek-reasoner', label: 'deepseek-reasoner (DeepSeek R1)' },
+          { value: 'gemini-1.5-flash', label: 'gemini-1.5-flash' },
+          { value: 'gemini-1.5-pro', label: 'gemini-1.5-pro' },
+          { value: 'qwen-turbo', label: 'qwen-turbo' }
+        ];
+        modelInput.value = 'gpt-4o-mini';
       } else if (provider === 'openai') {
         options = [
           { value: 'gpt-4o', label: 'gpt-4o' },
