@@ -363,14 +363,29 @@
               </div>
 
               <div class="relative mb-2">
-                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
+                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none"></i>
                 <input
-                  type="text"
+                  type="search"
                   id="disciplineSearchInput"
+                  name="academic_discipline_search_filter"
+                  autocomplete="off"
+                  autocorrect="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                  data-lpignore="true"
                   oninput="handleDisciplineSearch(this.value)"
-                  placeholder="Cari bidang atau sub-bidang..."
-                  class="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
+                  placeholder="Cari sub-bidang atau topik mikro..."
+                  class="w-full pl-8 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
                 />
+                <button
+                  type="button"
+                  id="clearDisciplineSearchBtn"
+                  onclick="clearDisciplineSearch()"
+                  class="hidden absolute right-2 top-2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-200 transition-colors"
+                  title="Hapus pencarian bidang"
+                >
+                  <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                </button>
               </div>
 
               <div id="disciplinesList" class="space-y-1.5 max-h-[360px] overflow-y-auto pr-1">
@@ -1915,7 +1930,7 @@
             ]
           },
           {
-            id: 'C144133568_strat',
+            id: 'C162853370',
             name: 'Strategi Inovasi & Transformasi Digital Bisnis',
             microTopics: [
               { name: 'Adopsi AI Perusahaan & Produktivitas', query: 'generative AI corporate adoption workforce productivity enterprise' },
@@ -1953,7 +1968,7 @@
         ]
       },
       {
-        id: 'C127413603_applied',
+        id: 'C127413603',
         name: 'Ilmu Terapan & Rekayasa Industri',
         icon: 'settings',
         subfields: [
@@ -1967,7 +1982,7 @@
             ]
           },
           {
-            id: 'C41008148_applied',
+            id: 'C25227671',
             name: 'Sains Data Terapan & Analitika Bisnis',
             microTopics: [
               { name: 'Analitika Preskriptif Riset Operasi', query: 'operations research prescriptive analytics linear programming optimization' },
@@ -2564,6 +2579,18 @@
       setupKeyboardShortcuts();
       setupSearchAutocomplete();
 
+      // Lindungi dari autofill email browser yang tidak disengaja
+      setTimeout(() => {
+        const discInput = document.getElementById('disciplineSearchInput');
+        if (discInput && discInput.value && (discInput.value.includes('@') || discInput.value.includes('.com'))) {
+          discInput.value = '';
+          state.disciplineSearch = '';
+          const clearBtn = document.getElementById('clearDisciplineSearchBtn');
+          if (clearBtn) clearBtn.classList.add('hidden');
+          renderDisciplinesSidebar();
+        }
+      }, 250);
+
       const searchInput = document.getElementById('searchInput');
       if (searchInput) searchInput.value = state.query;
 
@@ -2789,7 +2816,8 @@
           filters.push('is_oa:true');
         }
         if (state.activeConceptId) {
-          filters.push(`concepts.id:${state.activeConceptId}`);
+          const cleanConceptId = state.activeConceptId.split('_')[0];
+          filters.push(`concepts.id:${cleanConceptId}`);
         }
         if (state.yearFilter && state.yearFilter !== 'all') {
           if (state.yearFilter.includes('-')) {
@@ -3412,7 +3440,17 @@
       const container = document.getElementById('disciplinesList');
       if (!container) return;
 
-      const searchTerm = (state.disciplineSearch || '').trim().toLowerCase();
+      let searchTerm = (state.disciplineSearch || '').trim().toLowerCase();
+
+      // Deteksi & bersihkan jika browser secara keliru mengisi alamat email pengguna (seperti Chrome autofill)
+      if (searchTerm.includes('@') || searchTerm.includes('.com')) {
+        searchTerm = '';
+        state.disciplineSearch = '';
+        const input = document.getElementById('disciplineSearchInput');
+        if (input) input.value = '';
+        const clearBtn = document.getElementById('clearDisciplineSearchBtn');
+        if (clearBtn) clearBtn.classList.add('hidden');
+      }
 
       // Saring bidang berdasarkan pencarian teks
       const filteredFields = ACADEMIC_FIELDS.map(field => {
@@ -4745,7 +4783,33 @@
 
     // --- KONTROL TAKSONOMI KEILMUAN BERJENJANG (MAKRO, MESO, MIKRO) ---
     function handleDisciplineSearch(val) {
+      if (val && (val.includes('@') || val.includes('.com'))) {
+        const input = document.getElementById('disciplineSearchInput');
+        if (input) input.value = '';
+        state.disciplineSearch = '';
+        const clearBtn = document.getElementById('clearDisciplineSearchBtn');
+        if (clearBtn) clearBtn.classList.add('hidden');
+        renderDisciplinesSidebar();
+        return;
+      }
       state.disciplineSearch = val;
+      const clearBtn = document.getElementById('clearDisciplineSearchBtn');
+      if (clearBtn) {
+        if (val && val.trim().length > 0) {
+          clearBtn.classList.remove('hidden');
+        } else {
+          clearBtn.classList.add('hidden');
+        }
+      }
+      renderDisciplinesSidebar();
+    }
+
+    function clearDisciplineSearch() {
+      const input = document.getElementById('disciplineSearchInput');
+      if (input) input.value = '';
+      state.disciplineSearch = '';
+      const clearBtn = document.getElementById('clearDisciplineSearchBtn');
+      if (clearBtn) clearBtn.classList.add('hidden');
       renderDisciplinesSidebar();
     }
 
@@ -4909,6 +4973,8 @@
       state.disciplineSearch = '';
       const discInput = document.getElementById('disciplineSearchInput');
       if (discInput) discInput.value = '';
+      const clearDiscBtn = document.getElementById('clearDisciplineSearchBtn');
+      if (clearDiscBtn) clearDiscBtn.classList.add('hidden');
       state.yearFilter = 'all';
       state.minCitations = 0;
       state.page = 1;
