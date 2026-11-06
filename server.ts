@@ -1392,9 +1392,13 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, () => {
-    console.log(`Scholara Server berjalan di http://localhost:${PORT}`);
-  });
+  if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+      console.log(`Scholara Server berjalan di http://localhost:${PORT}`);
+    });
+  }
 }
 
 startServer();
+
+export default app;
