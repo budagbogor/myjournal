@@ -1,10 +1,13 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+dotenv.config();
 import express from "express";
 import path from "path";
 import fs from "fs/promises";
 import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,6 +16,76 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json({ limit: "10mb" }));
+
+// Inisialisasi Klien Neon Lakebase Postgres
+let sqlClient: NeonQueryFunction<false, false> | null = null;
+function getSql(): NeonQueryFunction<false, false> | null {
+  const dbUrl = process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED;
+  if (!sqlClient && dbUrl) {
+    try {
+      sqlClient = neon(dbUrl);
+    } catch (e) {
+      console.warn("Gagal membuat koneksi Neon:", e);
+    }
+  }
+  return sqlClient;
+}
+
+// Inisialisasi skema tabel & data awal Neon Postgres
+async function initNeonDb() {
+  const sql = getSql();
+  if (!sql) {
+    console.log("ℹ️ Neon DATABASE_URL tidak ditemukan. Menggunakan penyimpanan berkas lokal.");
+    return;
+  }
+
+  try {
+    // 1. Buat tabel curated_journals
+    await sql.query(`
+      CREATE TABLE IF NOT EXISTS curated_journals (
+        id TEXT PRIMARY KEY,
+        data JSONB NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+
+    // 2. Buat tabel ai_settings
+    await sql.query(`
+      CREATE TABLE IF NOT EXISTS ai_settings (
+        key TEXT PRIMARY KEY,
+        settings JSONB NOT NULL,
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `);
+
+    // 3. Periksa apakah tabel curated_journals perlu disemai dari berkas lokal yang sudah ada
+    const countRes: any = await sql.query(`SELECT COUNT(*)::int AS count FROM curated_journals;`);
+    const count = countRes?.[0]?.count || 0;
+    if (count === 0) {
+      try {
+        const raw = await fs.readFile(CURATED_JOURNALS_PATH, "utf-8");
+        const initialList = JSON.parse(raw);
+        if (Array.isArray(initialList) && initialList.length > 0) {
+          console.log(`📦 Menyemai ${initialList.length} jurnal awal ke Neon Postgres...`);
+          for (const item of initialList) {
+            if (item && item.id) {
+              await sql.query(
+                `INSERT INTO curated_journals (id, data, updated_at) VALUES ($1, $2, NOW()) ON CONFLICT (id) DO NOTHING;`,
+                [item.id, JSON.stringify(item)]
+              );
+            }
+          }
+          console.log("✅ Penyemaian jurnal ke Neon Postgres berhasil!");
+        }
+      } catch (err) {}
+    }
+
+    console.log(`🚀 Neon Database (${process.env.NEON_BRANCH || "production"}) terhubung dan siap digunakan.`);
+  } catch (err) {
+    console.error("❌ Gagal inisialisasi tabel Neon DB:", err);
+  }
+}
 
 // Inisialisasi Gemini Client secara aman
 let aiClient: GoogleGenAI | null = null;
@@ -33,9 +106,34 @@ function getGenAI(): GoogleGenAI | null {
 // In-memory Cache Terjemahan di sisi server agar respon secepat kilat
 const serverTranslationCache = new Map<string, { title: string; abstract?: string }>();
 
-// Endpoint Health Check
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
+// Endpoint Health Check dengan diagnosa Neon Lakebase Postgres
+app.get("/api/health", async (_req, res) => {
+  let dbStatus = "local_json";
+  let neonConnected = false;
+  let dbLatency = 0;
+  const sql = getSql();
+  if (sql) {
+    try {
+      const t0 = performance.now();
+      await sql.query("SELECT 1;");
+      dbLatency = Math.round(performance.now() - t0);
+      dbStatus = "neon_postgres";
+      neonConnected = true;
+    } catch (e) {
+      dbStatus = "neon_error";
+    }
+  }
+
+  res.json({
+    status: "ok",
+    database: {
+      type: dbStatus,
+      connected: neonConnected,
+      latencyMs: dbLatency,
+      branch: process.env.NEON_BRANCH || "production"
+    },
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Endpoint Terjemahan Batch untuk Judul dan Abstrak Karya Ilmiah
@@ -355,13 +453,27 @@ interface AiSettings {
 }
 
 async function getAiSettings(): Promise<AiSettings> {
+  const sql = getSql();
+  if (sql) {
+    try {
+      const rows: any = await sql.query(
+        `SELECT settings FROM ai_settings WHERE key = 'global' LIMIT 1;`
+      );
+      if (rows?.[0]?.settings) {
+        return rows[0].settings;
+      }
+    } catch (err) {
+      console.warn("Gagal membaca ai_settings dari Neon, fallback ke lokal:", err);
+    }
+  }
+
   try {
     const raw = await fs.readFile(AI_SETTINGS_PATH, "utf-8");
     return JSON.parse(raw);
   } catch {
     return {
-      provider: "gemini",
-      model: "gemini-2.5-flash",
+      provider: "sumopod",
+      model: "gpt-4o-mini",
       apiKey: "",
       scope: "global"
     };
@@ -369,8 +481,23 @@ async function getAiSettings(): Promise<AiSettings> {
 }
 
 async function saveAiSettings(settings: AiSettings): Promise<void> {
-  await fs.mkdir(path.dirname(AI_SETTINGS_PATH), { recursive: true });
-  await fs.writeFile(AI_SETTINGS_PATH, JSON.stringify(settings, null, 2), "utf-8");
+  try {
+    await fs.mkdir(path.dirname(AI_SETTINGS_PATH), { recursive: true });
+    await fs.writeFile(AI_SETTINGS_PATH, JSON.stringify(settings, null, 2), "utf-8");
+  } catch (e) {}
+
+  const sql = getSql();
+  if (sql) {
+    try {
+      await sql.query(
+        `INSERT INTO ai_settings (key, settings, updated_at) VALUES ('global', $1, NOW())
+         ON CONFLICT (key) DO UPDATE SET settings = $1, updated_at = NOW();`,
+        [JSON.stringify(settings)]
+      );
+    } catch (err) {
+      console.error("Gagal menyimpan ai_settings ke Neon:", err);
+    }
+  }
 }
 
 // Menyelesaikan konfigurasi AI aktif (dari header lokal atau basis data global)
@@ -715,6 +842,20 @@ app.post("/api/admin/test-connection", async (req, res) => {
 const CURATED_JOURNALS_PATH = path.join(process.cwd(), "data", "curated_journals.json");
 
 async function getCuratedJournals(): Promise<any[]> {
+  const sql = getSql();
+  if (sql) {
+    try {
+      const rows: any = await sql.query(
+        `SELECT data FROM curated_journals ORDER BY updated_at DESC;`
+      );
+      if (Array.isArray(rows) && rows.length > 0) {
+        return rows.map((r: any) => r.data);
+      }
+    } catch (err) {
+      console.warn("Gagal membaca curated_journals dari Neon, fallback ke lokal:", err);
+    }
+  }
+
   try {
     const raw = await fs.readFile(CURATED_JOURNALS_PATH, "utf-8");
     return JSON.parse(raw);
@@ -724,8 +865,36 @@ async function getCuratedJournals(): Promise<any[]> {
 }
 
 async function saveCuratedJournals(journals: any[]): Promise<void> {
-  await fs.mkdir(path.dirname(CURATED_JOURNALS_PATH), { recursive: true });
-  await fs.writeFile(CURATED_JOURNALS_PATH, JSON.stringify(journals, null, 2), "utf-8");
+  try {
+    await fs.mkdir(path.dirname(CURATED_JOURNALS_PATH), { recursive: true });
+    await fs.writeFile(CURATED_JOURNALS_PATH, JSON.stringify(journals, null, 2), "utf-8");
+  } catch (err) {}
+
+  const sql = getSql();
+  if (sql) {
+    try {
+      for (const item of journals) {
+        if (item && item.id) {
+          await sql.query(
+            `INSERT INTO curated_journals (id, data, updated_at) VALUES ($1, $2, NOW())
+             ON CONFLICT (id) DO UPDATE SET data = $2, updated_at = NOW();`,
+            [item.id, JSON.stringify(item)]
+          );
+        }
+      }
+      if (journals.length > 0) {
+        const ids = journals.map(j => j.id).filter(Boolean);
+        await sql.query(
+          `DELETE FROM curated_journals WHERE id != ALL($1::text[]);`,
+          [ids]
+        );
+      } else {
+        await sql.query(`DELETE FROM curated_journals;`);
+      }
+    } catch (err) {
+      console.error("Gagal menyimpan curated_journals ke Neon:", err);
+    }
+  }
 }
 
 // 1. Ambil semua jurnal terkurasi admin
@@ -1207,6 +1376,8 @@ Format output JSON di dalam \`\`\`json ... \`\`\`:
 
 // Setup Vite middleware untuk mode pengembangan dan penyajian statis untuk produksi
 async function startServer() {
+  await initNeonDb();
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },

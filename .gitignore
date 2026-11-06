@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+.neon
+
+data/ai_settings.json
