@@ -1,15 +1,16 @@
+import "dotenv/config";
 import express from "express";
 import path from "path";
 import fs from "fs/promises";
 import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json({ limit: "10mb" }));
 
@@ -149,6 +150,23 @@ app.get("/api/pdf-proxy", async (req, res) => {
       return;
     }
 
+    // Perlindungan SSRF: Blokir akses ke localhost, private IP, dan link lokal
+    const hostname = parsed.hostname.toLowerCase();
+    const isPrivate =
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "::1" ||
+      hostname.endsWith(".local") ||
+      hostname.startsWith("10.") ||
+      hostname.startsWith("192.168.") ||
+      hostname.startsWith("169.254.") ||
+      /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname);
+
+    if (isPrivate) {
+      res.status(403).send("Akses ke alamat jaringan internal diblokir demi keamanan.");
+      return;
+    }
+
     const response = await fetch(pdfUrl, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -158,6 +176,13 @@ app.get("/api/pdf-proxy", async (req, res) => {
 
     if (!response.ok) {
       res.status(response.status).send(`Gagal mengambil dokumen PDF dari server penerbit: ${response.statusText}`);
+      return;
+    }
+
+    // Batasi ukuran maksimal PDF 50MB untuk mencegah konsumsi memori berlebih
+    const contentLength = response.headers.get("content-length");
+    if (contentLength && parseInt(contentLength, 10) > 50 * 1024 * 1024) {
+      res.status(413).send("Dokumen PDF melebihi batas ukuran maksimal (50MB).");
       return;
     }
 
@@ -171,6 +196,61 @@ app.get("/api/pdf-proxy", async (req, res) => {
   } catch (err: any) {
     console.error("Gagal proxy PDF:", err);
     res.status(500).send("Terjadi kesalahan saat memuat berkas PDF: " + (err?.message || "Kesalahan jaringan"));
+  }
+});
+
+// Endpoint Tanya AI Interaktif (Academic Copilot) untuk Naskah Karya Ilmiah
+app.post("/api/paper-chat", async (req, res) => {
+  const { title, abstract, authors, venue, year, question, history } = req.body as {
+    title: string;
+    abstract?: string;
+    authors?: string;
+    venue?: string;
+    year?: string | number;
+    question: string;
+    history?: Array<{ role: "user" | "model"; text: string }>;
+  };
+
+  if (!title || !question) {
+    res.status(400).json({ error: "Judul paper dan pertanyaan wajib diisi." });
+    return;
+  }
+
+  let aiConfig;
+  try {
+    aiConfig = await resolveAiConfig(req);
+  } catch (err: any) {
+    res.status(503).json({ error: "Konfigurasi AI tidak tersedia: " + err.message });
+    return;
+  }
+
+  try {
+    const historyText = (history || [])
+      .slice(-6)
+      .map(h => `${h.role === "user" ? "Pengguna" : "Asisten AI"}: ${h.text}`)
+      .join("\n");
+
+    const systemPrompt = `Anda adalah Scholara Research Copilot, asisten AI riset akademik berstandar dunia.
+Anda bertugas menjawab pertanyaan peneliti mengenai naskah ilmiah berikut dengan lugas, objektif, berbasis bukti dari metadata/abstrak yang tersedia, dan dalam Bahasa Indonesia akademis yang elegan.
+Jika informasi spesifik tidak tercantum dalam abstrak/metadata, jelaskan secara transparan batasannya dan berikan inferensi ilmiah yang paling mendekati berdasarkan konteks bidang ilmu tersebut.`;
+
+    const userPrompt = `Metadata Karya Ilmiah:
+- Judul: ${title}
+- Penulis: ${authors || "Peneliti Ilmiah"}
+- Publikasi / Jurnal: ${venue || "Jurnal Akademik"} (${year || "N/A"})
+- Abstrak: ${abstract || "Abstrak ringkas."}
+
+${historyText ? `Riwayat Percakapan Sebelumnya:\n${historyText}\n` : ""}
+Pertanyaan Peneliti:
+${question}
+
+Jawab dengan struktur rapi menggunakan markdown (poin-poin, bolding penting).`;
+
+    const reply = await callAiChat(aiConfig, systemPrompt, userPrompt, "text/plain");
+    res.json({ reply: reply || "Maaf, belum dapat menghasilkan respon untuk pertanyaan ini." });
+  } catch (err: any) {
+    console.error("Gagal paper-chat:", err);
+    res.status(500).json({ error: err.message || "Gagal menghubungi mesin AI." });
   }
 });
 

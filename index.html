@@ -86,7 +86,7 @@
 
   <!-- ==================== HEADER UTAMA ==================== -->
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-    <div class="w-full px-3 sm:px-5 lg:px-6">
+    <div class="max-w-[1536px] w-full mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16 gap-3 sm:gap-6">
         
         <!-- Logo Brand -->
@@ -136,45 +136,20 @@
           <div id="suggestionsDropdown" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-50 divide-y divide-slate-100 max-h-72 overflow-y-auto"></div>
         </div>
 
-        <!-- Tombol Aksi Header -->
-        <div class="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
+        <!-- Tombol Aksi Header (Minimalist Modern Utility Bar) -->
+        <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           
-          <!-- Tombol Portal Admin & Kelola Jurnal -->
-          <button
-            type="button"
-            id="headerAdminHubBtn"
-            onclick="openAdminHubModal()"
-            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-md active:scale-95"
-            title="Portal Kurasi & Pembaruan Jurnal (Kelola Jurnal)"
-          >
-            <i data-lucide="sliders" class="w-3.5 h-3.5 text-amber-400"></i>
-            <span class="hidden md:inline">Kelola Jurnal</span>
-            <span id="adminCuratedCountBadge" class="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-400 text-slate-950 font-bold">4</span>
-          </button>
-
           <!-- Fitur Terjemahan Otomatis Toggle -->
           <button
             type="button"
             id="autoTranslateHeaderBtn"
             onclick="toggleAutoTranslateGlobal()"
-            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-semibold rounded-xl bg-indigo-50 border border-indigo-200/80 text-indigo-700 hover:bg-indigo-100 transition-all shadow-2xs"
-            title="Pengaturan Terjemahan Otomatis Bahasa Indonesia ala Media Sosial X"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 hover:bg-slate-200/80 text-slate-700 transition-all border border-slate-200/60 shadow-2xs"
+            title="Terjemahan Otomatis Bahasa Indonesia"
           >
             <i data-lucide="languages" class="w-3.5 h-3.5 text-indigo-600"></i>
-            <span class="hidden sm:inline">Terjemahan Otomatis</span>
-            <span id="autoTranslateStatusBadge" class="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-600 text-white font-mono">AKTIF</span>
-          </button>
-
-          <!-- Tombol Analitik -->
-          <button
-            type="button"
-            id="headerAnalyticsBtn"
-            onclick="toggleAnalyticsPanel()"
-            class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-medium rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-slate-300 hover:bg-slate-50 transition-all shadow-2xs"
-            title="Lihat Statistik Publikasi"
-          >
-            <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-600"></i>
-            <span class="hidden md:inline">Statistik</span>
+            <span class="hidden sm:inline">Terjemahan</span>
+            <span id="autoTranslateStatusBadge" class="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-indigo-600 text-white">ID</span>
           </button>
 
           <!-- Tombol Koleksi Tersimpan -->
@@ -182,12 +157,35 @@
             type="button"
             id="headerBookmarksBtn"
             onclick="openBookmarksDrawer()"
-            class="relative flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-medium rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-amber-600 hover:border-slate-300 hover:bg-slate-50 transition-all shadow-2xs"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 hover:bg-slate-200/80 text-slate-700 transition-all border border-slate-200/60 shadow-2xs"
             title="Daftar Bacaan Tersimpan"
           >
-            <i data-lucide="bookmark" class="w-4 h-4 text-amber-500"></i>
+            <i data-lucide="bookmark" class="w-3.5 h-3.5 text-amber-500"></i>
             <span class="hidden sm:inline">Koleksi</span>
-            <span id="savedBadgeCount" class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300/80">0</span>
+            <span id="savedBadgeCount" class="text-[10px] font-bold text-slate-700 bg-white px-1.5 py-0.2 rounded-full border border-slate-200">0</span>
+          </button>
+
+          <!-- Tombol Analitik -->
+          <button
+            type="button"
+            id="headerAnalyticsBtn"
+            onclick="toggleAnalyticsPanel()"
+            class="p-2 text-xs font-medium rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200"
+            title="Statistik Bibliometrik"
+          >
+            <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Tombol Portal Admin & Kelola Jurnal -->
+          <button
+            type="button"
+            id="headerAdminHubBtn"
+            onclick="openAdminHubModal()"
+            class="p-2 text-xs font-medium rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all relative border border-transparent hover:border-slate-200"
+            title="Kelola Jurnal & Pengaturan AI"
+          >
+            <i data-lucide="sliders" class="w-4 h-4"></i>
+            <span id="adminCuratedCountBadge" class="absolute -top-0.5 -right-0.5 text-[9px] w-4 h-4 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold">4</span>
           </button>
 
         </div>
@@ -197,13 +195,13 @@
   </header>
 
   <!-- ==================== BILAH TOPIK TREN RISET ==================== -->
-  <section class="border-b border-slate-200/80 bg-white/70 py-2 px-3 sm:px-5 lg:px-6 overflow-x-auto">
-    <div class="w-full flex items-center gap-2 text-xs whitespace-nowrap">
-      <div class="flex items-center gap-1 text-slate-500 font-medium pl-1 pr-2 border-r border-slate-200 flex-shrink-0">
+  <section class="border-b border-slate-200/70 bg-white/60 backdrop-blur-xs py-2">
+    <div class="max-w-[1536px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2.5 text-xs whitespace-nowrap">
+      <div class="flex items-center gap-1.5 text-slate-400 font-semibold text-[11px] uppercase tracking-wider pl-1 pr-3 border-r border-slate-200 flex-shrink-0">
         <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600"></i>
-        <span>Tren Riset:</span>
+        <span>Tren Riset</span>
       </div>
-      <div id="trendingTopicsContainer" class="flex items-center gap-1.5 overflow-x-auto py-0.5">
+      <div id="trendingTopicsContainer" class="flex items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-none">
         <!-- Dimuat via JavaScript -->
       </div>
     </div>
@@ -278,11 +276,11 @@
   </section>
 
   <!-- ==================== AREA UTAMA (SIDEBAR + DAFTAR JURNAL) ==================== -->
-  <main class="flex-1 w-full px-3 sm:px-5 lg:px-6 py-4">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5">
+  <main class="flex-1 max-w-[1536px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6">
       
       <!-- ==================== SIDEBAR FILTER (Kolom 4 di laptop kecil, Kolom 3 di layar lebar) ==================== -->
-      <aside class="lg:col-span-4 xl:col-span-3 2xl:col-span-3 space-y-5">
+      <aside class="lg:col-span-4 xl:col-span-3 2xl:col-span-3 space-y-4">
         
         <!-- Toggle Filter Mobile -->
         <div class="lg:hidden flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl shadow-xs">
@@ -299,122 +297,114 @@
           </button>
         </div>
 
-        <div id="sidebarFiltersContainer" class="hidden lg:block space-y-5 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
+        <div id="sidebarFiltersContainer" class="hidden lg:block space-y-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1">
           
-          <!-- Filter Khusus Open Access -->
-          <div class="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
-            <div class="flex items-center justify-between">
-              <label for="oaFilterToggle" class="flex items-center gap-2.5 cursor-pointer select-none">
-                <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
-                  <i data-lucide="unlock" class="w-4 h-4"></i>
-                </div>
-                <div>
-                  <span class="text-sm font-semibold text-slate-800 block">Hanya Open Access</span>
-                  <span class="text-[11px] text-slate-500 block">Akses gratis PDF & teks penuh</span>
-                </div>
-              </label>
-              <input
-                type="checkbox"
-                id="oaFilterToggle"
-                onchange="handleOAToggleChange(this.checked)"
-                class="w-4 h-4 rounded text-emerald-600 bg-white border-slate-300 focus:ring-emerald-500 cursor-pointer"
-              />
-            </div>
-          </div>
-
-          <!-- Kategori Disiplin & Bidang Keilmuan Hirarkis (Makro, Meso, hingga Mikro) -->
-          <div class="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
-            <div class="flex items-center justify-between mb-2.5">
-              <div>
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                  <i data-lucide="network" class="w-3.5 h-3.5 text-indigo-600"></i>
-                  Taksonomi Keilmuan
-                </h3>
-                <span class="text-[10px] text-slate-400 font-medium">Makro • Meso • Spesialisasi Mikro</span>
+          <!-- Panel Filter Terpadu Minimalis & Rapi -->
+          <div class="bg-white rounded-2xl border border-slate-200/90 shadow-xs divide-y divide-slate-100 overflow-hidden">
+            
+            <!-- Bagian 1: Akses Cepat & Open Access -->
+            <div class="p-3.5 sm:p-4">
+              <div class="flex items-center justify-between">
+                <label for="oaFilterToggle" class="flex items-center gap-2.5 cursor-pointer select-none">
+                  <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600">
+                    <i data-lucide="unlock" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <span class="text-xs font-bold text-slate-800 block">Hanya Open Access</span>
+                    <span class="text-[10px] text-slate-400 block">Akses gratis teks penuh & PDF</span>
+                  </div>
+                </label>
+                <input
+                  type="checkbox"
+                  id="oaFilterToggle"
+                  onchange="handleOAToggleChange(this.checked)"
+                  class="w-4 h-4 rounded text-emerald-600 bg-white border-slate-300 focus:ring-emerald-500 cursor-pointer"
+                />
               </div>
+            </div>
+
+            <!-- Bagian 2: Rentang Tahun Publikasi -->
+            <div class="p-3.5 sm:p-4">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+                <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-600"></i>
+                <span>Tahun Publikasi</span>
+              </h3>
+              <div class="grid grid-cols-2 gap-1.5 text-xs mb-2">
+                <button type="button" onclick="setYearFilter('all')" class="year-filter-btn px-2 py-1 rounded-lg border border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold transition-colors" data-year="all">Semua Waktu</button>
+                <button type="button" onclick="setYearFilter('2025-2026')" class="year-filter-btn px-2 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors" data-year="2025-2026">2025–2026</button>
+                <button type="button" onclick="setYearFilter('2024')" class="year-filter-btn px-2 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors" data-year="2024">2024</button>
+                <button type="button" onclick="setYearFilter('2021-2026')" class="year-filter-btn px-2 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors" data-year="2021-2026">5 Thn Terakhir</button>
+              </div>
+              <div class="flex items-center gap-1.5 pt-2 border-t border-slate-100">
+                <input type="number" id="customYearFrom" placeholder="Dari" min="1950" max="2026" class="w-full px-2 py-1 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-600 focus:bg-white" />
+                <span class="text-slate-400 text-xs">-</span>
+                <input type="number" id="customYearTo" placeholder="Sampai" min="1950" max="2026" class="w-full px-2 py-1 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-600 focus:bg-white" />
+                <button type="button" onclick="applyCustomYearRange()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium transition-colors">Terapkan</button>
+              </div>
+            </div>
+
+            <!-- Bagian 3: Taksonomi & Disiplin Ilmu -->
+            <div class="p-3.5 sm:p-4">
+              <div class="flex items-center justify-between mb-2">
+                <div>
+                  <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                    <i data-lucide="network" class="w-3.5 h-3.5 text-indigo-600"></i>
+                    <span>Disiplin Ilmu</span>
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  id="clearConceptBtn"
+                  onclick="selectConcept(null, null)"
+                  class="text-[10px] text-indigo-600 hover:text-indigo-800 hidden font-bold px-2 py-0.5 rounded bg-indigo-50 border border-indigo-200"
+                >
+                  Reset
+                </button>
+              </div>
+
+              <div class="relative mb-2">
+                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
+                <input
+                  type="text"
+                  id="disciplineSearchInput"
+                  oninput="handleDisciplineSearch(this.value)"
+                  placeholder="Cari bidang atau sub-bidang..."
+                  class="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
+                />
+              </div>
+
+              <div id="disciplinesList" class="space-y-1.5 max-h-[360px] overflow-y-auto pr-1">
+                <!-- Diisi via JS -->
+              </div>
+            </div>
+
+            <!-- Bagian 4: Dampak Sitasi Minimum -->
+            <div class="p-3.5 sm:p-4">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+                <i data-lucide="award" class="w-3.5 h-3.5 text-amber-500"></i>
+                <span>Sitasi Minimum</span>
+              </h3>
+              <div class="flex flex-wrap gap-1 text-xs">
+                <button type="button" onclick="setMinCitations(0)" class="cite-filter-btn px-2.5 py-1 rounded-lg border border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold" data-cites="0">Semua</button>
+                <button type="button" onclick="setMinCitations(10)" class="cite-filter-btn px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50" data-cites="10">10+</button>
+                <button type="button" onclick="setMinCitations(50)" class="cite-filter-btn px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50" data-cites="50">50+</button>
+                <button type="button" onclick="setMinCitations(200)" class="cite-filter-btn px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50" data-cites="200">200+</button>
+              </div>
+            </div>
+
+            <!-- Bagian 5: Reset Semua Filter -->
+            <div class="p-3 bg-slate-50/50">
               <button
                 type="button"
-                id="clearConceptBtn"
-                onclick="selectConcept(null, null)"
-                class="text-[11px] text-indigo-600 hover:text-indigo-800 hidden font-bold px-2 py-0.5 rounded-lg bg-indigo-50 border border-indigo-200"
+                onclick="resetAllFilters()"
+                class="w-full py-2 px-3 rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-1.5 shadow-2xs"
               >
-                Reset
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-slate-400"></i>
+                <span>Atur Ulang Filter</span>
               </button>
             </div>
 
-            <!-- Pencarian Cepat Topik Mikro & Sub-bidang -->
-            <div class="relative mb-2.5">
-              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
-              <input
-                type="text"
-                id="disciplineSearchInput"
-                oninput="handleDisciplineSearch(this.value)"
-                placeholder="Cari sub-bidang atau topik mikro..."
-                class="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
-              />
-            </div>
-
-            <!-- Legenda Tingkatan Hirarki -->
-            <div class="flex items-center justify-between text-[10px] text-slate-500 mb-2.5 px-1 py-1 rounded-lg bg-slate-50 border border-slate-100">
-              <span class="font-medium text-slate-600">Level:</span>
-              <div class="flex items-center gap-1">
-                <span class="px-1.5 py-0.2 rounded bg-indigo-100/60 text-indigo-700 font-semibold">1. Makro</span>
-                <span class="text-slate-300">/</span>
-                <span class="px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-700 font-semibold">2. Meso</span>
-                <span class="text-slate-300">/</span>
-                <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-bold">3. Mikro</span>
-              </div>
-            </div>
-
-            <div id="disciplinesList" class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-              <!-- Daftar bidang, subbidang, dan topik mikro diisi via JS -->
-            </div>
           </div>
-
-          <!-- Filter Rentang Tahun Publikasi -->
-          <div class="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
-              <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-600"></i>
-              Tahun Publikasi
-            </h3>
-            <div class="grid grid-cols-2 gap-1.5 text-xs mb-3">
-              <button type="button" onclick="setYearFilter('all')" class="year-filter-btn px-2.5 py-1.5 rounded-xl border border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold transition-colors" data-year="all">Semua Waktu</button>
-              <button type="button" onclick="setYearFilter('2025-2026')" class="year-filter-btn px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors" data-year="2025-2026">2025–2026</button>
-              <button type="button" onclick="setYearFilter('2024')" class="year-filter-btn px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors" data-year="2024">2024</button>
-              <button type="button" onclick="setYearFilter('2021-2026')" class="year-filter-btn px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors" data-year="2021-2026">5 Thn Terakhir</button>
-            </div>
-            <!-- Masukan Tahun Kustom -->
-            <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
-              <input type="number" id="customYearFrom" placeholder="Dari" min="1950" max="2026" class="w-full px-2 py-1 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-600 focus:bg-white" />
-              <span class="text-slate-400 text-xs">-</span>
-              <input type="number" id="customYearTo" placeholder="Sampai" min="1950" max="2026" class="w-full px-2 py-1 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-600 focus:bg-white" />
-              <button type="button" onclick="applyCustomYearRange()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium transition-colors">Terapkan</button>
-            </div>
-          </div>
-
-          <!-- Filter Dampak Sitasi Minimum -->
-          <div class="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-              <i data-lucide="award" class="w-3.5 h-3.5 text-amber-500"></i>
-              Dampak Sitasi Minimum
-            </h3>
-            <div class="flex flex-wrap gap-1.5 text-xs">
-              <button type="button" onclick="setMinCitations(0)" class="cite-filter-btn px-2.5 py-1 rounded-lg border border-indigo-600 bg-indigo-50 text-indigo-700 font-semibold" data-cites="0">Semua</button>
-              <button type="button" onclick="setMinCitations(10)" class="cite-filter-btn px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50" data-cites="10">10+ Sitasi</button>
-              <button type="button" onclick="setMinCitations(50)" class="cite-filter-btn px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50" data-cites="50">50+ Sitasi</button>
-              <button type="button" onclick="setMinCitations(200)" class="cite-filter-btn px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50" data-cites="200">200+ Sitasi</button>
-            </div>
-          </div>
-
-          <!-- Tombol Reset Semua Filter -->
-          <button
-            type="button"
-            onclick="resetAllFilters()"
-            class="w-full py-2.5 px-3 rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-xs font-medium text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-2 shadow-2xs"
-          >
-            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-slate-400"></i>
-            Atur Ulang Semua Filter
-          </button>
 
         </div>
       </aside>
@@ -422,107 +412,70 @@
       <!-- ==================== DAFTAR JURNAL UTAMA (Kolom 8 di laptop, Kolom 9 di layar lebar) ==================== -->
       <section class="lg:col-span-8 xl:col-span-9 2xl:col-span-9 space-y-4 min-w-0">
         
-        <!-- Segmented Search Mode Tab (Arsitektur Anti-Slop: Flat, berjarak, kontras tinggi) -->
-        <div class="grid grid-cols-1 md:grid-cols-3 p-1 bg-slate-100 border border-slate-200/80 rounded-2xl shadow-2xs gap-1">
-          <button
-            type="button"
-            id="searchModeOpenAlexBtn"
-            onclick="setSearchMode('openalex')"
-            class="py-2.5 px-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 bg-white text-slate-900 shadow-2xs active:scale-95"
-          >
-            <i data-lucide="globe" class="w-4 h-4 text-indigo-600"></i>
-            <span>Korpus OpenAlex (250M+ Data)</span>
-          </button>
-          <button
-            type="button"
-            id="searchModeDeepSearchBtn"
-            onclick="setSearchMode('deepsearch')"
-            class="py-2.5 px-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-white/50 active:scale-95"
-          >
-            <i data-lucide="sparkles" class="w-4 h-4 text-amber-500 animate-pulse"></i>
-            <span>⚡ DeepSearch (Google Grounding)</span>
-          </button>
-          <button
-            type="button"
-            id="searchModeCuratedBtn"
-            onclick="setSearchMode('curated')"
-            class="py-2.5 px-3 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-white/50 active:scale-95"
-          >
-            <i data-lucide="bookmark-check" class="w-4 h-4 text-emerald-500"></i>
-            <span>Koleksi Terkurasi Admin</span>
-          </button>
-        </div>
-
-        <!-- Banner Khusus Status DeepSearch -->
-        <div id="deepSearchStatusBanner" class="hidden p-4 rounded-2xl bg-amber-50 border border-amber-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 animate-fade-in">
-          <div class="flex items-start gap-2.5">
-            <div class="p-1.5 rounded-lg bg-amber-100 text-amber-700 mt-0.5">
-              <i data-lucide="info" class="w-4 h-4"></i>
-            </div>
-            <div>
-              <h4 class="text-xs font-bold text-amber-900">Mode DeepSearch (AI Grounding Search) Aktif</h4>
-              <p class="text-[11px] text-amber-800 mt-0.5">Mencari literatur ilmiah dari ratusan provider web (ScienceDirect, IEEE, arXiv, DOAJ, SSRN) secara live menggunakan real-time Google Search Grounding.</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onclick="setSearchMode('openalex')"
-            class="text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors flex-shrink-0"
-          >
-            Kembali ke Korpus Umum
-          </button>
-        </div>
-
-        <!-- Bar Kontrol Hasil & Metadata -->
-        <div class="flex flex-wrap items-center justify-between gap-3 bg-white border border-slate-200/90 p-3.5 rounded-2xl shadow-xs">
-          
-          <!-- Hitungan Hasil & Tag Filter Aktif -->
-          <div class="flex flex-wrap items-center gap-2">
-            <span id="resultsCountText" class="text-xs font-medium text-slate-700">
-              Mencari karya ilmiah...
-            </span>
-            <span id="queryLatencyBadge" class="hidden text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-              ⚡ 0ms
-            </span>
-            <div id="activeFiltersContainer" class="flex flex-wrap items-center gap-1.5"></div>
+        <!-- Segmented Search Mode Tab & Controls Bar (Modern Clean Design) -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
+          <!-- Segmented Search Tabs -->
+          <div class="inline-flex p-1 bg-slate-100 border border-slate-200/80 rounded-xl text-xs font-medium text-slate-600 shadow-2xs w-fit">
+            <button
+              type="button"
+              id="searchModeOpenAlexBtn"
+              onclick="setSearchMode('openalex')"
+              class="py-1.5 px-3 rounded-lg font-bold transition-all flex items-center gap-1.5 bg-white text-slate-900 shadow-2xs"
+            >
+              <i data-lucide="globe" class="w-3.5 h-3.5 text-indigo-600"></i>
+              <span>Korpus OpenAlex (250M+)</span>
+            </button>
+            <button
+              type="button"
+              id="searchModeDeepSearchBtn"
+              onclick="setSearchMode('deepsearch')"
+              class="py-1.5 px-3 rounded-lg transition-all flex items-center gap-1.5 text-slate-600 hover:text-slate-900"
+            >
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i>
+              <span>DeepSearch AI</span>
+            </button>
+            <button
+              type="button"
+              id="searchModeCuratedBtn"
+              onclick="setSearchMode('curated')"
+              class="py-1.5 px-3 rounded-lg transition-all flex items-center gap-1.5 text-slate-600 hover:text-slate-900"
+            >
+              <i data-lucide="bookmark-check" class="w-3.5 h-3.5 text-emerald-500"></i>
+              <span>Terkurasi</span>
+            </button>
           </div>
 
-          <!-- Pilihan Urutan & Mode Tampilan -->
-          <div class="flex items-center gap-3 ml-auto">
-            <div class="flex items-center gap-1.5">
-              <span class="text-xs text-slate-500 hidden sm:inline">Urutkan:</span>
-              <select
-                id="sortSelect"
-                onchange="handleSortChange(this.value)"
-                class="bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 py-1.5 px-2.5 focus:outline-none focus:border-indigo-600 focus:bg-white cursor-pointer"
-              >
-                <option value="relevance_score:desc">Paling Relevan</option>
-                <option value="cited_by_count:desc">Paling Banyak Disitasi</option>
-                <option value="publication_date:desc">Tanggal Terbaru</option>
-                <option value="publication_date:asc">Tanggal Terlama</option>
-              </select>
-            </div>
-
-            <!-- Tombol Toggle Sidebar Filter untuk Laptop / Desktop -->
+          <!-- Quick Controls: Filter, Urutkan, View Mode -->
+          <div class="flex items-center gap-2 text-xs ml-auto">
             <button
               type="button"
               id="sidebarToggleBtn"
               onclick="toggleSidebarCollapse()"
-              class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium shadow-2xs transition-colors"
-              title="Perluas atau sempitkan area baca jurnal (Sembunyikan / Tampilkan Panel Filter)"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium shadow-2xs transition-colors"
+              title="Tampilkan / Sembunyikan Panel Filter"
             >
-              <i id="sidebarToggleIcon" data-lucide="panel-left-close" class="w-3.5 h-3.5 text-indigo-600"></i>
-              <span id="sidebarToggleText" class="hidden xl:inline">Filter</span>
+              <i id="sidebarToggleIcon" data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-indigo-600"></i>
+              <span id="sidebarToggleText">Filter</span>
             </button>
 
-            <!-- Pengganti Mode Tampilan (Kartu vs Ringkas) -->
+            <select
+              id="sortSelect"
+              onchange="handleSortChange(this.value)"
+              class="bg-white border border-slate-200 rounded-xl text-xs text-slate-700 py-1.5 px-2.5 focus:outline-none focus:border-indigo-600 cursor-pointer shadow-2xs font-medium"
+            >
+              <option value="relevance_score:desc">Paling Relevan</option>
+              <option value="cited_by_count:desc">Paling Banyak Disitasi</option>
+              <option value="publication_date:desc">Tanggal Terbaru</option>
+              <option value="publication_date:asc">Tanggal Terlama</option>
+            </select>
+
             <div class="flex items-center bg-slate-100 border border-slate-200 rounded-xl p-0.5">
               <button
                 type="button"
                 id="viewCardBtn"
                 onclick="setViewMode('card')"
                 class="p-1.5 rounded-lg text-indigo-600 bg-white shadow-2xs transition-colors"
-                title="Tampilan Kartu Lengkap"
+                title="Tampilan Kartu"
               >
                 <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
               </button>
@@ -537,24 +490,47 @@
               </button>
             </div>
           </div>
-
         </div>
 
-        <!-- Banner Informasi Terjemahan Otomatis Aktif (Ala X / Twitter) -->
-        <div id="translationNoticeBanner" class="p-3.5 bg-indigo-50/80 border border-indigo-200/80 rounded-2xl flex items-center justify-between text-xs text-indigo-950 shadow-xs">
+        <!-- Banner Khusus Status DeepSearch -->
+        <div id="deepSearchStatusBanner" class="hidden p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-3 text-xs">
           <div class="flex items-center gap-2">
-            <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600 flex-shrink-0"></i>
-            <span><strong class="text-indigo-900">Terjemahan Otomatis Aktif</strong>: Semua judul dan abstrak jurnal diterjemahkan langsung ke Bahasa Indonesia.</span>
+            <i data-lucide="sparkles" class="w-4 h-4 text-amber-600 flex-shrink-0"></i>
+            <span class="text-amber-900"><strong>Mode DeepSearch Aktif</strong>: Menggali karya ilmiah real-time dengan Google Search Grounding.</span>
           </div>
+          <button
+            type="button"
+            onclick="setSearchMode('openalex')"
+            class="text-[11px] font-semibold text-slate-700 underline"
+          >
+            Kembali ke Korpus Umum
+          </button>
+        </div>
+
+        <!-- Bar Status Hasil Pencarian & Active Filters -->
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs py-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="resultsCountText" class="font-medium text-slate-600">
+              Mencari karya ilmiah...
+            </span>
+            <span id="queryLatencyBadge" class="hidden text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+              ⚡ 0ms
+            </span>
+            <div id="activeFiltersContainer" class="flex flex-wrap items-center gap-1.5"></div>
+          </div>
+
           <button
             type="button"
             onclick="toggleAllVisibleOriginalText()"
             id="toggleAllLangBtn"
-            class="text-[11px] text-indigo-700 hover:text-indigo-900 underline font-semibold ml-2 flex-shrink-0"
+            class="text-[11px] text-slate-500 hover:text-indigo-600 font-medium transition-colors"
           >
             Tampilkan Teks Asli Semua
           </button>
         </div>
+
+        <!-- Wadah Banner Terjemahan (Disembunyikan agar tampilan bersih & lapang) -->
+        <div id="translationNoticeBanner" class="hidden"></div>
 
         <!-- Wadah Kartu Jurnal -->
         <div id="papersContainer" class="space-y-3.5">
@@ -605,18 +581,37 @@
 
         <!-- Tampilan Saat Terjadi Kesalahan Jaringan -->
         <div id="errorState" class="hidden p-8 text-center rounded-2xl bg-rose-50 border border-rose-200 shadow-xs space-y-3">
-          <i data-lucide="alert-triangle" class="w-8 h-8 text-rose-500 mx-auto"></i>
-          <h3 class="text-sm font-semibold text-rose-800">Gagal Mengakses API OpenAlex</h3>
+          <i id="errorStateIcon" data-lucide="alert-triangle" class="w-8 h-8 text-rose-500 mx-auto"></i>
+          <h3 id="errorStateTitle" class="text-sm font-semibold text-rose-800">Gagal Mengakses Layanan Data</h3>
           <p id="errorMessageText" class="text-xs text-rose-700 max-w-md mx-auto">
             Terjadi kendala saat meminta data dari server korpus ilmiah global.
           </p>
-          <button
-            type="button"
-            onclick="fetchPapers()"
-            class="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-medium shadow-xs"
-          >
-            Coba Lagi
-          </button>
+          <div id="errorStateActions" class="flex flex-wrap items-center justify-center gap-2 pt-1">
+            <button
+              type="button"
+              onclick="fetchPapers()"
+              class="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-medium shadow-xs"
+            >
+              Coba Lagi
+            </button>
+            <button
+              type="button"
+              id="errorConfigureAiBtn"
+              onclick="openAdminHubModal(); switchAdminTab('ai_settings');"
+              class="hidden px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold shadow-xs flex items-center gap-1.5"
+            >
+              <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+              <span>Atur Kunci API AI</span>
+            </button>
+            <button
+              type="button"
+              id="errorFallbackOpenAlexBtn"
+              onclick="setSearchMode('openalex')"
+              class="hidden px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium shadow-xs"
+            >
+              Cari via OpenAlex Saja
+            </button>
+          </div>
         </div>
 
         <!-- Navigasi Paginasi Halaman -->
@@ -838,6 +833,16 @@
             <i data-lucide="file-down" class="w-3.5 h-3.5"></i>
             <span>PDF Asli</span>
           </button>
+          <button
+            type="button"
+            id="readerModeChatBtn"
+            onclick="setReaderViewMode('chat')"
+            class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5"
+            title="Tanya AI Copilot tentang naskah ini"
+          >
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-600"></i>
+            <span>Tanya Copilot</span>
+          </button>
         </div>
 
         <!-- Sisi Kanan: Aksi & Navigasi -->
@@ -1006,6 +1011,72 @@
 
         </div>
 
+        <!-- Panel Copilot: Tanya AI Naskah Interaktif -->
+        <div id="readerChatPane" class="w-full lg:w-1/2 h-full flex flex-col bg-slate-50 transition-all duration-200 hidden border-l border-slate-200">
+          <div class="px-5 py-3 bg-white border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+                <i data-lucide="bot" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-slate-900">Scholara Academic Copilot</h4>
+                <p class="text-[10px] text-slate-500">Tanya jawab cerdas berbasis bukti langsung dari naskah</p>
+              </div>
+            </div>
+            <button type="button" onclick="clearPaperChat()" class="text-[11px] text-slate-400 hover:text-slate-700 flex items-center gap-1 font-medium">
+              <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+              <span>Reset Chat</span>
+            </button>
+          </div>
+
+          <!-- Messages Container -->
+          <div id="readerChatMessages" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5">
+            <div class="p-4 rounded-xl bg-purple-50/70 border border-purple-100 text-xs text-purple-900 space-y-2.5">
+              <div class="font-bold flex items-center gap-1.5 text-purple-800">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                <span>Mulai Diskusi Ilmiah dengan AI</span>
+              </div>
+              <p class="text-[11.5px] text-purple-950/80 leading-relaxed">
+                Ajukan pertanyaan seputar metodologi, data, temuan empiris, atau batasan paper ini. Anda juga dapat memilih pertanyaan cepat di bawah:
+              </p>
+              <div class="flex flex-wrap gap-1.5 pt-1">
+                <button type="button" onclick="askQuickQuestion('Apa kontribusi utama dan novelty dari penelitian ini?')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-purple-100 text-purple-800 border border-purple-200 text-[11px] font-medium transition-colors shadow-2xs">
+                  📌 Kontribusi & Novelty
+                </button>
+                <button type="button" onclick="askQuickQuestion('Jelaskan metodologi dan desain penelitian yang digunakan.')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-purple-100 text-purple-800 border border-purple-200 text-[11px] font-medium transition-colors shadow-2xs">
+                  🔬 Metodologi Riset
+                </button>
+                <button type="button" onclick="askQuickQuestion('Apa batasan (limitations) dan potensi bias dari riset ini?')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-purple-100 text-purple-800 border border-purple-200 text-[11px] font-medium transition-colors shadow-2xs">
+                  ⚠️ Batasan Riset
+                </button>
+                <button type="button" onclick="askQuickQuestion('Bagaimana implikasi praktis dan manajerial dari temuan naskah ini?')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-purple-100 text-purple-800 border border-purple-200 text-[11px] font-medium transition-colors shadow-2xs">
+                  💡 Implikasi Praktis
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input Area -->
+          <div class="p-3 bg-white border-t border-slate-200 flex-shrink-0">
+            <form id="readerChatForm" onsubmit="handlePaperChatSubmit(event)" class="flex items-center gap-2">
+              <input
+                type="text"
+                id="readerChatInput"
+                placeholder="Tanyakan apa pun tentang paper ini (misal: apa model yang diuji?)..."
+                class="flex-1 px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-purple-600 focus:bg-white transition-all shadow-inner"
+              />
+              <button
+                type="submit"
+                id="readerChatSendBtn"
+                class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all flex-shrink-0 active:scale-95"
+              >
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                <span>Kirim</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -1038,6 +1109,7 @@
         <button type="button" onclick="setCiteFormat('chicago')" class="cite-tab-btn pb-2.5 px-3 border-b-2 font-medium border-transparent text-slate-500 hover:text-slate-800" data-format="chicago">Chicago</button>
         <button type="button" onclick="setCiteFormat('harvard')" class="cite-tab-btn pb-2.5 px-3 border-b-2 font-medium border-transparent text-slate-500 hover:text-slate-800" data-format="harvard">Harvard</button>
         <button type="button" onclick="setCiteFormat('bibtex')" class="cite-tab-btn pb-2.5 px-3 border-b-2 font-medium border-transparent text-slate-500 hover:text-slate-800" data-format="bibtex">BibTeX</button>
+        <button type="button" onclick="setCiteFormat('ris')" class="cite-tab-btn pb-2.5 px-3 border-b-2 font-medium border-transparent text-slate-500 hover:text-slate-800" data-format="ris">RIS (Zotero/Mendeley)</button>
       </div>
 
       <!-- Teks Sitasi Siap Salin -->
@@ -1050,15 +1122,26 @@
         ></textarea>
 
         <div class="flex items-center justify-between gap-3 pt-1">
-          <button
-            type="button"
-            id="downloadBibtexBtn"
-            onclick="downloadBibtexFile()"
-            class="hidden px-3.5 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-colors"
-          >
-            <i data-lucide="download" class="w-3.5 h-3.5"></i>
-            <span>Unduh File .bib</span>
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              id="downloadBibtexBtn"
+              onclick="downloadBibtexFile()"
+              class="hidden px-3.5 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-colors shadow-2xs"
+            >
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Unduh .bib</span>
+            </button>
+            <button
+              type="button"
+              id="downloadRisBtn"
+              onclick="downloadRisFile()"
+              class="hidden px-3.5 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-colors shadow-2xs"
+            >
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Unduh .ris</span>
+            </button>
+          </div>
 
           <button
             type="button"
@@ -1507,18 +1590,36 @@
       </div>
 
       <!-- Bilah Alat Drawer -->
-      <div class="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2 text-xs">
-        <div class="flex items-center gap-1.5">
+      <div class="p-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
             onclick="exportReadingListJSON()"
-            class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[11px] font-medium flex items-center gap-1 shadow-2xs"
+            class="px-2 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[11px] font-medium flex items-center gap-1 shadow-2xs"
             title="Ekspor koleksi ke file JSON"
           >
             <i data-lucide="download" class="w-3 h-3 text-slate-500"></i>
-            <span>Ekspor JSON</span>
+            <span>JSON</span>
           </button>
-          <label class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[11px] font-medium flex items-center gap-1 cursor-pointer shadow-2xs" title="Impor koleksi dari file JSON">
+          <button
+            type="button"
+            onclick="exportBookmarksBibTeX()"
+            class="px-2 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[11px] font-medium flex items-center gap-1 shadow-2xs"
+            title="Ekspor semua sitasi ke format BibTeX (.bib)"
+          >
+            <i data-lucide="file-code" class="w-3 h-3 text-indigo-600"></i>
+            <span>BibTeX</span>
+          </button>
+          <button
+            type="button"
+            onclick="exportBookmarksRIS()"
+            class="px-2 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[11px] font-medium flex items-center gap-1 shadow-2xs"
+            title="Ekspor ke format RIS untuk Mendeley / Zotero (.ris)"
+          >
+            <i data-lucide="file-text" class="w-3 h-3 text-emerald-600"></i>
+            <span>RIS</span>
+          </button>
+          <label class="px-2 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-[11px] font-medium flex items-center gap-1 cursor-pointer shadow-2xs" title="Impor koleksi dari file JSON">
             <i data-lucide="upload" class="w-3 h-3 text-slate-500"></i>
             <span>Impor</span>
             <input type="file" accept=".json" onchange="importReadingListJSON(event)" class="hidden" />
@@ -2524,7 +2625,10 @@
             })
           });
 
-          if (!response.ok) throw new Error('Layanan DeepSearch AI mengembalikan error');
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || 'Layanan DeepSearch AI mengembalikan error');
+          }
           const data = await response.json();
           const papers = data.results || [];
 
@@ -2556,11 +2660,18 @@
         const baseUrl = 'https://api.openalex.org/works';
         const params = new URLSearchParams();
 
-        if (state.query && state.query.trim()) {
-          params.append('search', state.query.trim());
-        }
+        // Aktifkan OpenAlex Polite Pool (10x lebih cepat dan batas kuota tinggi)
+        params.append('mailto', 'scholara-academic@openalex-polite.org');
+
+        const cleanQuery = (state.query || '').trim();
+        const doiMatch = cleanQuery.match(/(?:https?:\/\/doi\.org\/)?(10\.\d{4,9}\/[-._;()/:A-Za-z0-9]+)/i);
 
         const filters = [];
+        if (doiMatch) {
+          filters.push(`doi:https://doi.org/${doiMatch[1]}`);
+        } else if (cleanQuery) {
+          params.append('search', cleanQuery);
+        }
         if (state.openAccessOnly) {
           filters.push('is_oa:true');
         }
@@ -2709,10 +2820,30 @@
         }
 
       } catch (err) {
-        console.error('Error fetching OpenAlex papers:', err);
+        console.error('Error fetching papers:', err);
         skeletonLoader.classList.add('hidden');
         errorState.classList.remove('hidden');
-        document.getElementById('errorMessageText').textContent = err.message || 'Gagal tersambung ke jaringan OpenAlex.';
+
+        const titleEl = document.getElementById('errorStateTitle');
+        const msgEl = document.getElementById('errorMessageText');
+        const configBtn = document.getElementById('errorConfigureAiBtn');
+        const fallbackBtn = document.getElementById('errorFallbackOpenAlexBtn');
+
+        const errMsg = err?.message || '';
+        const isAiKeyError = errMsg.includes('API Key') || errMsg.includes('DeepSearch') || errMsg.includes('503') || errMsg.includes('belum dikonfigurasi');
+        
+        if (isAiKeyError) {
+          if (titleEl) titleEl.textContent = 'Kunci API AI Diperlukan untuk DeepSearch';
+          if (msgEl) msgEl.textContent = 'Fitur DeepSearch AI memerlukan Kunci API AI (Google Gemini, OpenAI, atau Claude). Silakan masukkan API Key Anda di menu Pengaturan AI atau gunakan mode pencarian OpenAlex.';
+          if (configBtn) configBtn.classList.remove('hidden');
+          if (fallbackBtn) fallbackBtn.classList.remove('hidden');
+        } else {
+          if (titleEl) titleEl.textContent = 'Gagal Mengakses Korpus Jurnal';
+          if (msgEl) msgEl.textContent = errMsg || 'Gagal tersambung ke jaringan OpenAlex.';
+          if (configBtn) configBtn.classList.add('hidden');
+          if (fallbackBtn) fallbackBtn.classList.add('hidden');
+        }
+        lucide.createIcons();
       }
     }
 
@@ -2991,6 +3122,9 @@
                   <i data-lucide="book-open" class="w-3.5 h-3.5 text-indigo-600"></i> Baca (ID)
                 </button>
               `}
+              <button type="button" onclick="openReaderInChatMode('${paper.id}')" class="px-2.5 py-1 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-medium flex items-center gap-1 transition-colors" title="Tanya AI Copilot">
+                <i data-lucide="sparkles" class="w-3 h-3 text-purple-600"></i> Copilot
+              </button>
               <button type="button" onclick="openCiteModalForPaper('${paper.id}')" class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium" title="Sitasi">
                 Sitasi
               </button>
@@ -3009,95 +3143,53 @@
         const card = document.createElement('div');
         card.className = 'group p-5 rounded-2xl bg-white border border-slate-200/90 hover:border-indigo-300 hover:shadow-md transition-all duration-200 shadow-xs relative';
 
-        const renderNoticeHtml = () => {
-          if (paper.isTranslating && state.autoTranslate) {
-            return `
-              <div class="flex items-center gap-1.5 text-[11px] text-indigo-700 bg-indigo-50/80 border border-indigo-200/80 px-2.5 py-0.5 rounded-lg w-fit animate-pulse">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-600 animate-spin"></i>
-                <span class="font-medium">Menerjemahkan ke Bahasa Indonesia...</span>
-              </div>
-            `;
-          }
-          if (paper.showOriginal || !state.autoTranslate) {
-            return `
-              <div class="flex items-center gap-1.5 text-[11px] text-slate-500 py-0.5">
-                <span class="inline-flex items-center gap-1 text-slate-700 font-medium bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
-                  <i data-lucide="globe" class="w-3 h-3 text-slate-500"></i> Bahasa asli: Inggris
+        card.innerHTML = `
+          <!-- Baris Atas: Metadata Jurnal Bersih & Minimalis -->
+          <div class="flex items-center justify-between gap-2 text-xs text-slate-500 mb-2">
+            <div class="flex items-center gap-2 flex-wrap min-w-0">
+              <span class="font-semibold text-slate-800 truncate max-w-sm">${venueName}</span>
+              <span class="text-slate-300">•</span>
+              <span class="text-slate-500 font-medium">${pubYear}</span>
+              ${isOA ? `
+                <span class="text-slate-300">•</span>
+                <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                  <i data-lucide="unlock" class="w-2.5 h-2.5"></i> Open Access
                 </span>
-                <span>•</span>
-                <button
-                  type="button"
-                  onclick="togglePaperLanguage('${paper.id}')"
-                  class="text-indigo-600 hover:text-indigo-800 font-semibold underline"
-                >
-                  Terjemahkan ke Bahasa Indonesia
-                </button>
+              ` : ''}
+            </div>
+
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <div class="flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70">
+                <i data-lucide="star" class="w-3 h-3 fill-amber-500 text-amber-500"></i>
+                <span>${citations.toLocaleString('id-ID')} sitasi</span>
               </div>
-            `;
-          }
-          return `
-            <div class="flex items-center gap-1.5 text-[11px] text-slate-500 py-0.5">
-              <span class="inline-flex items-center gap-1 text-emerald-800 font-medium bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80">
-                <i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> Diterjemahkan ke Bahasa Indonesia
-              </span>
-              <span>•</span>
               <button
                 type="button"
-                onclick="togglePaperLanguage('${paper.id}')"
-                class="text-indigo-600 hover:text-indigo-800 font-semibold underline"
+                onclick="toggleBookmark('${paper.id}')"
+                class="p-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs transition-colors ${isSaved ? 'text-amber-500 border-amber-300 bg-amber-50' : 'text-slate-400 hover:text-slate-600'}"
+                title="${isSaved ? 'Hapus dari Tersimpan' : 'Simpan ke Koleksi'}"
               >
-                Tampilkan teks asli
+                <i data-lucide="bookmark" class="w-3.5 h-3.5 ${isSaved ? 'fill-amber-500' : ''}"></i>
               </button>
             </div>
-          `;
-        };
-
-        card.innerHTML = `
-          <!-- Baris Atas: Badge Open Access & Metrik -->
-          <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-            <div class="flex flex-wrap items-center gap-2">
-              ${isOA ? `
-                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <i data-lucide="unlock" class="w-3 h-3"></i> Open Access (${oaStatus})
-                </span>
-              ` : `
-                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                  <i data-lucide="lock" class="w-3 h-3"></i> Langganan
-                </span>
-              `}
-              <span class="text-xs text-indigo-700 font-semibold">${venueName}</span>
-              <span class="text-xs text-slate-300">•</span>
-              <span class="text-xs text-slate-500 font-medium">${pubYear}</span>
-            </div>
-
-            <!-- Sitasi -->
-            <div class="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
-              <i data-lucide="star" class="w-3 h-3 fill-amber-500 text-amber-500"></i>
-              <span>${citations.toLocaleString('id-ID')} sitasi</span>
-            </div>
-          </div>
-
-          <!-- Indikator Terjemahan ala Media Sosial X -->
-          <div id="paper-notice-${safeId}" class="mb-1">
-            ${renderNoticeHtml()}
           </div>
 
           <!-- Judul Jurnal -->
           <h3
             id="paper-title-${safeId}"
-            class="text-base sm:text-lg font-bold text-slate-900 group-hover:text-indigo-600 cursor-pointer transition-colors leading-snug mb-2"
+            class="text-base sm:text-lg font-bold text-slate-900 group-hover:text-indigo-600 cursor-pointer transition-colors leading-snug mb-1.5"
             onclick="openDetailModal('${paper.id}')"
           >
             ${displayTitle}
           </h3>
 
           <!-- Penulis -->
-          <div class="flex items-center gap-1.5 text-xs text-slate-600 mb-3">
+          <p class="text-xs text-slate-500 font-medium truncate mb-2.5 flex items-center gap-1.5">
             <i data-lucide="users" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>
-            <span class="truncate">${authorsStr}</span>
-          </div>
+            <span>${authorsStr}</span>
+          </p>
 
-          <!-- Abstrak Cuplikan -->
+          <!-- Abstrak Cuplikan Bersih -->
           <p
             id="paper-abs-${safeId}"
             class="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3 mb-4 font-normal"
@@ -3105,7 +3197,7 @@
             ${displayAbs}
           </p>
 
-          <!-- Baris Bawah: Konsep & Tombol Aksi -->
+          <!-- Baris Bawah: Konsep & Aksi Minimalis -->
           <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
             
             <div class="flex flex-wrap items-center gap-1.5">
@@ -3113,55 +3205,60 @@
                 <button
                   type="button"
                   onclick="filterBySpecificConcept('${c.id}', '${c.display_name.replace(/'/g, "\\'")}')"
-                  class="px-2 py-0.5 rounded-lg bg-slate-50 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50 text-[11px] text-slate-600 hover:text-indigo-700 transition-colors"
+                  class="px-2 py-0.5 rounded-md bg-slate-50 hover:bg-slate-100 text-[11px] text-slate-600 transition-colors"
                 >
                   ${c.display_name}
                 </button>
               `).join('')}
-              ${cleanDoi ? `
-                <span class="text-[10px] font-mono text-slate-400 truncate max-w-[140px] hidden sm:inline" title="DOI: ${cleanDoi}">
-                  doi:${cleanDoi}
-                </span>
+              ${(paper.translatedTitle && state.autoTranslate) ? `
+                <button
+                  type="button"
+                  onclick="togglePaperLanguage('${paper.id}')"
+                  class="text-[11px] text-indigo-600 hover:underline font-semibold ml-1"
+                >
+                  ${paper.showOriginal ? 'Terjemahkan' : 'Teks Asli'}
+                </button>
               ` : ''}
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 flex-shrink-0">
               ${pdfUrl ? `
                 <button
                   type="button"
                   onclick="openPdfReaderModal('${paper.id}')"
-                  class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all active:scale-95"
-                  title="Buka dan baca PDF di dalam frame aplikasi dalam bahasa Indonesia"
+                  class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition-all active:scale-95"
+                  title="Buka naskah di Pembaca Dokumen"
                 >
                   <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
-                  <span>Baca PDF (ID)</span>
+                  <span>Baca PDF</span>
                 </button>
-                <a
-                  href="${pdfUrl}"
-                  target="_blank"
-                  download
-                  class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition-colors"
-                  title="Unduh PDF Asli"
-                >
-                  <i data-lucide="download" class="w-4 h-4"></i>
-                </a>
               ` : `
                 <button
                   type="button"
                   onclick="openPdfReaderModal('${paper.id}')"
                   class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors"
-                  title="Baca naskah terjemahan Bahasa Indonesia"
+                  title="Baca naskah"
                 >
                   <i data-lucide="book-open" class="w-3.5 h-3.5 text-indigo-600"></i>
-                  <span>Baca (ID)</span>
+                  <span>Baca</span>
                 </button>
               `}
 
               <button
                 type="button"
+                onclick="openReaderInChatMode('${paper.id}')"
+                class="px-2.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 text-xs font-medium flex items-center gap-1 transition-colors"
+                title="Tanya AI Copilot"
+              >
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-600"></i>
+                <span class="hidden sm:inline">Copilot</span>
+              </button>
+
+              <button
+                type="button"
                 onclick="openCiteModalForPaper('${paper.id}')"
-                class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1 transition-colors"
-                title="Buat Sitasi Ilmiah"
+                class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1 transition-colors shadow-2xs"
+                title="Sitasi"
               >
                 <i data-lucide="quote" class="w-3.5 h-3.5 text-indigo-600"></i>
                 <span class="hidden sm:inline">Sitasi</span>
@@ -3169,19 +3266,12 @@
 
               <button
                 type="button"
-                onclick="toggleBookmark('${paper.id}')"
-                class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-medium transition-colors ${isSaved ? 'text-amber-500 border-amber-300 bg-amber-50' : 'text-slate-400'}"
-                title="${isSaved ? 'Hapus dari Tersimpan' : 'Simpan ke Koleksi Bacaan'}"
-              >
-                <i data-lucide="bookmark" class="w-4 h-4 ${isSaved ? 'fill-amber-500' : ''}"></i>
-              </button>
-
-              <button
-                type="button"
                 onclick="openDetailModal('${paper.id}')"
-                class="px-2.5 py-1.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 bg-white text-slate-700 text-xs font-medium transition-colors shadow-2xs"
+                class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1 transition-colors shadow-2xs"
+                title="Detail Dokumen"
               >
-                Detail
+                <i data-lucide="info" class="w-3.5 h-3.5 text-slate-500"></i>
+                <span class="hidden sm:inline">Detail</span>
               </button>
             </div>
 
@@ -3259,24 +3349,20 @@
         const totalMicro = field.subfields.reduce((acc, s) => acc + (s.microTopics ? s.microTopics.length : 0), 0);
 
         return `
-          <div class="rounded-xl border ${isFieldActive ? 'border-indigo-500 bg-indigo-50/20' : 'border-slate-200/90 bg-white'} overflow-hidden shadow-2xs transition-all">
-            <!-- Header Bidang Makro (Tingkat 1) -->
-            <div class="p-2 flex items-center justify-between gap-1.5 hover:bg-slate-50/80 transition-colors">
+          <div class="rounded-xl border ${isFieldActive ? 'border-indigo-500 bg-indigo-50/20' : 'border-slate-200/70 bg-white'} overflow-hidden transition-all mb-2">
+            <!-- Header Bidang Makro -->
+            <div class="p-2.5 flex items-center justify-between gap-1.5 hover:bg-slate-50 transition-colors">
               <button
                 type="button"
                 onclick="toggleExpandField('${field.id}')"
                 class="flex items-center gap-2 text-left min-w-0 flex-1 group"
-                title="Buka atau tutup rincian sub-bidang & topik mikro"
               >
-                <div class="w-6 h-6 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 flex-shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 flex-shrink-0 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
                   <i data-lucide="${field.icon}" class="w-3.5 h-3.5"></i>
                 </div>
                 <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="text-xs font-bold text-slate-800 group-hover:text-indigo-600 transition-colors leading-tight break-words">${field.name}</span>
-                    <span class="px-1 py-0.2 rounded text-[8px] font-bold bg-indigo-100 text-indigo-700 flex-shrink-0">Makro</span>
-                  </div>
-                  <span class="text-[10px] text-slate-400 block mt-0.5">${field.subfields.length} Sub-bidang • ${totalMicro} Mikro</span>
+                  <span class="text-xs font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors block truncate">${field.name}</span>
+                  <span class="text-[10px] text-slate-400 block">${field.subfields.length} Sub-bidang</span>
                 </div>
               </button>
 
@@ -3284,49 +3370,45 @@
                 <button
                   type="button"
                   onclick="selectField('${field.id}', '${field.name.replace(/'/g, "\\'")}')"
-                  class="px-2 py-0.5 text-[10px] font-semibold rounded-lg border ${isFieldActive ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'} transition-all shadow-2xs"
-                  title="Pilih seluruh bidang makro ini"
+                  class="px-2 py-0.5 text-[10px] font-medium rounded-md border ${isFieldActive ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:text-indigo-600'} transition-all"
                 >
                   Pilih
                 </button>
                 <button
                   type="button"
                   onclick="toggleExpandField('${field.id}')"
-                  class="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                  class="p-1 text-slate-400 hover:text-slate-600"
                 >
                   <i data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
             </div>
 
-            <!-- Bagian Sub-bidang (Skala Meso, Tingkat 2) & Spesialisasi Mikro -->
+            <!-- Bagian Sub-bidang -->
             ${isExpanded ? `
-              <div class="px-2 pb-2 pt-1 border-t border-slate-100 bg-slate-50/50 space-y-1.5">
+              <div class="px-2.5 pb-2.5 pt-1 border-t border-slate-100 bg-slate-50/30 space-y-1">
                 ${subfieldsToRender.map(sub => {
                   const isSubActive = state.activeConceptId === sub.id && state.hierarchyLevel === 'meso';
                   const isSubExpanded = searchTerm ? true : state.expandedSubfields.has(sub.id);
                   const microList = sub.matchingMicro || sub.microTopics || [];
 
                   return `
-                    <div class="rounded-lg border ${isSubActive ? 'border-indigo-400 bg-indigo-50/40' : 'border-slate-200/80 bg-white'} overflow-hidden shadow-2xs">
-                      <!-- Subfield Header (Meso) -->
-                      <div class="px-2 py-1.5 flex items-center justify-between gap-1.5 hover:bg-slate-50/60 transition-colors">
+                    <div class="rounded-lg border ${isSubActive ? 'border-indigo-400 bg-indigo-50/30' : 'border-slate-200/60 bg-white'} overflow-hidden">
+                      <div class="px-2 py-1.5 flex items-center justify-between gap-1.5 hover:bg-slate-50 transition-colors">
                         <button
                           type="button"
                           onclick="toggleExpandSubfield('${sub.id}')"
                           class="flex items-center gap-1.5 text-left min-w-0 flex-1 group"
                         >
                           <i data-lucide="${isSubExpanded ? 'folder-open' : 'folder'}" class="w-3 h-3 text-slate-400 group-hover:text-indigo-600 flex-shrink-0"></i>
-                          <span class="text-[11px] font-semibold text-slate-700 break-words leading-tight group-hover:text-indigo-600">${sub.name}</span>
-                          <span class="px-1 py-0.2 rounded text-[8px] font-bold bg-slate-100 text-slate-600 flex-shrink-0">Meso</span>
+                          <span class="text-[11px] font-medium text-slate-700 truncate group-hover:text-indigo-600">${sub.name}</span>
                         </button>
 
                         <div class="flex items-center gap-1 flex-shrink-0">
                           <button
                             type="button"
                             onclick="selectSubfield('${sub.id}', '${sub.name.replace(/'/g, "\\'")}', '${field.name.replace(/'/g, "\\'")}')"
-                            class="px-1.5 py-0.5 text-[9px] font-semibold rounded ${isSubActive ? 'bg-indigo-600 text-white' : 'bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-600'} transition-all"
-                            title="Pilih sub-bidang ini"
+                            class="px-1.5 py-0.5 text-[9px] font-medium rounded ${isSubActive ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:text-indigo-600'} transition-all"
                           >
                             Pilih
                           </button>
@@ -3340,13 +3422,8 @@
                         </div>
                       </div>
 
-                      <!-- Daftar Spesialisasi Mikro (Skala Mikro, Tingkat 3) -->
                       ${isSubExpanded && microList.length > 0 ? `
-                        <div class="p-2 border-t border-slate-100 bg-slate-50/90">
-                          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1">
-                            <i data-lucide="sparkles" class="w-2.5 h-2.5 text-amber-500"></i>
-                            Spesialisasi Mikro:
-                          </div>
+                        <div class="p-2 border-t border-slate-100 bg-slate-50/70">
                           <div class="flex flex-wrap gap-1">
                             ${microList.map(micro => {
                               const isMicroActive = state.activeMicroTopic?.name === micro.name;
@@ -3354,15 +3431,13 @@
                                 <button
                                   type="button"
                                   onclick="selectMicroTopic('${micro.name.replace(/'/g, "\\'")}', '${micro.query.replace(/'/g, "\\'")}', '${micro.conceptId || ''}', '${field.name.replace(/'/g, "\\'")}', '${sub.name.replace(/'/g, "\\'")}')"
-                                  class="px-2 py-1 rounded-md text-[10px] font-medium transition-all text-left flex items-start gap-1.5 ${
+                                  class="px-2 py-1 rounded text-[10px] font-medium transition-all text-left ${
                                     isMicroActive
-                                      ? 'bg-amber-500 text-white font-bold shadow-xs'
-                                      : 'bg-white border border-slate-200 text-slate-700 hover:border-amber-400 hover:bg-amber-50/50 hover:text-amber-900 shadow-2xs'
+                                      ? 'bg-indigo-600 text-white font-semibold'
+                                      : 'bg-white border border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-700'
                                   }"
-                                  title="Saring jurnal spesialisasi mikro: ${micro.name}"
                                 >
-                                  <span class="w-1.5 h-1.5 rounded-full ${isMicroActive ? 'bg-white' : 'bg-amber-400'} flex-shrink-0 mt-1"></span>
-                                  <span class="break-words leading-tight">${micro.name}</span>
+                                  ${micro.name}
                                 </button>
                               `;
                             }).join('')}
@@ -3389,7 +3464,7 @@
         <button
           type="button"
           onclick="applySearchKeyword('${item.query.replace(/'/g, "\\'")}')"
-          class="px-3 py-1 rounded-full bg-white border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/30 text-slate-700 hover:text-indigo-700 transition-all text-xs flex items-center gap-1 shadow-2xs font-medium"
+          class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-700 border border-slate-200/60 hover:border-indigo-200 transition-all text-[11px] font-medium whitespace-nowrap"
         >
           <span>${item.label}</span>
         </button>
@@ -3558,6 +3633,15 @@
             <span>Baca Naskah (Bahasa Indonesia)</span>
           </button>
         `}
+        <button
+          type="button"
+          onclick="openReaderInChatMode('${paper.id}')"
+          class="px-3.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
+          title="Tanya AI Copilot tentang karya ilmiah ini"
+        >
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-600"></i>
+          <span>Tanya AI Copilot</span>
+        </button>
         ${doiUrl ? `
           <a href="${doiUrl}" target="_blank" rel="noopener noreferrer" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-colors">
             <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Penerbit
@@ -3831,17 +3915,21 @@
       `).join('') || '<span class="text-slate-400 text-xs">Tidak ada kata kunci terdaftar</span>';
     }
 
+    const paperChatHistoryMap = new Map(); // paperId -> Array<{ role: 'user' | 'model', text: string }>
+
     function setReaderViewMode(mode) {
       readerCurrentMode = mode;
       const splitBtn = document.getElementById('readerModeSplitBtn');
       const transBtn = document.getElementById('readerModeTransBtn');
       const pdfBtn = document.getElementById('readerModePdfBtn');
+      const chatBtn = document.getElementById('readerModeChatBtn');
       const framePane = document.getElementById('pdfFramePane');
       const articlePane = document.getElementById('pdfArticlePane');
+      const chatPane = document.getElementById('readerChatPane');
       const overlay = document.getElementById('pdfTranslationOverlay');
 
       // Reset style tombol switcher
-      [splitBtn, transBtn, pdfBtn].forEach(btn => {
+      [splitBtn, transBtn, pdfBtn, chatBtn].filter(Boolean).forEach(btn => {
         btn.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5 font-medium';
       });
 
@@ -3851,21 +3939,220 @@
         articlePane.className = 'w-full lg:w-1/2 h-full overflow-y-auto bg-white p-6 sm:p-8 lg:p-10 transition-all duration-200';
         framePane.classList.remove('hidden');
         articlePane.classList.remove('hidden');
+        if (chatPane) chatPane.classList.add('hidden');
         if (overlay) overlay.classList.add('hidden');
       } else if (mode === 'translated') {
         transBtn.className = 'px-3 py-1.5 rounded-lg bg-white text-indigo-700 font-bold shadow-xs transition-all flex items-center gap-1.5';
         framePane.classList.add('hidden');
         articlePane.classList.remove('hidden');
         articlePane.className = 'w-full h-full overflow-y-auto bg-white p-6 sm:p-12 lg:p-16 transition-all duration-200';
+        if (chatPane) chatPane.classList.add('hidden');
         if (overlay) overlay.classList.add('hidden');
       } else if (mode === 'pdf') {
         pdfBtn.className = 'px-3 py-1.5 rounded-lg bg-white text-indigo-700 font-bold shadow-xs transition-all flex items-center gap-1.5';
         framePane.classList.remove('hidden');
         articlePane.classList.add('hidden');
         framePane.className = 'w-full h-full flex flex-col bg-slate-100 transition-all duration-200';
+        if (chatPane) chatPane.classList.add('hidden');
         if (overlay) overlay.classList.remove('hidden');
+      } else if (mode === 'chat') {
+        if (chatBtn) chatBtn.className = 'px-3 py-1.5 rounded-lg bg-white text-purple-700 font-bold shadow-xs transition-all flex items-center gap-1.5';
+        const hasPdf = currentReaderPaper && (currentReaderPaper.open_access?.oa_url || currentReaderPaper.best_oa_location?.pdf_url);
+        if (hasPdf) {
+          framePane.className = 'hidden lg:flex lg:w-1/2 h-full flex-col border-r border-slate-200 bg-slate-100 transition-all duration-200';
+          framePane.classList.remove('hidden');
+          articlePane.classList.add('hidden');
+        } else {
+          articlePane.className = 'hidden lg:block lg:w-1/2 h-full overflow-y-auto bg-white p-6 sm:p-8 transition-all duration-200 border-r border-slate-200';
+          articlePane.classList.remove('hidden');
+          framePane.classList.add('hidden');
+        }
+        if (chatPane) {
+          chatPane.classList.remove('hidden');
+          chatPane.className = 'w-full lg:w-1/2 h-full flex flex-col bg-slate-50 transition-all duration-200';
+          renderPaperChatMessages();
+          const chatInput = document.getElementById('readerChatInput');
+          if (chatInput) setTimeout(() => chatInput.focus(), 100);
+        }
+        if (overlay) overlay.classList.add('hidden');
       }
       lucide.createIcons();
+    }
+
+    function renderPaperChatMessages() {
+      const container = document.getElementById('readerChatMessages');
+      if (!container || !currentReaderPaper) return;
+
+      const history = paperChatHistoryMap.get(currentReaderPaper.id) || [];
+      const introCard = `
+        <div class="p-4 rounded-xl bg-purple-50/70 border border-purple-100 text-xs text-purple-900 space-y-2.5">
+          <div class="font-bold flex items-center gap-1.5 text-purple-800">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>Mulai Diskusi Ilmiah dengan AI</span>
+          </div>
+          <p class="text-[11.5px] text-purple-950/80 leading-relaxed">
+            Ajukan pertanyaan seputar metodologi, data, temuan empiris, atau batasan paper ini. Anda juga dapat memilih pertanyaan cepat di bawah:
+          </p>
+          <div class="flex flex-wrap gap-1.5 pt-1">
+            <button type="button" onclick="askQuickQuestion('Apa kontribusi utama dan novelty dari penelitian ini?')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-purple-100 text-purple-800 border border-purple-200 text-[11px] font-medium transition-colors shadow-2xs">
+              📌 Kontribusi & Novelty
+            </button>
+            <button type="button" onclick="askQuickQuestion('Jelaskan metodologi dan desain penelitian yang digunakan.')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-purple-100 text-purple-800 border border-purple-200 text-[11px] font-medium transition-colors shadow-2xs">
+              🔬 Metodologi Riset
+            </button>
+            <button type="button" onclick="askQuickQuestion('Apa batasan (limitations) dan potensi bias dari riset ini?')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-purple-100 text-purple-800 border border-purple-200 text-[11px] font-medium transition-colors shadow-2xs">
+              ⚠️ Batasan Riset
+            </button>
+            <button type="button" onclick="askQuickQuestion('Bagaimana implikasi praktis dan manajerial dari temuan naskah ini?')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-purple-100 text-purple-800 border border-purple-200 text-[11px] font-medium transition-colors shadow-2xs">
+              💡 Implikasi Praktis
+            </button>
+          </div>
+        </div>
+      `;
+
+      if (history.length === 0) {
+        container.innerHTML = introCard;
+      } else {
+        const messagesHtml = history.map(msg => {
+          if (msg.role === 'user') {
+            return `
+              <div class="flex justify-end">
+                <div class="max-w-[85%] bg-purple-600 text-white p-3 rounded-2xl rounded-tr-sm text-xs leading-relaxed shadow-xs">
+                  ${escapeHtml(msg.text)}
+                </div>
+              </div>
+            `;
+          } else {
+            return `
+              <div class="flex items-start gap-2.5">
+                <div class="w-6 h-6 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="flex-1 bg-white border border-slate-200 p-3.5 rounded-2xl rounded-tl-sm text-xs text-slate-800 space-y-1.5 shadow-2xs leading-relaxed">
+                  ${formatAiResponse(msg.text)}
+                </div>
+              </div>
+            `;
+          }
+        }).join('');
+        container.innerHTML = introCard + messagesHtml;
+      }
+
+      container.scrollTop = container.scrollHeight;
+      lucide.createIcons();
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function formatAiResponse(text) {
+      if (!text) return '';
+      let formatted = escapeHtml(text);
+      formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      formatted = formatted.replace(/^\s*[-*]\s+(.*)$/gm, '<li class="ml-4 list-disc">$1</li>');
+      formatted = formatted.replace(/\n\n/g, '<br/><br/>');
+      formatted = formatted.replace(/\n/g, '<br/>');
+      return formatted;
+    }
+
+    async function handlePaperChatSubmit(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('readerChatInput');
+      const question = (input?.value || '').trim();
+      if (!question || !currentReaderPaper) return;
+
+      input.value = '';
+      sendPaperChatQuestion(question);
+    }
+
+    function askQuickQuestion(question) {
+      if (!currentReaderPaper) return;
+      setReaderViewMode('chat');
+      sendPaperChatQuestion(question);
+    }
+
+    function clearPaperChat() {
+      if (!currentReaderPaper) return;
+      paperChatHistoryMap.delete(currentReaderPaper.id);
+      renderPaperChatMessages();
+      showToast('Riwayat percakapan naskah ini telah direset.', 'info');
+    }
+
+    async function sendPaperChatQuestion(question) {
+      if (!currentReaderPaper) return;
+      const paperId = currentReaderPaper.id;
+      let history = paperChatHistoryMap.get(paperId) || [];
+      
+      history.push({ role: 'user', text: question });
+      paperChatHistoryMap.set(paperId, history);
+      renderPaperChatMessages();
+
+      const container = document.getElementById('readerChatMessages');
+      const loadingId = `chat-loading-${Date.now()}`;
+      if (container) {
+        container.innerHTML += `
+          <div id="${loadingId}" class="flex items-start gap-2.5">
+            <div class="w-6 h-6 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+            </div>
+            <div class="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-sm text-xs text-slate-500 shadow-2xs flex items-center gap-2">
+              <div class="w-3.5 h-3.5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+              <span>Scholara Copilot sedang menelaah naskah...</span>
+            </div>
+          </div>
+        `;
+        container.scrollTop = container.scrollHeight;
+        lucide.createIcons();
+      }
+
+      const originalTitle = currentReaderPaper.display_name || currentReaderPaper.title || '';
+      const originalAbs = reconstructAbstract(currentReaderPaper.abstract_inverted_index) || currentReaderPaper.abstract || '';
+      const authorsStr = (currentReaderPaper.authorships || []).map(a => a.author?.display_name).filter(Boolean).join(', ');
+      const venueName = currentReaderPaper.primary_location?.source?.display_name || currentReaderPaper.host_venue?.display_name || '';
+      const pubYear = currentReaderPaper.publication_year || '';
+
+      try {
+        const response = await fetch('/api/paper-chat', {
+          method: 'POST',
+          headers: getAiHeaders(),
+          body: JSON.stringify({
+            title: originalTitle,
+            abstract: originalAbs,
+            authors: authorsStr,
+            venue: venueName,
+            year: pubYear,
+            question,
+            history: history.slice(0, -1)
+          })
+        });
+
+        const loadingEl = document.getElementById(loadingId);
+        if (loadingEl) loadingEl.remove();
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || 'Gagal menghubungi mesin AI.');
+        }
+
+        const data = await response.json();
+        const replyText = data.reply || 'Maaf, tidak dapat menghasilkan jawaban.';
+        history.push({ role: 'model', text: replyText });
+        paperChatHistoryMap.set(paperId, history);
+        renderPaperChatMessages();
+      } catch (err) {
+        const loadingEl = document.getElementById(loadingId);
+        if (loadingEl) loadingEl.remove();
+        history.push({ role: 'model', text: `⚠️ Maaf, terjadi kendala: ${err.message}. Pastikan API Key telah terkonfigurasi di Pengaturan AI.` });
+        paperChatHistoryMap.set(paperId, history);
+        renderPaperChatMessages();
+      }
+    }
+
+    function openReaderInChatMode(paperId) {
+      closeDetailModal();
+      openPdfReaderModal(paperId);
+      setTimeout(() => setReaderViewMode('chat'), 200);
     }
 
     function closePdfReaderModal() {
@@ -3898,7 +4185,7 @@
       lucide.createIcons();
     }
 
-    // --- GENERATOR SITASI AKADEMIK (APA, MLA, CHICAGO, HARVARD, BIBTEX) ---
+    // --- GENERATOR SITASI AKADEMIK (APA, MLA, CHICAGO, HARVARD, BIBTEX, RIS) ---
     let currentCitePaper = null;
 
     function openCiteModalForPaper(paperId) {
@@ -3926,12 +4213,10 @@
 
       const outputEl = document.getElementById('citationOutput');
       const bibtexBtn = document.getElementById('downloadBibtexBtn');
+      const risBtn = document.getElementById('downloadRisBtn');
 
-      if (format === 'bibtex') {
-        bibtexBtn.classList.remove('hidden');
-      } else {
-        bibtexBtn.classList.add('hidden');
-      }
+      if (bibtexBtn) bibtexBtn.classList.toggle('hidden', format !== 'bibtex');
+      if (risBtn) risBtn.classList.toggle('hidden', format !== 'ris');
 
       if (currentCitePaper) {
         outputEl.value = generateCitationString(currentCitePaper, format);
@@ -3972,6 +4257,17 @@
           const citeKey = `${firstAuthor}${year}${paper.id.split('/').pop() || 'paper'}`;
           return `@article{${citeKey},\n  author = {${authors.join(' and ')}},\n  title = {${title}},\n  journal = {${venue}},\n  year = {${year}},\n  doi = {${doi}}\n}`;
         }
+        case 'ris': {
+          let ris = 'TY  - JOUR\n';
+          authors.forEach(a => { ris += `AU  - ${a}\n`; });
+          ris += `TI  - ${title}\n`;
+          ris += `JO  - ${venue}\n`;
+          ris += `PY  - ${year}\n`;
+          if (doi) ris += `DO  - ${doi}\n`;
+          if (paper.open_access?.oa_url) ris += `UR  - ${paper.open_access.oa_url}\n`;
+          ris += 'ER  - \n';
+          return ris;
+        }
         default:
           return `${title} (${year}).`;
       }
@@ -4001,6 +4297,56 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       showToast('File .bib berhasil diunduh', 'success');
+    }
+
+    function downloadRisFile() {
+      const content = document.getElementById('citationOutput').value;
+      const blob = new Blob([content], { type: 'application/x-research-info-systems;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `scholara-citation-${Date.now()}.ris`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('File sitasi .ris (Zotero/Mendeley) berhasil diunduh', 'success');
+    }
+
+    function exportBookmarksBibTeX() {
+      if (!state.bookmarks || state.bookmarks.length === 0) {
+        showToast('Daftar bacaan masih kosong.', 'info');
+        return;
+      }
+      const bibEntries = state.bookmarks.map(p => generateCitationString(p, 'bibtex')).join('\n\n');
+      const blob = new Blob([bibEntries], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `scholara-reading-list-${Date.now()}.bib`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Berhasil mengekspor ${state.bookmarks.length} rujukan ke format BibTeX (.bib)!`, 'success');
+    }
+
+    function exportBookmarksRIS() {
+      if (!state.bookmarks || state.bookmarks.length === 0) {
+        showToast('Daftar bacaan masih kosong.', 'info');
+        return;
+      }
+      const risEntries = state.bookmarks.map(p => generateCitationString(p, 'ris')).join('\n');
+      const blob = new Blob([risEntries], { type: 'application/x-research-info-systems;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `scholara-reading-list-${Date.now()}.ris`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Berhasil mengekspor ${state.bookmarks.length} rujukan ke format RIS (Zotero/Mendeley)!`, 'success');
     }
 
     // --- MANAJEMEN DAFTAR BACAAN (LOCALSTORAGE) ---
