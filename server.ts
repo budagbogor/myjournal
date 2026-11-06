@@ -405,10 +405,18 @@ async function resolveAiConfig(req: express.Request) {
     // Abaikan jika berkas tidak ada
   }
 
+  if (process.env.SUMOPOD_API_KEY) {
+    return {
+      provider: "sumopod",
+      model: process.env.SUMOPOD_MODEL || "gpt-4o-mini",
+      apiKey: process.env.SUMOPOD_API_KEY
+    };
+  }
+
   return {
     provider: "gemini",
     model: "gemini-2.5-flash",
-    apiKey: process.env.GEMINI_API_KEY || process.env.SUMOPOD_API_KEY || ""
+    apiKey: process.env.GEMINI_API_KEY || ""
   };
 }
 
@@ -461,21 +469,37 @@ async function callAiChat(
     return data.choices?.[0]?.message?.content || "";
   } else if (provider === "sumopod") {
     // SumoPod AI: OpenAI-compatible gateway/proxy (ai.sumopod.com)
-    const res = await fetch("https://ai.sumopod.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
+    // Non-OpenAI models on proxy may reject response_format: { type: "json_object" }
+    const sendRequest = async (useJsonFormat: boolean) => {
+      const payload: any = {
         model: model || "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
-        ],
-        response_format: responseMimeType === "application/json" ? { type: "json_object" } : undefined
-      })
-    });
+        ]
+      };
+      if (useJsonFormat) {
+        payload.response_format = { type: "json_object" };
+      }
+      return await fetch("https://ai.sumopod.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+    };
+
+    let res = await sendRequest(responseMimeType === "application/json");
+    if (!res.ok && responseMimeType === "application/json") {
+      // Retry without response_format if proxy model doesn't support structured output
+      const retryRes = await sendRequest(false);
+      if (retryRes.ok) {
+        res = retryRes;
+      }
+    }
+
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(`SumoPod API Error: ${err.error?.message || err.message || res.statusText}`);
@@ -1197,8 +1221,8 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Scholara Server berjalan di http://0.0.0.0:${PORT}`);
+  app.listen(PORT, () => {
+    console.log(`Scholara Server berjalan di http://localhost:${PORT}`);
   });
 }
 
